@@ -24,16 +24,16 @@ jwt = JWTManager(app)
 
 # Config Database Migration
 app.config.from_object(ConnectDB)
-app.config['db'] = SQLAlchemy(app)
+# app.config['db'] = SQLAlchemy(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Config request limiter
-limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["15/minute","35/hour"]
-)
+# limiter = Limiter(
+#     app,
+#     key_func=get_remote_address,
+#     default_limits=["15/minute","35/hour"]
+# )
 
 # Config Folder Upload Here
 app.config['ADMIN_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/admin/"
@@ -62,7 +62,7 @@ from .routes.Admin.controller import admin
 from .routes.User.controller import user
 
 # Set Limiter Every Route
-limiter.limit("5/minute;12/hours")(admin)
+# limiter.limit("5/minute;12/hours")(admin)
 
 # Register Blueprint Here
 app.register_blueprint(admin)
