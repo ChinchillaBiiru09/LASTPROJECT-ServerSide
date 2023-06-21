@@ -1,4 +1,4 @@
-from . import config
+import config
 
 class ConnectDB(object):
     DATABASE = config.DB_NAME
