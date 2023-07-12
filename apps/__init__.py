@@ -50,16 +50,22 @@ for x in list_folder_to_create:
 # =================================== DATABASE MODEL ===================================
 from .database import adminDB
 from .database import userDB
+from .database import profileDB
+from .database import logDB
+from .database import categoryDB
+from .database import guestDB
 
 # =================================== CONFIG ===================================
 @app.route('/')
 def index():
-    return 'TA Backend API Gateway - Version 1.0 - Development'
+    return 'TA Backend Creavitation API Gateway - Version 1.0 - Development'
 
 # =================================== CONFIG ===================================
 # import blueprint here
 from .routes.Admin.controller import admin
 from .routes.User.controller import user
+from .routes.Category.controller import category
+# from .routes.Guest.controller import guest
 
 # Set Limiter Every Route
 # limiter.limit("5/minute;12/hours")(admin)
@@ -67,3 +73,5 @@ from .routes.User.controller import user
 # Register Blueprint Here
 app.register_blueprint(admin)
 app.register_blueprint(user)
+app.register_blueprint(category)
+# app.register_blueprint(guest)

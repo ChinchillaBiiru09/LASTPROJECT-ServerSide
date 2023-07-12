@@ -1,0 +1,74 @@
+o> BLOCK COMMENT
+# BLOCK FIRST/BASE ============================================================ Begin
+# Block Second ---------------------------------------- Start
+# Request Data ======================================== 
+# POST https://127.0.0.1:5000/admin/login
+# Block Second ---------------------------------------- Finish
+# BLOCK FIRST/BASE ============================================================ End
+
+
+o> SINGLE BLOCK
+# Block Content ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# End Block Content ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+o> BLOCK COMMENT
+# ============================================================== 
+# COMMENT - START
+# ============================================================== 
+# ============================================================== 
+# COMMENT - END
+# ============================================================== 
+
+o> BLOCK HTML
+<!-- ============================================================== -->
+<!-- Comment -->
+<!-- ============================================================== -->
+<!-- ============================================================== -->
+<!-- End Comment -->
+<!-- ============================================================== -->
+
+o> FOLDER ROUTES NAME
+routes/FolderName
+
+o> FILE ROUTES NAME
+routes/FolderName/fileName
+
+o> INITIALIZATION NAME
+class BigFirstLetter():
+    def use_underscore():
+        likeThis = 
+
+o> CONTROLLERS
+o>> IMPORT FORMAT
+from package import something
+from package import something
+from package import something
+
+from folder.file import function/class
+from folder.file import function/class
+
+import library
+
+o>> BLUEPRINT
+smallletter = Blueprint()
+
+o>> FUNCTION CRUD
+def create_data() -> for api create
+def get_all_data() -> for api get all 
+def get_detail_data() -> for api get detail
+def update_data() -> for api update
+def delete_data() -> for api delete
+def signin() -> for api login 
+def profile() -> for api profile
+def upload_data() -> for api upload 
+def download_data() -> for api download
+etc..
+
+o> MODELS
+o>> FUNCTION
+def create_specificfunction()
+etc..
+
+o> REQUEST FIELD
+smallcase+_underscore

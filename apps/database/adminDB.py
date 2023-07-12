@@ -7,9 +7,9 @@ class Admin(db.Model):
     email = db.Column(db.String(100), nullable=False)
     password = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.BigInteger, nullable=False)
-    # created_by =  db.Column(db.Integer, nullable=False)
     updated_at = db.Column(db.BigInteger, nullable=False)
-    # updated_by = db.Column(db.Integer, nullable=False)
-    deleted_at = db.Column(db.BigInteger, nullable=False)
-    # deleted_by = db.Column(db.Integer, nullable=False)
+    deleted_at = db.Column(db.BigInteger, nullable=True)
     is_delete = db.Column(db.Integer, nullable=False, server_default='0')
+    
+    def __repr__(self):
+        return '<Admin {}>'.format(self.name)
