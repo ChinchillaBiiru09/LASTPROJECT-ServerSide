@@ -36,7 +36,7 @@ class CategoryModels():
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = CTGR_ADD_QUERY
-            values = (category, timestamp, timestamp, timestamp, timestamp)
+            values = (category, timestamp, user_id, timestamp, user_id)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
@@ -134,7 +134,7 @@ class CategoryModels():
             # Update Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = CTGR_UPDATE_QUERY
-            values = (ctgr, timestamp, timestamp, ctgrId)
+            values = (ctgr, timestamp, user_id, ctgrId)
             DBHelper().save_data(query, values)
             # Update Data ---------------------------------------- Finish
 

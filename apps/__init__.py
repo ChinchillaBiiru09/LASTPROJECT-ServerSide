@@ -24,7 +24,6 @@ jwt = JWTManager(app)
 
 # Config Database Migration
 app.config.from_object(ConnectDB)
-# app.config['db'] = SQLAlchemy(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -37,10 +36,12 @@ migrate = Migrate(app, db)
 
 # Config Folder Upload Here
 app.config['ADMIN_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/admin/"
+app.config['USER_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/user/"
 
 # Create Folder (if doesn't exist)
 list_folder_to_create = [
     app.config['ADMIN_PHOTOS'],
+    app.config['USER_PHOTOS'],
 ]
 
 for x in list_folder_to_create:
@@ -54,7 +55,8 @@ from .database import profileDB
 from .database import logDB
 from .database import categoryDB
 from .database import guestDB
-from .database import test
+from .database import testDB
+from .database import greetingDB
 
 # =================================== CONFIG ===================================
 @app.route('/')
@@ -66,8 +68,9 @@ def index():
 from .routes.Admin.controller import admin
 from .routes.User.controller import user
 from .routes.Category.controller import category
+from .routes.Greeting.controller import greeting
 # from .routes.Guest.controller import guest
-from .routes.tester.controller import test
+# from .routes.tester.controller import test
 
 # Set Limiter Every Route
 # limiter.limit("5/minute;12/hours")(admin)
@@ -76,5 +79,6 @@ from .routes.tester.controller import test
 app.register_blueprint(admin)
 app.register_blueprint(user)
 app.register_blueprint(category)
+app.register_blueprint(greeting)
 # app.register_blueprint(guest)
-app.register_blueprint(test)
+app.register_blueprint(testDB)

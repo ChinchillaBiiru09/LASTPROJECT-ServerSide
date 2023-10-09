@@ -18,18 +18,13 @@ greeting = Blueprint(
 # CREATE CATEGORY ============================================================ Begin
 # POST https://127.0.0.1:5000/category/
 @greeting.post('/')
-@jwt_required()
 def create_data():
     try:
-        # Access User ======================================== 
-        # id = str(get_jwt()["id"])
-        invitationCode = str(get_jwt()["invitationCode"])
-
         # Request Data ======================================== 
         data = request.json
 
         # Request Process ======================================== 
-        response = GreetingModels.add_greeting(invitationCode, data)
+        response = GreetingModels.add_greeting(data)
 
         # Request Data ======================================== 
         return response
@@ -39,14 +34,34 @@ def create_data():
 # CREATE CATEGORY ============================================================ End
 
 
-
 # GET CATEGORY ============================================================ Begin
 # POST https://127.0.0.1:5000/category/
-@category.get('/')
+@greeting.get('/')
+@jwt_required()
 def get_all_data():
     try:
         # Request Process ======================================== 
-        response = CategoryModels.view_all_category()
+        response = GreetingModels.view_all_category()
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# GET CATEGORY ============================================================ End
+
+
+# GET CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/category/
+@greeting.get('/user/')
+@jwt_required()
+def get_all_data_by_user():
+    try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+
+        # Request Process ======================================== 
+        response = GreetingModels.view_all_category()
 
         # Request Data ======================================== 
         return response

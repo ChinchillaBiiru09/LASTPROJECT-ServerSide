@@ -82,9 +82,11 @@ def vld_admin_regis(name, email, password, repassword):
     if sanitRepass:
         checkResult.append(f"Password tidak boleh mengandung karakter {charRepass}")
 
+
     if password != repassword:
         checkResult.append(f"Password tidak sama.")
     
+
     if string_checker(name):
         checkResult.append(f"Nama tidak valid.")
     if email_checker(email):
@@ -92,6 +94,7 @@ def vld_admin_regis(name, email, password, repassword):
     passwordCheck, message = password_checker(password)
     if passwordCheck:
         checkResult.append(message)
+
 
     query = ADM_CHK_EMAIL_QUERY
     values = (email,)
@@ -304,4 +307,34 @@ def vld_category(category):
 # GREETING VALIDATION ============================================================ Begin
 def vld_greeting(invCode, name, email, greeting):
     checkResult = []
+
+    if name == "":
+        checkResult.append(f"Nama tidak boleh kosong")
+    if email == "":
+        checkResult.append(f"Email tidak boleh kosong")
+    if greeting == "":
+        checkResult.append(f"Pesan tidak boleh kosong")
+
+
+    sanitName, charName = sanitize_all_char(name)
+    if sanitName:
+        checkResult.append(f"Nama tidak boleh mengandung karakter {charName}")
+    sanitMail, charMail = sanitize_email_char(email)
+    if sanitMail:
+        checkResult.append(f"Email tidak boleh mengandung karakter {charMail}")
+        
+    
+    if string_checker(name):
+        checkResult.append(f"Nama tidak valid.")
+    if email_checker(email):
+        checkResult.append(f"Email tidak valid.")
+    
+    
+    query = INV_CODE_CHK_QUERY
+    values = (invCode,)
+    result = DBHelper().get_data(query, values)
+    if len(result) != 0 or result != None:
+        checkResult.append(f"Kode Undangan sudah tidak aktif.")
+
+    return checkResult 
 # GREETING VALIDATION ============================================================ End
