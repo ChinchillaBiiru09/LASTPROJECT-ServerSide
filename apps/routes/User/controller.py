@@ -1,4 +1,4 @@
-from flask import Blueprint, request, make_response, jsonify, current_app as pp
+from flask import Blueprint, request, make_response, jsonify, current_app as app
 from flask_jwt_extended import jwt_required, get_jwt
 
 from ...utilities.responseHelper import bad_request
@@ -16,7 +16,7 @@ user = Blueprint(
 # REGISTER USER ============================================================ Begin
 # POST https://127.0.0.1:5000/user/
 @user.post('/')
-def create():
+def create_data():
     try:
         # Request Data ======================================== 
         data = request.json
@@ -62,10 +62,7 @@ def profile():
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        data = request.json
-
-        # Request Data ======================================== 
-        response = UserModels.view_profile_user(id, role, data)
+        response = UserModels.view_profile_user(id, role)
 
         # Request Data ======================================== 
         return response
@@ -89,7 +86,7 @@ def update_data():
         data = request.json
 
         # Request Data ======================================== 
-        response = UserModels.view_profile_user(data)
+        response = UserModels.edit_profile_user(id, role, data)
 
         # Request Data ======================================== 
         return response
@@ -97,4 +94,3 @@ def update_data():
     except Exception as e:
         return bad_request(str(e))
 # EDIT PROFILE USER ============================================================ End
-

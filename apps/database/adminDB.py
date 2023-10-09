@@ -1,5 +1,4 @@
 from .. import db
-from sqlalchemy.sql import func
 
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

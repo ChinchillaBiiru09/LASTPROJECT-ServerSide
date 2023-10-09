@@ -37,7 +37,7 @@ def insert_return(conn, query, values):
 def execute(conn, query):
     cursor = conn.cursor()
     cursor.execute(query)
-    return cursor.fetchall
+    return cursor.fetchall()
 
 # Row Count Data
 def row_count(conn, query):

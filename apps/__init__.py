@@ -54,6 +54,7 @@ from .database import profileDB
 from .database import logDB
 from .database import categoryDB
 from .database import guestDB
+from .database import test
 
 # =================================== CONFIG ===================================
 @app.route('/')
@@ -66,6 +67,7 @@ from .routes.Admin.controller import admin
 from .routes.User.controller import user
 from .routes.Category.controller import category
 # from .routes.Guest.controller import guest
+from .routes.tester.controller import test
 
 # Set Limiter Every Route
 # limiter.limit("5/minute;12/hours")(admin)
@@ -75,3 +77,4 @@ app.register_blueprint(admin)
 app.register_blueprint(user)
 app.register_blueprint(category)
 # app.register_blueprint(guest)
+app.register_blueprint(test)

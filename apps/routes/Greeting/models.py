@@ -1,50 +1,54 @@
 from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.validator import vld_category, vld_role
+from ...utilities.validator import vld_greeting
 
 import time
 
-# CATEGORY MODEL CLASS ============================================================ Begin
-class CategoryModels():
+# GREETING MODEL CLASS ============================================================ Begin
+class GreetingModels():
     # CREATE CATEGORY ============================================================ Begin
-    def add_category(user_id, user_role, datas):
-
+    def add_greeting(invCode, datas):
+        
         try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
+            # Invitation Code Validation ---------------------------------------- Start
+            # access, message = vld_role(invtCode)
+            # if not access:
+            #     return defined_error(message, "Forbidden", 403)
+            # Invitation Code Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["category"]
-            if requiredData not in datas:
-                return parameter_error(f"Missing {requiredData} in Request Body")
+            requiredData = ["invitationCode", "name", "email", "greeting"]
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
-            category = datas["category"].strip()
-            ctgrCheck = vld_category(category)
-            if len(ctgrCheck) != 0:
-                return defined_error(ctgrCheck, "Bad Request", 400)
+            invCode = datas["invitationCode"].strip()
+            name = datas["name"].strip()
+            email = datas["email"].strip()
+            greeting = datas["greeting"].strip()
+            checkResult = vld_greeting(invCode,name,email,greeting)
+            if len(checkResult) != 0:
+                return defined_error(checkResult, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
             
             # Insert Data ---------------------------------------- Start
-            timestamp = int(round(time.time()*1000))
-            query = CTGR_ADD_QUERY
-            values = (category, timestamp, timestamp, timestamp, timestamp)
-            DBHelper().save_data(query, values)
+            # timestamp = int(round(time.time()*1000))
+            # query = CTGR_ADD_QUERY
+            # values = (category, timestamp, timestamp, timestamp, timestamp)
+            # DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}"
-            query = LOG_ADD_QUERY
-            values = (user_id, activity, )
-            DBHelper().save_data(query, values)
+            # activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}"
+            # query = LOG_ADD_QUERY
+            # values = (user_id, activity, )
+            # DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
@@ -229,4 +233,4 @@ class CategoryModels():
         except Exception as e:
             return bad_request(str(e))
     # GET ALL CATEGORY ============================================================ End
-# CATEGORY MODEL CLASS ============================================================ End
+# GREETING MODEL CLASS ============================================================ End

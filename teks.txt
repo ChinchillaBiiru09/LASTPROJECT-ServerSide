@@ -1,3 +1,4 @@
+A. FORMAT COMMENT 
 o> BLOCK COMMENT
 # BLOCK FIRST/BASE ============================================================ Begin
 # Block Second ---------------------------------------- Start
@@ -72,3 +73,30 @@ etc..
 
 o> REQUEST FIELD
 smallcase+_underscore
+
+
+
+B. STATUS HTTP RESPONSE
+o> 1xx -> Information, 
+o>> None
+
+o> 2xx -> Success, 
+o>> 200 => Successed
+0>> 201 => Created
+
+o> 3xx -> Redirect, 
+o>> None
+
+o> 4xx -> Client Error,
+o>> 400 => Bad Request
+o>> 401 => Unauthorized
+o>> 403 => Forbidden
+o>> 404 => Not Found
+o>> 405 => Method Not Allowed
+o>> 419 => Authentication Timeout
+o>> 440 => Login Timeout
+
+o> 5xx -> Server Error,
+o>> 500 -> Internal Server Error
+o>> 502 -> Bad Gateway
+o>> 504 -> Gateway Timeout
