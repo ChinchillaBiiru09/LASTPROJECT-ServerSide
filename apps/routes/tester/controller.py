@@ -28,12 +28,12 @@ def testcreateblob():
         if data == None:
                 return invalid_params()
             
-        requiredData = ["nama", "file"]
+        requiredData = ["title", "file"]
         for req in requiredData:
             if req not in data:
                 return parameter_error(f"Missing {req} in Request Body")
         
-        nama = data["nama"]
+        nama = data["title"]
         file = data["file"]
 
         binary_data = base64.b64decode(file)
