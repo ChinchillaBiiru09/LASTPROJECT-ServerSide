@@ -3,21 +3,21 @@ from flask import current_app as app
 from flask_jwt_extended import jwt_required, get_jwt
 
 from ...utilities.responseHelper import bad_request
-from .models import CategoryModels
+from .models import TemplateModels
 
 
 # BLUEPRINT ============================================================ Begin
-category = Blueprint(
-    name='category',
+template = Blueprint(
+    name='template',
     import_name=__name__,
-    url_prefix='/category'
+    url_prefix='/template'
 )
 # BLUEPRINT ============================================================ End
 
 
-# CREATE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
-@category.post('/')
+# CREATE TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/template/
+@template.post('/')
 @jwt_required()
 def create_data():
     try:
@@ -29,36 +29,35 @@ def create_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.add_category(id, role, data)
+        response = TemplateModels.add_template(id, role, data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# CREATE CATEGORY ============================================================ End
+# CREATE TEMPLATE ============================================================ End
 
 
-
-# GET CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
-@category.get('/')
+# GET TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/template/
+@template.get('/')
 def get_all_data():
     try:
         # Request Process ======================================== 
-        response = CategoryModels.view_category()
+        response = TemplateModels.view_template()
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# GET CATEGORY ============================================================ End
+# GET TEMPLATE ============================================================ End
 
 
-# UPDATE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
-@category.put('/')
+# UPDATE TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/template/
+@template.put('/')
 @jwt_required()
 def update_data():
     try:
@@ -70,19 +69,19 @@ def update_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.edit_category(id, role, data)
+        response = TemplateModels.edit_template(id, role, data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# UPDATE CATEGORY ============================================================ End
+# UPDATE TEMPLATE ============================================================ End
 
 
-# DELETE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
-@category.delete('/')
+# DELETE TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/template/
+@template.delete('/')
 @jwt_required()
 def delete_data():
     try:
@@ -94,32 +93,31 @@ def delete_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.delete_category(id, role, data)
+        response = TemplateModels.delete_template(id, role, data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# DELETE CATEGORY ============================================================ End
+# DELETE TEMPLATE ============================================================ End
 
 
-# VIEW DETAIL CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/detail
-@category.get('/detail')
+# VIEW DETAIL TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/template/detail
+@template.get('/detail')
 @jwt_required()
 def get_data():
     try:
-        # Access User ======================================== 
-        id = str(get_jwt()["id"])
-        role = str(get_jwt()["role"])
+        # Request Data ======================================== 
+        data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.view_detail_category(id, role)
+        response = TemplateModels.view_detail_template(data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW DETAIL CATEGORY ============================================================ End
+# VIEW DETAIL TEMPLATE ============================================================ End

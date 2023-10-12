@@ -15,8 +15,8 @@ greeting = Blueprint(
 # BLUEPRINT ============================================================ End
 
 
-# CREATE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
+# CREATE GREETING ============================================================ Begin
+# POST https://127.0.0.1:5000/greeting/
 @greeting.post('/')
 def create_data():
     try:
@@ -31,73 +31,98 @@ def create_data():
 
     except Exception as e:
         return bad_request(str(e))
-# CREATE CATEGORY ============================================================ End
+# CREATE GREETING ============================================================ End
 
 
-# GET CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
+# GET GREETING ============================================================ Begin
+# POST https://127.0.0.1:5000/greeting/
 @greeting.get('/')
 @jwt_required()
 def get_all_data():
     try:
+        # Access User ======================================== 
+        role = str(get_jwt()["role"])
+
         # Request Process ======================================== 
-        response = GreetingModels.view_all_category()
+        response = GreetingModels.view_all_greeting(role)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# GET CATEGORY ============================================================ End
+# GET GREETING ============================================================ End
 
 
-# GET CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
+# GET GREETING ============================================================ Begin
+# POST https://127.0.0.1:5000/greeting/
 @greeting.get('/user/')
 @jwt_required()
 def get_all_data_by_user():
     try:
         # Access User ======================================== 
         id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
 
         # Request Process ======================================== 
-        response = GreetingModels.view_all_category()
+        response = GreetingModels.view_all_greeting_by_user(id, role)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# GET CATEGORY ============================================================ End
+# GET GREETING ============================================================ End
 
 
-# UPDATE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
-@category.put('/')
+# VIEW DETAIL GREETING ============================================================ Begin
+# POST https://127.0.0.1:5000/greeting/detail
+@greeting.get('/detail')
 @jwt_required()
-def update_data():
+def get_data():
     try:
         # Access User ======================================== 
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
 
-        # Request Data ======================================== 
-        data = request.json
-
         # Request Process ======================================== 
-        response = CategoryModels.edit_category(id, role, data)
+        response = GreetingModels.view_greeting(id, role)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# UPDATE CATEGORY ============================================================ End
+# VIEW DETAIL GREETING ============================================================ End
 
 
-# DELETE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
-@category.delete('/')
+# # UPDATE GREETING ============================================================ Begin
+# # POST https://127.0.0.1:5000/greeting/
+# @greeting.put('/')
+# @jwt_required()
+# def update_data():
+#     try:
+#         # Access User ======================================== 
+#         id = str(get_jwt()["id"])
+#         role = str(get_jwt()["role"])
+
+#         # Request Data ======================================== 
+#         data = request.json
+
+#         # Request Process ======================================== 
+#         response = CategoryModels.edit_category(id, role, data)
+
+#         # Request Data ======================================== 
+#         return response
+
+#     except Exception as e:
+#         return bad_request(str(e))
+# # UPDATE GREETING ============================================================ End
+
+
+# DELETE GREETING ============================================================ Begin
+# POST https://127.0.0.1:5000/greeting/
+@greeting.delete('/')
 @jwt_required()
 def delete_data():
     try:
@@ -109,32 +134,11 @@ def delete_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.delete_category(id, role, data)
+        response = GreetingModels.delete_greeting(id, role, data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# DELETE CATEGORY ============================================================ End
-
-
-# VIEW DETAIL CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/detail
-@category.get('/detail')
-@jwt_required()
-def get_data():
-    try:
-        # Access User ======================================== 
-        id = str(get_jwt()["id"])
-        role = str(get_jwt()["role"])
-
-        # Request Process ======================================== 
-        response = CategoryModels.view_all_category(id, role)
-
-        # Request Data ======================================== 
-        return response
-
-    except Exception as e:
-        return bad_request(str(e))
-# VIEW DETAIL CATEGORY ============================================================ End
+# DELETE GREETING ============================================================ End

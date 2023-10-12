@@ -119,7 +119,7 @@ GRTG_ADD_QUERY = """
                     (name, email, message, invitation_code, user_id, created_at)
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """
-GRTG_GET_QUERY = """
+GRTG_GET_ALL_QUERY = """
                     SELECT * FROM greeting 
                     WHERE is_delete=0
                 """
@@ -127,6 +127,15 @@ GRTG_GET_BY_USER_QUERY = """
                             SELECT * FROM greeting 
                             WHERE user_id=%s AND is_delete=0
                         """
+GRTG_GET_BY_ID_QUERY = """
+                            SELECT * FROM greeting 
+                            WHERE id=%s AND is_delete=0
+                        """
+GRTG_DELETE_QUERY = """
+                        UPDATE greeting 
+                        SET is_delete=1, deleted_at=%s, deleted_by=%s
+                        WHERE id=%s AND is_delete=0
+                    """
 # ======================================================================== 
 # GREETING QUERY - END ===================================================
 # ======================================================================== 

@@ -7,9 +7,8 @@ import time
 
 # GREETING MODEL CLASS ============================================================ Begin
 class GreetingModels():
-    # CREATE CATEGORY ============================================================ Begin
-    def add_greeting(datas):
-        
+    # CREATE GREETING ============================================================ Begin
+    def add_greeting(datas):   
         try:
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
@@ -46,7 +45,7 @@ class GreetingModels():
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"User dengan id {user_owner_id} mendapatkan ucapan selamat dari: {name}"
+            activity = f"User dengan id {user_owner_id} mendapatkan ucapan selamat dari: {email}"
             query = LOG_ADD_QUERY
             values = (user_owner_id, activity, )
             DBHelper().save_data(query, values)
@@ -57,13 +56,19 @@ class GreetingModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # CREATE CATEGORY ============================================================ End
+    # CREATE GREETING ============================================================ End
 
-    # GET ALL CATEGORY ============================================================ Begin
-    def view_all_greeting():
+    # GET ALL GREETING ============================================================ Begin
+    def view_all_greeting(user_role):
         try:
+            # Access Validation ---------------------------------------- Start
+            access, message = vld_role(user_role)
+            if not access: # Not True = User
+                return defined_error(message, "Forbidden", 403)
+            # Access Validation ---------------------------------------- Finish
+
             # Checking Data ---------------------------------------- Start
-            query = GRTG_GET_QUERY
+            query = GRTG_GET_ALL_QUERY
             result = DBHelper().execute(query)
             if len(result) == 0 or result == None:
                 return defined_error("Belum ada ucapan selamat untuk user manapun.", "Bad Request", 400)
@@ -89,24 +94,35 @@ class GreetingModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # GET ALL CATEGORY ============================================================ End
+    # GET ALL GREETING ============================================================ End
 
-    # GET ALL CATEGORY ============================================================ Begin
-    def view_all_greeting_by_user(user_id):
+    # GET ALL GREETING ============================================================ Begin
+    def view_all_greeting_by_user(user_id, user_role):
         try:
+            # Access Validation ---------------------------------------- Start
+            access, message = vld_role(user_role)
+            if access: # True = Admin
+                return defined_error("Hanya User yang dapat mengakses Menu ini.", "Forbidden", 403)
+            # Access Validation ---------------------------------------- Finish
+
             # Checking Data ---------------------------------------- Start
-            query = CTGR_GET_QUERY
-            result = DBHelper().execute(query)
+            query = GRTG_GET_BY_USER_QUERY
+            values = (user_id,)
+            result = DBHelper().get_data(query,values)
             if len(result) == 0 or result == None:
-                return defined_error("Belum ada kategori.", "Bad Request", 400)
+                return defined_error("Belum ada ucapan selamat dari calon tamu.", "Bad Request", 400)
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
                 data = {
-                    "category_id" : rsl["id"],
-                    "category" : rsl["category"],
+                    "greeting_id" : rsl["id"],
+                    "name" : rsl["name"],
+                    "email" : rsl["email"],
+                    "greeting" : rsl["greeting"],
+                    "invitation_code" : rsl["invitation_code"],
+                    "user_owner" : rsl["user_id"],
                     "created_at": rsl["created_at"]
                 }
                 response.append(data)
@@ -117,40 +133,38 @@ class GreetingModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # GET ALL CATEGORY ============================================================ End
+    # GET ALL GREETING ============================================================ End
 
-    # GET DETAIL CATEGORY ============================================================ Begin
+    # GET DETAIL GREETING ============================================================ Begin
     def view_greeting(user_role, datas):
         try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
-
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["category_id"]
+            requiredData = ["greeting_id"]
             if requiredData not in datas:
                 return parameter_error(f"Missing {requiredData} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
-            ctgrId = datas["category_id"].strip()
+            grtgId = datas["greeting_id"].strip()
             
             # Checking Data ---------------------------------------- Start
-            query = CTGR_GET_BY_ID_QUERY
-            values = (ctgrId,)
+            query = GRTG_GET_BY_ID_QUERY
+            values = (grtgId,)
             result = DBHelper.get_data(query, values)
             if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.")
+                return defined_error("Ucapan selamat tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = {
-                "category_id" : result[0]["id"],
-                "category" : result[0]["category"],
+                "greeting_id" : result[0]["id"],
+                "name" : result[0]["name"],
+                "email" : result[0]["email"],
+                "greeting" : result[0]["greeting"],
+                "invitation_code" : result[0]["invitation_code"],
+                "user_owner" : result[0]["user_id"],
                 "created_at": result[0]["created_at"]
             }
             # Response Data ---------------------------------------- Finish
@@ -160,101 +174,94 @@ class GreetingModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # GET DETAIL CATEGORY ============================================================ End
+    # GET DETAIL GREETING ============================================================ End
 
-    # UPDATE CATEGORY ============================================================ Begin
-    def edit_category(user_id, user_role,  datas):
+    # # UPDATE GREETING ============================================================ Begin
+    # def edit_category(user_id, user_role,  datas):
+    #     try:
+    #         # Access Validation ---------------------------------------- Start
+    #         access, message = vld_role(user_role)
+    #         if not access:
+    #             return defined_error(message, "Forbidden", 403)
+    #         # Access Validation ---------------------------------------- Finish
+
+    #         # Checking Request Body ---------------------------------------- Start
+    #         if datas == None:
+    #             return invalid_params()
+            
+    #         requiredData = ["category_id", "category"]
+    #         for req in requiredData:
+    #             if req not in datas:
+    #                 return parameter_error(f"Missing {req} in Request Body")
+    #         # Checking Request Body ---------------------------------------- Finish
+            
+    #         ctgrId = datas["category_id"].strip()
+    #         ctgr = datas["category"].strip()
+            
+    #         # Data Validation ---------------------------------------- Start
+    #         query = CTGR_GET_BY_ID_QUERY
+    #         values = (ctgrId,)
+    #         result = DBHelper.get_data(query, values)
+    #         if len(result) == 0 :
+    #             return defined_error("Kategori tidak dapat ditemukan.")
+            
+    #         ctgrCheck, result = vld_category(ctgr)
+    #         if len(ctgrCheck) != 0:
+    #             return defined_error(ctgrCheck, "Bad Request", 400)
+    #         # Data Validation ---------------------------------------- Finish
+            
+    #         # Update Data ---------------------------------------- Start
+    #         timestamp = int(round(time.time()*1000))
+    #         query = CTGR_UPDATE_QUERY
+    #         values = (ctgr, timestamp, timestamp, ctgrId)
+    #         DBHelper().save_data(query, values)
+    #         # Update Data ---------------------------------------- Finish
+
+    #         # Log Activity Record ---------------------------------------- Start
+    #         activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {ctgr}"
+    #         query = LOG_ADD_QUERY
+    #         values = (user_id, activity, )
+    #         DBHelper().save_data(query, values)
+    #         # Log Activity Record ---------------------------------------- Finish
+
+    #         # Return Response ======================================== 
+    #         return success("Successed!")
+            
+    #     except Exception as e:
+    #         return bad_request(str(e))
+    # # UPDATE GREETING ============================================================ End
+
+    # DELETE GREETING ============================================================ Begin
+    def delete_greeting(user_id, user_role, datas):     
         try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
-
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["category_id", "category"]
-            for req in requiredData:
-                if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body")
-            # Checking Request Body ---------------------------------------- Finish
-            
-            ctgrId = datas["category_id"].strip()
-            ctgr = datas["category"].strip()
-            
-            # Data Validation ---------------------------------------- Start
-            query = CTGR_GET_BY_ID_QUERY
-            values = (ctgrId,)
-            result = DBHelper.get_data(query, values)
-            if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.")
-            
-            ctgrCheck, result = vld_category(ctgr)
-            if len(ctgrCheck) != 0:
-                return defined_error(ctgrCheck, "Bad Request", 400)
-            # Data Validation ---------------------------------------- Finish
-            
-            # Update Data ---------------------------------------- Start
-            timestamp = int(round(time.time()*1000))
-            query = CTGR_UPDATE_QUERY
-            values = (ctgr, timestamp, timestamp, ctgrId)
-            DBHelper().save_data(query, values)
-            # Update Data ---------------------------------------- Finish
-
-            # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {ctgr}"
-            query = LOG_ADD_QUERY
-            values = (user_id, activity, )
-            DBHelper().save_data(query, values)
-            # Log Activity Record ---------------------------------------- Finish
-
-            # Return Response ======================================== 
-            return success("Successed!")
-            
-        except Exception as e:
-            return bad_request(str(e))
-    # UPDATE CATEGORY ============================================================ End
-
-    # DELETE CATEGORY ============================================================ Begin
-    def delete_category(user_id, user_role, datas):
-        
-        try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
-
-            # Checking Request Body ---------------------------------------- Start
-            if datas == None:
-                return invalid_params()
-            
-            requiredData = ["category_id"]
+            requiredData = ["greeting_id"]
             if requiredData not in datas:
                 return parameter_error(f"Missing {requiredData} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
-            ctgrId = datas["category_id"].strip()
+            grtgId = datas["greeting_id"].strip()
             
             # Data Validation ---------------------------------------- Start
-            query = CTGR_GET_BY_ID_QUERY
-            values = (ctgrId,)
+            query = GRTG_GET_BY_ID_QUERY
+            values = (grtgId,)
             result = DBHelper().get_data(query, values)
             if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.", "Bad Request", 400)
+                return defined_error("Ucapan selamat tidak dapat ditemukan.", "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
             
             # Delete Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
-            query = CTGR_DELETE_QUERY
-            values = (timestamp, user_id, ctgrId)
+            query = GRTG_DELETE_QUERY
+            values = (timestamp, user_id, grtgId)
             DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menghapus kategori {ctgrId}"
+            activity = f"Ucapan selamat dari: {result[0]['email']}, telah dihapus oleh {user_role} dengan id {user_id}"
             query = LOG_ADD_QUERY
             values = (user_id, activity, )
             DBHelper().save_data(query, values)
@@ -265,5 +272,5 @@ class GreetingModels():
             
         except Exception as e:
             return bad_request(str(e))
-    # DELETE CATEGORY ============================================================ End
+    # DELETE GREETING ============================================================ End
 # GREETING MODEL CLASS ============================================================ End

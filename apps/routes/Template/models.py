@@ -6,9 +6,9 @@ from ...utilities.validator import vld_category, vld_role
 import time
 
 # CATEGORY MODEL CLASS ============================================================ Begin
-class CategoryModels():
+class TemplateModels():
     # CREATE CATEGORY ============================================================ Begin
-    def add_category(user_id, user_role, datas):
+    def add_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
             access, message = vld_role(user_role)
@@ -54,7 +54,7 @@ class CategoryModels():
     # CREATE CATEGORY ============================================================ End
 
     # GET ALL CATEGORY ============================================================ Begin
-    def view_category():
+    def view_template():
         try:
             # Checking Data ---------------------------------------- Start
             query = CTGR_GET_QUERY
@@ -82,7 +82,7 @@ class CategoryModels():
     # GET ALL CATEGORY ============================================================ End
 
     # UPDATE CATEGORY ============================================================ Begin
-    def edit_category(user_id, user_role,  datas):
+    def edit_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
             access, message = vld_role(user_role)
@@ -137,7 +137,7 @@ class CategoryModels():
     # UPDATE CATEGORY ============================================================ End
 
     # DELETE CATEGORY ============================================================ Begin
-    def delete_category(user_id, user_role, datas):
+    def delete_template(user_id, user_role, datas):
         
         try:
             # Access Validation ---------------------------------------- Start
@@ -187,7 +187,7 @@ class CategoryModels():
     # DELETE CATEGORY ============================================================ End
 
     # GET DETAIL CATEGORY ============================================================ Begin
-    def view_detail_category(user_role, datas):
+    def view_detail_template(datas):
         try:
             # Access Validation ---------------------------------------- Start
             access, message = vld_role(user_role)
