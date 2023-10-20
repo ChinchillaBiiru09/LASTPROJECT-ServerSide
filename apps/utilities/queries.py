@@ -142,9 +142,45 @@ GRTG_DELETE_QUERY = """
 
 
 # ======================================================================== 
+# TEMPLATE QUERY - START =================================================
+# ======================================================================== 
+TMPLT_CHK_QUERY = """
+                    SELECT * FROM template 
+                    WHERE title=%s AND is_delete=0
+                """
+TMPLT_ADD_QUERY = """
+                    INSERT INTO template 
+                    (title, thumbnail, css_file, js_file, wallpaper, category_id, created_at, created_by, updated_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+TMPLT_UPDATE_QUERY = """
+                        UPDATE category 
+                        SET category=%s, updated_at=%s, updated_by=%s
+                        WHERE id=%s AND is_delete=0
+                    """
+TMPLT_DELETE_QUERY = """
+                        UPDATE category 
+                        SET is_delete=1, deleted_at=%s, deleted_by=%s
+                        WHERE id=%s AND is_delete=0
+                    """
+TMPLT_GET_QUERY = """
+                    SELECT * FROM category 
+                    WHERE is_delete=0
+                """
+TMPLT_GET_BY_ID_QUERY = """
+                            SELECT * FROM category 
+                            WHERE id=%s AND is_delete=0
+                        """
+TMPLT_GET_WITH_FILTER_QUERY = """
+                            """
+# ======================================================================== 
+# TEMPLATE QUERY - END ===================================================
+# ========================================================================
+
+
+# ======================================================================== 
 # INVITATION QUERY - START ===============================================
 # ======================================================================== 
-
 # ======================================================================== 
 # INVITATION QUERY - END =================================================
 # ======================================================================== 

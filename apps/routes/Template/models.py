@@ -1,9 +1,14 @@
 from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.validator import vld_category, vld_role
+from ...utilities.validator import vld_template, vld_role
+from ...utilities.utils import random_number, saving_file
 
-import time
+from flask import request, current_app as app
+from werkzeug.utils import secure_filename
+from time import strftime
+
+import time, os
 
 # CATEGORY MODEL CLASS ============================================================ Begin
 class TemplateModels():
@@ -20,27 +25,57 @@ class TemplateModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["category"]
+            requiredData = ["tmplt_title", "tmplt_thumbnail", "css_file", "js_file", "tmplt_wallpaper", "category_id"]
             if requiredData not in datas:
                 return parameter_error(f"Missing {requiredData} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
+            # Variable Data Input ---------------------------------------- Start
+            title = datas["tmplt_title"].title().strip()
+            thumbnail = datas["tmplt_thumbnail"]
+            css = datas["css_file"]
+            js = datas["js_file"]
+            wallpaper = datas["tmplt_wallpaper"]
+            ctgr_id = datas["category_id"]
+            # Variable Data Input ---------------------------------------- Finish
+
             # Data Validation ---------------------------------------- Start
-            category = datas["category"].strip()
-            ctgrCheck = vld_category(category)
+            ctgrCheck = vld_template(title, thumbnail, css, wallpaper)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
+
+            # Saving File ---------------------------------------- Start
+            randomNumber = str(random_number(5))
+            # Thumbnail
+            thumbFileName = secure_filename(strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_thumbnail.jpg")
+            thumbPath = os.path.join(app.config['TEMPLATE_THUMBNAIL_PHOTOS'], thumbFileName)
+            saving_file(thumbnail, thumbPath)
+            # CSS
+            cssFileName = secure_filename(strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_style.css")
+            cssPath = os.path.join(app.config['TEMPLATE_CSS_FILE'], cssFileName)
+            saving_file(css, cssPath)
+            # JS
+            jsPath = ""
+            if js != "":
+                jsFileName = secure_filename(strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_script.js")
+                jsPath = os.path.join(app.config['TEMPLATE_JS_FILE'], jsFileName)
+                saving_file(js, jsPath)
+            # Wallpaper
+            wallpFileName = secure_filename(strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper.jpg")
+            wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName)
+            saving_file(wallpaper, wallpPath)
+            # Saving File ---------------------------------------- Finish
             
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
-            query = CTGR_ADD_QUERY
-            values = (category, timestamp, user_id, timestamp, user_id)
+            query = TMPLT_ADD_QUERY
+            values = (title, thumbPath, cssPath, jsPath, wallpPath, ctgr_id, timestamp, user_id, timestamp, user_id)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}"
+            activity = f"Admin dengan id {user_id} menambahkan template baru: {title}"
             query = LOG_ADD_QUERY
             values = (user_id, activity, )
             DBHelper().save_data(query, values)
@@ -54,22 +89,40 @@ class TemplateModels():
     # CREATE CATEGORY ============================================================ End
 
     # GET ALL CATEGORY ============================================================ Begin
-    def view_template():
+    def view_template(data):
         try:
             # Checking Data ---------------------------------------- Start
-            query = CTGR_GET_QUERY
+            query = TMPLT_GET_QUERY
             result = DBHelper().execute(query)
             if len(result) == 0 or result == None:
-                return defined_error("Belum ada kategori.", "Bad Request", 400)
+                return defined_error("Belum ada template.", "Bad Request", 400)
             # Checking Data ---------------------------------------- Finish
+
+            # Get Data Category ---------------------------------------- Start
+            # query = CTGR_GET_QUERY
+            # resultCtgr = DBHelper().execute(query)
+            # if len(resultCtgr) == 0 or resultCtgr == None:
+            #     return defined_error("Kategori tidak terdaftar.", "Bad Request", 400)
+            # Get Data Category ---------------------------------------- Finish
+
+            # Join Data ---------------------------------------- Start
+            # Join Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
+                value = (rsl["category_id"],)
+                resultCtgr = DBHelper().get_data(query, value)
+                category = ""
+                if resultCtgr != 0:
+                    category = resultCtgr["category"]
                 data = {
-                    "category_id" : rsl["id"],
-                    "category" : rsl["category"],
-                    "created_at": rsl["created_at"]
+                    "template_id" : rsl["id"],
+                    "title" : rsl["title"],
+                    "thumbnail" : f"{request.url_root}produk/media/{rsl['thumbnail']}",
+                    "category" : category,
+                    "created_at" : rsl["created_at"],
+                    "updated_at" : rsl["updated_at"]
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish

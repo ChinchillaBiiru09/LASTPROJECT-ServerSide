@@ -10,6 +10,8 @@ from .models import TemplateModels
 template = Blueprint(
     name='template',
     import_name=__name__,
+    static_folder = '../../static/template',
+    static_url_path="/media",
     url_prefix='/template'
 )
 # BLUEPRINT ============================================================ End

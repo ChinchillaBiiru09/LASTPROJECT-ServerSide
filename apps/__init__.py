@@ -37,11 +37,19 @@ migrate = Migrate(app, db)
 # Config Folder Upload Here
 app.config['ADMIN_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/admin/"
 app.config['USER_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/user/"
+app.config['TEMPLATE_THUMBNAIL_PHOTOS'] = config.STATIC_FOLDER_PATH + "template/thumbnail/"
+app.config['TEMPLATE_WALLPAPER_PHOTOS'] = config.STATIC_FOLDER_PATH + "template/wallpaper/"
+app.config['TEMPLATE_CSS_FILE'] = config.STATIC_FOLDER_PATH + "templates/css/"
+app.config['TEMPLATE_JS_FILE'] = config.STATIC_FOLDER_PATH + "templates/js/"
 
 # Create Folder (if doesn't exist)
 list_folder_to_create = [
     app.config['ADMIN_PHOTOS'],
     app.config['USER_PHOTOS'],
+    app.config['TEMPLATE_THUMBNAIL_PHOTOS'],
+    app.config['TEMPLATE_WALLPAPER_PHOTOS'],
+    app.config['TEMPLATE_CSS_FILE'],
+    app.config['TEMPLATE_JS_FILE'],
 ]
 
 for x in list_folder_to_create:

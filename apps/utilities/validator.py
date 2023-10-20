@@ -338,3 +338,34 @@ def vld_greeting(invCode, name, email, greeting):
 
     return checkResult 
 # GREETING VALIDATION ============================================================ End
+
+# TEMPLATE VALIDATION ============================================================ Begin
+def vld_template(title, thumbnail, css, wallpaper):
+    checkResult = []
+
+    if title == "":
+        checkResult.append(f"Judul template tidak boleh kosong")
+    if thumbnail == "":
+        checkResult.append(f"Thumbnail tidak boleh kosong")
+    if css == "":
+        checkResult.append(f"Css tidak boleh kosong")
+    if wallpaper == "":
+        checkResult.append(f"Wallpaper tidak boleh kosong")
+    
+    # Sanitize Title ---------------------------------------- Start
+    sanitTitle, charTitle = sanitize_all_char(title)
+    if sanitTitle:
+        checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}")
+    # Sanitize Title ---------------------------------------- Finish
+    
+    if string_checker(title):
+        checkResult.append(f"Judul tidak valid.")
+
+    query = CTGR_CHK_QUERY
+    values = (title,)
+    result = DBHelper().get_data(query, values)
+    if len(result) != 0 or result != None:
+        checkResult.append(f"Judul sudah terdaftar.")
+
+    return checkResult, result 
+# TEMPLATE VALIDATION ============================================================ End

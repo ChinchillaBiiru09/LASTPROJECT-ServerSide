@@ -4,7 +4,7 @@ from sqlalchemy.dialects.mysql import LONGBLOB
 class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(150), nullable=False)
-    thumbnail = db.Column(LONGBLOB(), nullable=False)
+    thumbnail = db.Column(db.Text(), nullable=False)
     css_file = db.Column(db.Text(), nullable=False)
     js_file = db.Column(db.Text(), nullable=True)
     wallpaper = db.Column(db.Text(), nullable=True)

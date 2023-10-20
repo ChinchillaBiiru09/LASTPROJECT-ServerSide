@@ -1,5 +1,13 @@
 import string, random
 import hashlib, uuid
+import cv2, base64, numpy as np
+
+
+def saving_file(encodedData, fileName):
+    encodedData = encodedData.split(',')[1]
+    arr = np.fromstring(base64.b64decode(encodedData), np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
+    return cv2.imwrite(fileName, img)
 
 def random_string(length):
     lowers = string.ascii_lowercase
