@@ -163,7 +163,7 @@ class TemplateModels():
             if len(result) == 0 :
                 return defined_error("Kategori tidak dapat ditemukan.")
             
-            ctgrCheck, result = vld_category(ctgr)
+            ctgrCheck, result = vld_template(ctgr)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -243,9 +243,9 @@ class TemplateModels():
     def view_detail_template(datas):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
+            # access, message = vld_role(user_role)
+            # if not access:
+            #     return defined_error(message, "Forbidden", 403)
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
