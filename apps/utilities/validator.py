@@ -29,12 +29,12 @@ def password_checker(password):
     error = False
     message= ""
     # special_chr = [",", "'", '"', "`"]
-    if len(password) < 8:
+    if len(password) < 6:
         error = True
-        message += "Panjang Password setidaknya harus 8."
+        message += "Panjang Password setidaknya harus 6 karakter."
     if len(password) > 20:
         error = True
-        message += "Panjang Password tidak boleh lebih dari 20."
+        message += "Panjang Password tidak boleh lebih dari 20 karakter."
     if not any(char.isdigit() for char in password):
         error = True
         message += "Password harus memiliki setidaknya satu angka."
@@ -99,12 +99,12 @@ def vld_admin_regis(name, email, password, repassword):
     query = ADM_CHK_EMAIL_QUERY
     values = (email,)
     result = DBHelper().get_data(query, values)
-    if len(result) != 0 or result != None:
+    if len(result) != 0:
         checkResult.append(f"Email sudah terdaftar sebagai admin.")
 
     return checkResult 
 
-def vld_user_regis(fname, lname, email, password, repassword):
+def vld_user_regis(fname, mname, lname, phone, email, password, repassword):
     checkResult = []
 
     # Check Null String ---------------------------------------- Start
@@ -121,16 +121,16 @@ def vld_user_regis(fname, lname, email, password, repassword):
     # Sanitize String Input ---------------------------------------- Start
     sanitFName, charFName = sanitize_all_char(fname)
     if sanitFName:
-        checkResult.append(f"Nama tidak boleh mengandung karakter {charFName}")
+        checkResult.append(f"Nama tidak boleh mengandung simbol {charFName}")
     sanitMail, charMail = sanitize_email_char(email)
     if sanitMail:
-        checkResult.append(f"Email tidak boleh mengandung karakter {charMail}")
+        checkResult.append(f"Email tidak boleh mengandung simbol {charMail}")
     sanitPass, charPass = sanitize_passwd_char(password)
     if sanitPass:
-        checkResult.append(f"Password tidak boleh mengandung karakter {charPass}")
+        checkResult.append(f"Password tidak boleh mengandung simbol '{charPass}'. Gunakan selain simbol '( ) [ ] < > ' ` \" ; . ,'.")
     sanitRepass, charRepass = sanitize_passwd_char(repassword)
     if sanitRepass:
-        checkResult.append(f"Password tidak boleh mengandung karakter {charRepass}")
+        checkResult.append(f"Password tidak boleh mengandung simbol '{charRepass}'. Gunakan selain simbol '( ) [ ] < > ' ` \" ; . ,'.")
     # Sanitize String Input ---------------------------------------- Finish
 
     # Comparing Password ======================================== 
@@ -147,14 +147,32 @@ def vld_user_regis(fname, lname, email, password, repassword):
         checkResult.append(message)
     # Filter String Input ---------------------------------------- Finish
 
-    # Checking Las Name - If Ready ---------------------------------------- Start
+    # Checking Middle Name - If Ready ---------------------------------------- Start
+    if mname != "":
+        sanitMName, charMName = sanitize_all_char(mname)
+        if sanitMName:
+            checkResult.append(f"Nama tengah tidak boleh mengandung karakter {charMName}")
+        if string_checker(mname):
+            checkResult.append(f"Nama tengah tidak valid.")
+    # Checking Middle Name - If Ready ---------------------------------------- Finish
+
+    # Checking Last Name - If Ready ---------------------------------------- Start
     if lname != "":
+        sanitLName, charLName = sanitize_all_char(lname)
+        if sanitLName:
+            checkResult.append(f"Nama belakang tidak boleh mengandung karakter {charLName}")
+        if string_checker(lname):
+            checkResult.append(f"Nama belakang tidak valid.")
+    # Checking Last Name - If Ready ---------------------------------------- Finish
+
+    # Checking Phone Number - If Ready ---------------------------------------- Start
+    if phone != "":
         sanitLName, charLName = sanitize_all_char(lname)
         if sanitLName:
             checkResult.append(f"Nama tidak boleh mengandung karakter {charLName}")
         if string_checker(lname):
             checkResult.append(f"Nama tidak valid.")
-    # Checking Last Name - If Ready ---------------------------------------- Finish
+    # Checking Phone Number - If Ready ---------------------------------------- Finish
 
     # Checking Email on DB ---------------------------------------- Start
     query = USR_CHK_EMAIL_QUERY
@@ -195,14 +213,15 @@ def vld_signin(email, password):
         result = DBHelper().get_data(query, values)
         if len(result) == 0 or result == None:
             stts = 400
-            checkResult.append(f"Email tidak terdaftar.")
+            checkResult.append(f"Email belum terdaftar.")
     
-    savedPassword = result[0]['password']
-    validatePass = password_compare(savedPassword, password)
-    if not validatePass:
-        stts = 400
-        checkResult.append(f"Akun tidak valid.")
-
+    if len(result) != 0:
+        savedPassword = result[0]['password']
+        validatePass = password_compare(savedPassword, password)
+        if not validatePass:
+            stts = 400
+            checkResult.append(f"Akun tidak valid.")
+    
     return checkResult, result, stts
 
 def vld_edit_profile(userId, userLevel, fName, mName, lName, phone):
@@ -298,10 +317,10 @@ def vld_category(category):
     query = CTGR_CHK_QUERY
     values = (category,)
     result = DBHelper().get_data(query, values)
-    if len(result) != 0 or result != None:
+    if len(result) != 0:
         checkResult.append(f"Kategori sudah terdaftar.")
 
-    return checkResult, result 
+    return checkResult
 # CATEGORY VALIDATION ============================================================ End
 
 # GREETING VALIDATION ============================================================ Begin

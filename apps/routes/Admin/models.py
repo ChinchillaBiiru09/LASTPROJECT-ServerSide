@@ -16,20 +16,20 @@ class AdminModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["name", "email", "password", "retype_password"]
+            requiredData = ["username", "email", "password", "retype_password"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body")
             
             # Initialize Data ---------------------------------------- Start
-            name = datas["name"].strip().title()
+            username = datas["username"].strip()
             email = datas["email"].strip().lower()
             password = datas["password"].strip()
             retypePassword = datas["retype_password"].strip()
             # Initialize Data ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            checkResult = vld_admin_regis(name, email, password, retypePassword)
+            checkResult = vld_admin_regis(username, email, password, retypePassword)
             if len(checkResult) != 0:
                 return defined_error(checkResult, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -38,12 +38,12 @@ class AdminModels():
             passEncrypt = hashPassword(password)
             timestamp = int(round(time.time()*1000))
             query = ADM_ADD_QUERY
-            values = (name, email, passEncrypt, timestamp, timestamp)
+            values = (username, email, passEncrypt, timestamp, timestamp)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Successed!")
+            return success("Succeed!")
 
         except Exception as e:
             return bad_request(str(e))
@@ -59,36 +59,29 @@ class AdminModels():
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body")
-                
+            
             email = datas["email"].strip().lower()
             password = datas["password"].strip()
             
             # Data Validation ---------------------------------------- Start
-            checkResult, result = vld_signin(email, password)
+            checkResult, result, stts = vld_signin(email, password)
             if len(checkResult) != 0:
-                return defined_error(checkResult, "Bad Request", statusCode=400)
+                return defined_error(checkResult, "Bad Request", statusCode=stts)
             # Data Validation ---------------------------------------- Finish
             
             # Create jwt_payload
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
-                "nama" : result[0]["name"]
+                "nama" : result[0]["name"],
+                "role" : "ADMIN"
             }
             
             # Create access_token by email & jwt_payload
             access_token = create_access_token(email, additional_claims=jwt_payload)
-
-            # Insert access_token to jwt_payload
-            jwt_payload["access_token"] = access_token
-
-            response = {
-                "access_token" : access_token,
-                "role" : "ADMIN"
-            }
-
+            
             # Send success response
-            return success_data("Sign In Successed.", response)
+            return success_data("Sign In Succeed.", access_token)
 
         except Exception as e:
             return bad_request(str(e))

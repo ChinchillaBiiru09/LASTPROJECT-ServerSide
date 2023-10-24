@@ -58,3 +58,15 @@ def sanitize_email_char(string):
         if i in special_char:
             return True, i
     return False, ""
+
+def sanitize_phone_char(number):
+    special_char = [
+        "{", "}", "[", "]", "<", ">", 
+        "--", "*", "%", "/", "'", 
+        "$", "&", "`", ",", '"', ";", ":",
+        "?", "^", "=", "~"
+    ]
+    for i in string:
+        if i in special_char:
+            return True, i
+    return False, ""

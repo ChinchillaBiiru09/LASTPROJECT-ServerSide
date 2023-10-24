@@ -62,8 +62,9 @@ from .database import userDB
 from .database import profileDB
 from .database import logDB
 from .database import categoryDB
+from .database import templateDB
 from .database import guestDB
-from .database import testDB
+# from .database import testDB
 from .database import greetingDB
 
 # =================================== CONFIG ===================================
@@ -77,6 +78,7 @@ from .routes.Admin.controller import admin
 from .routes.User.controller import user
 from .routes.Category.controller import category
 from .routes.Greeting.controller import greeting
+from .routes.Template.controller import template
 # from .routes.Guest.controller import guest
 # from .routes.tester.controller import test
 
@@ -88,5 +90,6 @@ app.register_blueprint(admin)
 app.register_blueprint(user)
 app.register_blueprint(category)
 app.register_blueprint(greeting)
+app.register_blueprint(template)
 # app.register_blueprint(guest)
-app.register_blueprint(testDB)
+# app.register_blueprint(testDB)

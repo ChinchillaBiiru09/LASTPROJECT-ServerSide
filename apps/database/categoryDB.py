@@ -7,7 +7,7 @@ class Category(db.Model):
     created_at = db.Column(db.BigInteger, nullable=False)
     created_by = db.Column(db.Integer, nullable=False)
     updated_at = db.Column(db.BigInteger, nullable=False)
-    update_by = db.Column(db.Integer, nullable=False)
+    updated_by = db.Column(db.Integer, nullable=False)
     deleted_at = db.Column(db.BigInteger, nullable=True, server_default='0')
     deleted_by = db.Column(db.Integer, nullable=True, server_default='0')
     is_delete = db.Column(db.Integer, nullable=True, server_default='0')

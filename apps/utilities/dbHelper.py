@@ -37,7 +37,12 @@ def insert_return(conn, query, values):
 def execute(conn, query):
     cursor = conn.cursor()
     cursor.execute(query)
-    return cursor.fetchall()
+    row_headers = [x[0] for x in cursor.description]
+    results = cursor.fetchall()
+    json_data = []
+    for result in results:
+        json_data.append(dict(zip(row_headers, result)))
+    return json_data
 
 # Row Count Data
 def row_count(conn, query):

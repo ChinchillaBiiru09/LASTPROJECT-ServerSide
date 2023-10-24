@@ -39,7 +39,6 @@ def create_data():
 # CREATE CATEGORY ============================================================ End
 
 
-
 # GET CATEGORY ============================================================ Begin
 # POST https://127.0.0.1:5000/category/
 @category.get('/')
@@ -111,11 +110,13 @@ def delete_data():
 def get_data():
     try:
         # Access User ======================================== 
-        id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
 
+        # Request Data ======================================== 
+        data = request.json
+
         # Request Process ======================================== 
-        response = CategoryModels.view_detail_category(id, role)
+        response = CategoryModels.view_detail_category(role, data)
 
         # Request Data ======================================== 
         return response
