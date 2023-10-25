@@ -26,9 +26,7 @@ class ProfileModels():
             # Get Data ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
-            print(result[0]["photos"])
             base_64 = base64.b64encode(result[0]["photos"]).decode('utf-8')
-            print("base64", base_64)
             response = {
                 "id" : result[0]["id"],
                 "first_name" : result[0]["first_name"],
@@ -40,7 +38,7 @@ class ProfileModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data("Succeed!", response)
             
         except Exception as e:
             return bad_request(str(e))
@@ -102,14 +100,18 @@ class ProfileModels():
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"User dengan id {userId} telah mengubah data profile."
+            if userLevel == 1:
+                level = "Admin"
+            elif userLevel == 2:
+                level = "User"
+            activity = f"{level} dengan id {userId} telah mengubah data profile."
             query = LOG_ADD_QUERY
             values = (userId, activity, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Successed!")
+            return success("Succeed!")
             
         except Exception as e:
             return bad_request(str(e))

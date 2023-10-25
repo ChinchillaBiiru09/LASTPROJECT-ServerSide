@@ -3,102 +3,85 @@ from flask import current_app as app
 from flask_jwt_extended import jwt_required, get_jwt
 
 from ...utilities.responseHelper import bad_request
-from .models import GreetingModels
+from .models import InvitationModels
 
 
 # BLUEPRINT ============================================================ Begin
-greeting = Blueprint(
-    name='greeting',
+invitation = Blueprint(
+    name='invitation',
     import_name=__name__,
-    url_prefix='/greeting'
+    url_prefix='/invitation'
 )
 # BLUEPRINT ============================================================ End
 
 
-# CREATE GREETING ============================================================ Begin
-# POST https://127.0.0.1:5000/greeting/
-@greeting.post('/')
+# CREATE CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/invitation/
+@invitation.post('/')
+@jwt_required()
 def create_data():
     try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+
         # Request Data ======================================== 
         data = request.json
 
         # Request Process ======================================== 
-        response = GreetingModels.add_greeting(data)
+        response = InvitationModels.add_invitation(id, role, data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# CREATE GREETING ============================================================ End
+# CREATE CATEGORY ============================================================ End
 
 
-# GET GREETING ============================================================ Begin
-# POST https://127.0.0.1:5000/greeting/
-@greeting.get('/')
-@jwt_required()
+# GET CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/invitation/
+@invitation.get('/')
 def get_all_data():
     try:
-        # Access User ======================================== 
-        role = str(get_jwt()["role"])
-
         # Request Process ======================================== 
-        response = GreetingModels.view_all_greeting(role)
+        response = CategoryModels.view_category()
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# GET GREETING ============================================================ End
+# GET CATEGORY ============================================================ End
 
 
-# GET GREETING ============================================================ Begin
-# POST https://127.0.0.1:5000/greeting/
-@greeting.get('/user/')
+# UPDATE CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/invitation/
+@invitation.put('/')
 @jwt_required()
-def get_all_data_by_user():
+def update_data():
     try:
         # Access User ======================================== 
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
 
+        # Request Data ======================================== 
+        data = request.json
+
         # Request Process ======================================== 
-        response = GreetingModels.view_all_greeting_by_user(id, role)
+        response = CategoryModels.edit_category(id, role, data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# GET GREETING ============================================================ End
+# UPDATE CATEGORY ============================================================ End
 
 
-# VIEW DETAIL GREETING ============================================================ Begin
-# POST https://127.0.0.1:5000/greeting/detail
-@greeting.get('/detail')
-@jwt_required()
-def get_data():
-    try:
-        # Access User ======================================== 
-        id = str(get_jwt()["id"])
-        role = str(get_jwt()["role"])
-
-        # Request Process ======================================== 
-        response = GreetingModels.view_greeting(id, role)
-
-        # Request Data ======================================== 
-        return response
-
-    except Exception as e:
-        return bad_request(str(e))
-# VIEW DETAIL GREETING ============================================================ End
-
-
-# DELETE GREETING ============================================================ Begin
-# POST https://127.0.0.1:5000/greeting/
-@greeting.delete('/')
+# DELETE CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/invitation/
+@invitation.delete('/')
 @jwt_required()
 def delete_data():
     try:
@@ -110,11 +93,34 @@ def delete_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = GreetingModels.delete_greeting(id, role, data)
+        response = CategoryModels.delete_category(id, role, data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# DELETE GREETING ============================================================ End
+# DELETE CATEGORY ============================================================ End
+
+
+# VIEW DETAIL CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/invitation/detail
+@invitation.get('/detail')
+@jwt_required()
+def get_data():
+    try:
+        # Access User ======================================== 
+        role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = CategoryModels.view_detail_category(role, data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW DETAIL CATEGORY ============================================================ End

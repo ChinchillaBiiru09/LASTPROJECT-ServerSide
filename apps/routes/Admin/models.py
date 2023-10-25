@@ -2,7 +2,7 @@ from flask_jwt_extended import create_access_token
 
 from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
 from ...utilities.dbHelper import DBHelper
-from ...utilities.queries import ADM_ADD_QUERY
+from ...utilities.queries import ADM_ADD_QUERY, PROF_ADD_QUERY, LOG_ADD_QUERY
 from ...utilities.validator import vld_admin_regis, vld_signin
 from ...utilities.utils import hashPassword
 
@@ -13,6 +13,7 @@ class AdminModels():
     # CREATE ADMIN ============================================================ Begin
     def create_admin(datas):
         try:
+            # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
@@ -20,6 +21,7 @@ class AdminModels():
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body")
+            # Checking Request Body ---------------------------------------- Finish
             
             # Initialize Data ---------------------------------------- Start
             username = datas["username"].strip()
@@ -39,8 +41,25 @@ class AdminModels():
             timestamp = int(round(time.time()*1000))
             query = ADM_ADD_QUERY
             values = (username, email, passEncrypt, timestamp, timestamp)
-            DBHelper().save_data(query, values)
+            resReturn = DBHelper().save_data(query, values)
+            if resReturn == None:
+                return defined_error("Gagal menyimpan data.", "Bad Request", 400)
             # Insert Data ---------------------------------------- Finish
+
+            # Insert Profile ---------------------------------------- Start
+            userId = resReturn
+            level = 1  # 1:Admin, 2:User
+            query = PROF_ADD_QUERY
+            values = (userId, level, username, "", "", "", 0, timestamp, timestamp)
+            DBHelper().save_data(query, values)
+            # Insert Profile ---------------------------------------- Finish
+            
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"Admin baru dengan id {userId} telah berhasil ditambahkan."
+            query = LOG_ADD_QUERY
+            values = (userId, activity, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
             return success("Succeed!")
@@ -86,19 +105,4 @@ class AdminModels():
         except Exception as e:
             return bad_request(str(e))
     # SIGN IN ============================================================ End
-
-    # VIEW PROFILE ============================================================ Begin
-    def view_profile_admin(datas):
-        try:
-            if datas == None:
-                return invalid_params()
-            
-            requiredData = ["email", "password"]
-            for req in requiredData:
-                if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body")
-            
-        except Exception as e:
-            return bad_request(str(e))
-    # VIEW PROFILE ============================================================ End
 # BLOCK FIRST/BASE ============================================================ End

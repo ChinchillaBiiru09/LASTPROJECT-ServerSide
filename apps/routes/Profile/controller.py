@@ -19,7 +19,7 @@ profile = Blueprint(
 # GET https://127.0.0.1:5000/profile/
 @profile.get('/')
 @jwt_required()
-def profile():
+def get_data():
     try:
         # Access User ======================================== 
         id = str(get_jwt()["id"])

@@ -20,11 +20,14 @@ class GreetingModels():
                     return parameter_error(f"Missing {req} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
-            # Data Validation ---------------------------------------- Start
+            # Intialize ---------------------------------------- Start
             invCode = datas["invitationCode"].strip()
             name = datas["name"].strip().title()
             email = datas["email"].strip()
             greeting = datas["greeting"]
+            # Intialize ---------------------------------------- Finish
+
+            # Data Validation ---------------------------------------- Start
             checkResult = vld_greeting(invCode,name,email,greeting)
             if len(checkResult) != 0:
                 return defined_error(checkResult, "Bad Request", 400)
@@ -52,7 +55,7 @@ class GreetingModels():
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Successed!")
+            return success("Succeed!")
         
         except Exception as e:
             return bad_request(str(e))
