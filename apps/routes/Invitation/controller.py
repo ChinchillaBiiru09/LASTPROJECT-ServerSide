@@ -45,7 +45,7 @@ def create_data():
 def get_all_data():
     try:
         # Request Process ======================================== 
-        response = CategoryModels.view_category()
+        response = InvitationModels.view_invitation()
 
         # Request Data ======================================== 
         return response
@@ -69,7 +69,7 @@ def update_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.edit_category(id, role, data)
+        response = InvitationModels.edit_invitation(id, role, data)
 
         # Request Data ======================================== 
         return response
@@ -93,7 +93,7 @@ def delete_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.delete_category(id, role, data)
+        response = InvitationModels.delete_invitation(id, role, data)
 
         # Request Data ======================================== 
         return response
@@ -116,7 +116,7 @@ def get_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = CategoryModels.view_detail_category(role, data)
+        response = InvitationModels.view_detail_invitation(role, data)
 
         # Request Data ======================================== 
         return response

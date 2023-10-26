@@ -9,6 +9,13 @@ def saving_file(encodedData, fileName):
     img = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
     return cv2.imwrite(fileName, img)
 
+def random_string_number(length):
+    lowers = string.ascii_lowercase
+    uppers = string.ascii_uppercase
+    number = string.digits
+    letters = ''.join(random.choice(lowers+uppers+number) for i in range(length))
+    return letters
+
 def random_string(length):
     lowers = string.ascii_lowercase
     uppers = string.ascii_uppercase

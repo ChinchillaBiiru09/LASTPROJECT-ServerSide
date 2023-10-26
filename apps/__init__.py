@@ -41,6 +41,7 @@ app.config['TEMPLATE_THUMBNAIL_PHOTOS'] = config.STATIC_FOLDER_PATH + "template/
 app.config['TEMPLATE_WALLPAPER_PHOTOS'] = config.STATIC_FOLDER_PATH + "template/wallpaper/"
 app.config['TEMPLATE_CSS_FILE'] = config.STATIC_FOLDER_PATH + "templates/css/"
 app.config['TEMPLATE_JS_FILE'] = config.STATIC_FOLDER_PATH + "templates/js/"
+app.config['USER_INVITATION_FILE'] = config.STATIC_FOLDER_PATH + "invitation/user/"
 
 # Create Folder (if doesn't exist)
 list_folder_to_create = [
@@ -50,6 +51,7 @@ list_folder_to_create = [
     app.config['TEMPLATE_WALLPAPER_PHOTOS'],
     app.config['TEMPLATE_CSS_FILE'],
     app.config['TEMPLATE_JS_FILE'],
+    app.config['USER_INVITATION_FILE'],
 ]
 
 for x in list_folder_to_create:

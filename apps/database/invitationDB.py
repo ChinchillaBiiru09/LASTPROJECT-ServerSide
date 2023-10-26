@@ -8,7 +8,7 @@ class Invitation(db.Model):
     title = db.Column(db.String(150), nullable=False)
     wallpaper = db.Column(db.Text(), nullable=True)
     personal_data = db.Column(db.Text(), nullable=False)
-    inv_setting = db.Column(db.Text(), nullable=False)
+    inv_setting = db.Column(db.Text(), nullable=True)
     code = db.Column(db.String(6), nullable=False)
     link = db.Column(db.Text(), nullable=True)
     created_at = db.Column(db.BigInteger, nullable=False)

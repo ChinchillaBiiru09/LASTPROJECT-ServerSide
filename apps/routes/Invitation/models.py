@@ -2,23 +2,25 @@ from ...utilities.responseHelper import invalid_params, parameter_error, defined
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_role, vld_invitation
-from ...utilities.utils import random_number, saving_file
+from ...utilities.utils import random_number, saving_file, random_string_number
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
 
 import time, os
 
+
 # CATEGORY MODEL CLASS ============================================================ Begin
 class InvitationModels():
     # CREATE CATEGORY ============================================================ Begin
-    def add_invitation(user_id, user_role, datas):
+    def add_invitation(userId, userRole, datas):
         try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
+            # Set Level User ---------------------------------------- Start
+            userLevel = 1  # 1 = Admin
+            access, message = vld_role(userRole)
             if not access:
-                return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
+                userLevel = 2  # 2 = User
+            # Set Level User ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
@@ -34,52 +36,40 @@ class InvitationModels():
             categoryId = datas["category_id"].strip()
             templateId = datas["template_id"].strip()
             title = datas["title"].title().strip()
-            photo1 = datas["photo_1"]
-            photo2 = datas["photo_2"]
             wallpaper = datas["wallpaper"]
             personalData = datas["personal_data"]
             invSett = datas["inv_setting"]
             # Initialize Request Data ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
-            ctgrCheck = vld_invitation(categoryId, title, personalData, invSett)
-            if len(ctgrCheck) != 0:
-                return defined_error(ctgrCheck, "Bad Request", 400)
+            randomNumber = str(random_number(5))
+            invCheck, personalData = vld_invitation(categoryId, templateId, title, personalData, randomNumber)
+            if len(invCheck) != 0:
+                return defined_error(invCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
             
             # Saving File ---------------------------------------- Start
-            randomNumber = str(random_number(5))
-            # Photo1
-            photo1FileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_photo1.jpg")
-            photo1Path = os.path.join(app.config['TEMPLATE_THUMBNAIL_PHOTOS'], photo1FileName)
-            saving_file(photo1, photo1Path)
-            # CSS
-            cssFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_style.css")
-            cssPath = os.path.join(app.config['TEMPLATE_CSS_FILE'], cssFileName)
-            saving_file(css, cssPath)
-            # JS
-            jsPath = ""
-            if js != "":
-                jsFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_script.js")
-                jsPath = os.path.join(app.config['TEMPLATE_JS_FILE'], jsFileName)
-                saving_file(js, jsPath)
-            # Wallpaper
-            wallpFileName = secure_filename(strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper.jpg")
-            wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName)
-            saving_file(wallpaper, wallpPath)
+            # wallpaper
+            wallpaperPath = ""
+            if wallpaper != "":
+                wallpaperFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper.jpg")
+                wallpaperPath = os.path.join(app.config['USER_INVITATION_FILE'], wallpaperFileName)
+                saving_file(wallpaper, wallpaperPath)
             # Saving File ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
-            query = CTGR_ADD_QUERY
-            values = (category, timestamp, user_id, timestamp, user_id)
+            invCode = str(random_string_number(6))
+            invLink =  app.config['FE_URL']+"/"+userId+"/"+title
+            query = INV_ADD_QUERY
+            values = (userLevel, categoryId, templateId, title, wallpaper, personalData, invSett, invCode, invLink, timestamp, userId, timestamp, userId)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}"
+            activity = f"User dengan id {userId} telah membuat undangan baru: {title}"
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
+            values = (userId, activity, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
@@ -91,7 +81,7 @@ class InvitationModels():
     # CREATE CATEGORY ============================================================ End
 
     # GET ALL CATEGORY ============================================================ Begin
-    def view_category():
+    def view_invitation():
         try:
             # Checking Data ---------------------------------------- Start
             query = CTGR_GET_QUERY
@@ -119,7 +109,7 @@ class InvitationModels():
     # GET ALL CATEGORY ============================================================ End
 
     # UPDATE CATEGORY ============================================================ Begin
-    def edit_category(user_id, user_role,  datas):
+    def edit_invitation(user_id, user_role,  datas):
         try:
             # Access Validation ---------------------------------------- Start
             access, message = vld_role(user_role)
@@ -147,7 +137,7 @@ class InvitationModels():
             if len(result) == 0 :
                 return defined_error("Kategori tidak dapat ditemukan.")
             
-            ctgrCheck = vld_category(ctgr)
+            ctgrCheck = vld_invitation(ctgr)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -174,7 +164,7 @@ class InvitationModels():
     # UPDATE CATEGORY ============================================================ End
 
     # DELETE CATEGORY ============================================================ Begin
-    def delete_category(user_id, user_role, datas):
+    def delete_invitation(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
             access, message = vld_role(user_role)
@@ -224,7 +214,7 @@ class InvitationModels():
     # DELETE CATEGORY ============================================================ End
 
     # GET DETAIL CATEGORY ============================================================ Begin
-    def view_detail_category(user_role, datas):
+    def view_detail_invitation(user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
             print(user_role)

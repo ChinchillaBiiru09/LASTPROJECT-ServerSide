@@ -393,28 +393,8 @@ def vld_template(title, thumbnail, css, wallpaper):
 # TEMPLATE VALIDATION ============================================================ End
 
 # INVITATION VALIDATION ============================================================ Begin
-def vld_invitation(categoryId, title, personalData, invSett):
+def vld_invitation(categoryId, templateId, title, personalData, randomNumber):
     checkResult = []
-    
-    # Get Category ---------------------------------------- Start
-    query = CTGR_GET_BY_ID_QUERY
-    values = (categoryId,)
-    resCtgr = DBHelper().get_data(query, values)
-    if len(resCtgr) == 0:
-        checkResult.append(f"Kateori tidak ditemukan.")
-    else : 
-        category = resCtgr[0]["category"].lower().strip()
-    # Get Category ---------------------------------------- Finish
-
-    # Template Data Invitation ---------------------------------------- Start
-    if category == "pernikahan":
-        weddingResult = inv_wedding(personalData, checkResult)
-    if category == "ulang tahun":
-        personData = ["name", "start_date", "start_time", "end_date", "end_time", "location_party"]
-        for data in personData:
-            if data not in personalData:
-                checkResult.append(f"Gagal menyimpan undangan! Silahkan lengkapi data {data}.")
-    # Template Data Invitation ---------------------------------------- Finish
 
     # Validation Null Data ---------------------------------------- Start
     if title == "":
@@ -423,20 +403,56 @@ def vld_invitation(categoryId, title, personalData, invSett):
         checkResult.append(f"Data pribadi tidak boleh kosong tidak boleh kosong.")
     # Validation Null Data ---------------------------------------- Finish
     
+    # Check Data ---------------------------------------- Start
+    # Template
+    query = TMPLT_GET_BY_ID_QUERY
+    values = (templateId,)
+    result = DBHelper().get_data(query, values)
+    if len(result) == 0:
+        checkResult.append(f"Template tidak ditemukan.")
+    
+    # Title
+    query = INV_CHK_QUERY
+    values = (title,)
+    result = DBHelper().get_data(query, values)
+    if len(result) != 0:
+        checkResult.append(f"Judul sudah terpakai.")
+    # Check Data ---------------------------------------- Finish
+    
+    # Get Category ---------------------------------------- Start
+    query = CTGR_GET_BY_ID_QUERY
+    values = (categoryId,)
+    resCtgr = DBHelper().get_data(query, values)
+    if len(resCtgr) == 0:
+        checkResult.append(f"Kateori tidak ditemukan.")
+    else : 
+        category = resCtgr[0]["category"].upper().strip()
+    # Get Category ---------------------------------------- Finish
+
+    # Template Data Invitation ---------------------------------------- Start
+    if category == "PERNIKAHAN":
+        weddingResult, personalData = inv_wedding(personalData, randomNumber)
+        if len(weddingResult) != 0:
+            for wedRes in weddingResult:
+                checkResult.append(wedRes)
+    if category == "ULANG TAHUN":
+        birthdayResult, personalData = inv_birthday(personalData, randomNumber)
+        if len(birthdayResult) != 0:
+            for bdRes in birthdayResult:
+                checkResult.append(bdRes)
+    # Template Data Invitation ---------------------------------------- Finish
+    
     # Sanitize Title ---------------------------------------- Start
     sanitTitle, charTitle = sanitize_all_char(title)
     if sanitTitle:
         checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}")
     # Sanitize Title ---------------------------------------- Finish
     
+    # String Filter ---------------------------------------- Start
     if string_checker(title):
         checkResult.append(f"Judul tidak valid.")
+    # String Filter ---------------------------------------- Finish
 
-    query = CTGR_CHK_QUERY
-    values = (title,)
-    result = DBHelper().get_data(query, values)
-    if len(result) != 0 or result != None:
-        checkResult.append(f"Judul sudah terdaftar.")
-
-    return checkResult, result 
+    # Return Value ========================================
+    return checkResult, result, personalData
 # INVITATION VALIDATION ============================================================ End
