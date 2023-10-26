@@ -1,7 +1,7 @@
 import string, random
 import hashlib, uuid
 import cv2, base64, numpy as np
-
+import re, hashlib
 
 def saving_file(encodedData, fileName):
     encodedData = encodedData.split(',')[1]
@@ -77,3 +77,55 @@ def sanitize_phone_char(number):
         if i in special_char:
             return True, i
     return False, ""
+
+
+##########################################################################################################
+# CHECKER
+
+def string_checker(strings):
+    error = True
+    if all(chr.isalpha() or chr.isspace() for chr in strings):
+        error = False
+    return error
+
+def phone_checker(numbers):
+    error = True
+    if len(numbers) > 5 and len(numbers) <= 16 and all(chr.isdigit() for chr in (numbers)):
+        error = False
+    return error
+
+def email_checker(email):
+    error = False
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if not (re.fullmatch(regex, email)):
+        error = True
+        return error
+    return error
+
+def password_checker(password):
+    error = False
+    message= ""
+    # special_chr = [",", "'", '"', "`"]
+    if len(password) < 6:
+        error = True
+        message += "Panjang Password setidaknya harus 6 karakter."
+    if len(password) > 20:
+        error = True
+        message += "Panjang Password tidak boleh lebih dari 20 karakter."
+    if not any(char.isdigit() for char in password):
+        error = True
+        message += "Password harus memiliki setidaknya satu angka."
+    if not any(char.isupper() for char in password):
+        error = True
+        message += "Password harus memiliki setidaknya satu huruf besar."  
+    if not any(char.islower() for char in password):
+        error = True
+        message += "Password harus memiliki setidaknya satu huruf kecil."
+    return error, message
+
+def password_compare(hashedText, password):
+    """fungsi untuk komparasi password yang sudah di hash dengan password dari user"""
+    _hashedText, salt = hashedText.split(':')
+    return _hashedText == hashlib.sha256(salt.encode() + password.encode()).hexdigest()
+
+

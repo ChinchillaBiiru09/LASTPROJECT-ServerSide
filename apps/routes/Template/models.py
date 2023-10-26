@@ -25,8 +25,9 @@ class TemplateModels():
                 return invalid_params()
             
             requiredData = ["tmplt_title", "tmplt_thumbnail", "css_file", "js_file", "tmplt_wallpaper", "category_id"]
-            if requiredData not in datas:
-                return parameter_error(f"Missing {requiredData} in Request Body")
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
             # Variable Data Input ---------------------------------------- Start
@@ -39,9 +40,9 @@ class TemplateModels():
             # Variable Data Input ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            ctgrCheck = vld_template(title, thumbnail, css, wallpaper)
-            if len(ctgrCheck) != 0:
-                return defined_error(ctgrCheck, "Bad Request", 400)
+            tmpltCheck = vld_template(title, thumbnail, css, wallpaper)
+            if len(tmpltCheck) != 0:
+                return defined_error(tmpltCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
 
             # Saving File ---------------------------------------- Start
@@ -53,6 +54,7 @@ class TemplateModels():
             # CSS
             cssFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_style.css")
             cssPath = os.path.join(app.config['TEMPLATE_CSS_FILE'], cssFileName)
+            print("bisa")
             saving_file(css, cssPath)
             # JS
             jsPath = ""

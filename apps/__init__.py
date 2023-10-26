@@ -19,7 +19,7 @@ app.config['FE_URL'] = os.getenv("FRONTEND_URL")
 
 # Config JWT
 app.config['SECRET_KEY'] = config.JWT_SECRET_KEY
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.JWT_ACCESS_TOKEN_EXPIRED
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.JWT_ACCESS_TOKEN_EXPIRES
 jwt = JWTManager(app)
 
 # Config Database Migration

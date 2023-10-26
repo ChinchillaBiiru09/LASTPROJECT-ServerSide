@@ -1,59 +1,7 @@
 from .queries import *
 from .dbHelper import DBHelper
-from .utils import sanitize_email_char, sanitize_all_char, sanitize_passwd_char
+from .utils import sanitize_email_char, sanitize_all_char, sanitize_passwd_char, email_checker, password_checker, string_checker, password_compare, phone_checker
 from .templateData import *
-
-import re, hashlib
-
-
-##########################################################################################################
-# CHECKER
-
-def string_checker(strings):
-    error = True
-    if all(chr.isalpha() or chr.isspace() for chr in strings):
-        error = False
-    return error
-
-def phone_checker(numbers):
-    error = True
-    if len(numbers) > 5 and len(numbers) <= 16 and all(chr.isdigit() for chr in (numbers)):
-        error = False
-    return error
-
-def email_checker(email):
-    error = False
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    if not (re.fullmatch(regex, email)):
-        error = True
-        return error
-    return error
-
-def password_checker(password):
-    error = False
-    message= ""
-    # special_chr = [",", "'", '"', "`"]
-    if len(password) < 6:
-        error = True
-        message += "Panjang Password setidaknya harus 6 karakter."
-    if len(password) > 20:
-        error = True
-        message += "Panjang Password tidak boleh lebih dari 20 karakter."
-    if not any(char.isdigit() for char in password):
-        error = True
-        message += "Password harus memiliki setidaknya satu angka."
-    if not any(char.isupper() for char in password):
-        error = True
-        message += "Password harus memiliki setidaknya satu huruf besar."  
-    if not any(char.islower() for char in password):
-        error = True
-        message += "Password harus memiliki setidaknya satu huruf kecil."
-    return error, message
-
-def password_compare(hashedText, password):
-    """fungsi untuk komparasi password yang sudah di hash dengan password dari user"""
-    _hashedText, salt = hashedText.split(':')
-    return _hashedText == hashlib.sha256(salt.encode() + password.encode()).hexdigest()
 
 
 ##########################################################################################################
@@ -380,16 +328,16 @@ def vld_template(title, thumbnail, css, wallpaper):
         checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}")
     # Sanitize Title ---------------------------------------- Finish
     
-    if string_checker(title):
-        checkResult.append(f"Judul tidak valid.")
+    # if string_checker(title):
+    #     checkResult.append(f"Judul tidak valid.")
 
-    query = CTGR_CHK_QUERY
+    query = TMPLT_CHK_QUERY
     values = (title,)
     result = DBHelper().get_data(query, values)
-    if len(result) != 0 or result != None:
+    if len(result) != 0:
         checkResult.append(f"Judul sudah terdaftar.")
 
-    return checkResult, result 
+    return checkResult
 # TEMPLATE VALIDATION ============================================================ End
 
 # INVITATION VALIDATION ============================================================ Begin

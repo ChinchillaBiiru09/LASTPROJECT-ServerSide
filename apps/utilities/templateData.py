@@ -1,5 +1,4 @@
-from .utils import sanitize_email_char, sanitize_all_char, sanitize_passwd_char, random_number, saving_file
-from .validator import string_checker
+from .utils import sanitize_all_char, saving_file, string_checker
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
