@@ -6,8 +6,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
 
-from .confgure import config
-from .confgure.connectionDB import ConnectDB
+from .configure import config
+from .configure.connectionDB import ConnectDB
 
 # =================================== CONFIG ===================================
 app = Flask(__name__)
