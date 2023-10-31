@@ -3,11 +3,16 @@ import hashlib, uuid
 import cv2, base64, numpy as np
 import re, hashlib
 
-def saving_file(encodedData, fileName):
+def saving_image(encodedData, fileName):
     encodedData = encodedData.split(',')[1]
     arr = np.fromstring(base64.b64decode(encodedData), np.uint8)
     img = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
     return cv2.imwrite(fileName, img)
+
+def saving_file(encodedData, fileName):
+    arr = np.fromstring(base64.b64decode(encodedData), np.uint8)
+    with open(fileName, "wb") as file:
+        file.write(arr)
 
 def random_string_number(length):
     lowers = string.ascii_lowercase

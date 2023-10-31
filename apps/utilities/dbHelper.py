@@ -1,4 +1,4 @@
-from ..confgure import config
+from ..configure import config
 import mysql.connector
 
 

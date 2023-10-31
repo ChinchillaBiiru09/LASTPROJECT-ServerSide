@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 from apps import app
-from apps.confgure import config
+from apps.configure import config
 
 from flask_cors import CORS
 cors = CORS (

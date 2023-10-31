@@ -1,4 +1,4 @@
-from .utils import sanitize_all_char, saving_file, string_checker
+from .utils import sanitize_all_char, saving_image, string_checker
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
@@ -95,11 +95,11 @@ def inv_wedding(personalData, randomNumber):
     # Photo1
     photo1FileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_photo1.jpg")
     photo1Path = os.path.join(app.config['USER_INVITATION_FILE'], photo1FileName)
-    saving_file(photo1, photo1Path)
+    saving_image(photo1, photo1Path)
     # Photo2
     photo2FileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_photo2.jpg")
     photo2Path = os.path.join(app.config['USER_INVITATION_FILE'], photo2FileName)
-    saving_file(photo2, photo2Path)
+    saving_image(photo2, photo2Path)
     # Saving File ---------------------------------------- Finish
 
     # Convert Time ---------------------------------------- Start

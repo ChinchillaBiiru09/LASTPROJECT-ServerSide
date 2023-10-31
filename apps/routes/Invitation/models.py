@@ -2,7 +2,7 @@ from ...utilities.responseHelper import invalid_params, parameter_error, defined
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_role, vld_invitation
-from ...utilities.utils import random_number, saving_file, random_string_number
+from ...utilities.utils import random_number, saving_image, random_string_number
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
@@ -54,7 +54,7 @@ class InvitationModels():
             if wallpaper != "":
                 wallpaperFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper.jpg")
                 wallpaperPath = os.path.join(app.config['USER_INVITATION_FILE'], wallpaperFileName)
-                saving_file(wallpaper, wallpaperPath)
+                saving_image(wallpaper, wallpaperPath)
             # Saving File ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start

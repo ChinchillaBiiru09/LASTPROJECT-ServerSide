@@ -2,7 +2,7 @@ from ...utilities.responseHelper import invalid_params, parameter_error, defined
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_template, vld_role
-from ...utilities.utils import random_number, saving_file
+from ...utilities.utils import random_number, saving_image, saving_file
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
@@ -50,12 +50,12 @@ class TemplateModels():
             # Thumbnail
             thumbFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_thumbnail.jpg")
             thumbPath = os.path.join(app.config['TEMPLATE_THUMBNAIL_PHOTOS'], thumbFileName)
-            saving_file(thumbnail, thumbPath)
+            saving_image(thumbnail, thumbPath)
             # CSS
             cssFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_style.css")
             cssPath = os.path.join(app.config['TEMPLATE_CSS_FILE'], cssFileName)
-            print("bisa")
             saving_file(css, cssPath)
+            print("bisa")
             # JS
             jsPath = ""
             if js != "":
