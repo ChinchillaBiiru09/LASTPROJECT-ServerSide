@@ -1,5 +1,5 @@
 from .. import db
-from sqlalchemy.dialects.mysql import LONGBLOB
+# from sqlalchemy.dialects.mysql import LONGBLOB
 
 class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

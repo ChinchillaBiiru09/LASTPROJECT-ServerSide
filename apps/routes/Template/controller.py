@@ -10,7 +10,7 @@ from .models import TemplateModels
 template = Blueprint(
     name='template',
     import_name=__name__,
-    static_folder = '../../static/template',
+    static_folder = '../../static/templates',
     static_url_path="/media",
     url_prefix='/template'
 )
@@ -110,6 +110,26 @@ def delete_data():
 @template.get('/detail')
 @jwt_required()
 def get_data():
+    try:
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = TemplateModels.view_detail_template(data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW DETAIL TEMPLATE ============================================================ End
+
+
+# VIEW DETAIL TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/template/detail
+@template.get('/show')
+@jwt_required()
+def show():
     try:
         # Request Data ======================================== 
         data = request.json

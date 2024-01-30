@@ -7,7 +7,7 @@ from ...utilities.utils import random_number, saving_image, saving_file
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
 
-import time, os
+import time, os, base64
 
 # CATEGORY MODEL CLASS ============================================================ Begin
 class TemplateModels():
@@ -55,9 +55,8 @@ class TemplateModels():
             cssFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_style.css")
             cssPath = os.path.join(app.config['TEMPLATE_CSS_FILE'], cssFileName)
             saving_file(css, cssPath)
-            print("bisa")
             # JS
-            jsPath = ""
+            jsFileName = ""
             if js != "":
                 jsFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_script.js")
                 jsPath = os.path.join(app.config['TEMPLATE_JS_FILE'], jsFileName)
@@ -71,7 +70,7 @@ class TemplateModels():
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = TMPLT_ADD_QUERY
-            values = (title, thumbPath, cssPath, jsPath, wallpPath, ctgr_id, timestamp, user_id, timestamp, user_id)
+            values = (title, thumbFileName, cssFileName, jsFileName, wallpFileName, ctgr_id, timestamp, user_id, timestamp, user_id)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
@@ -90,7 +89,7 @@ class TemplateModels():
     # CREATE CATEGORY ============================================================ End
 
     # GET ALL CATEGORY ============================================================ Begin
-    def view_template(data):
+    def view_template():
         try:
             # Checking Data ---------------------------------------- Start
             query = TMPLT_GET_QUERY
@@ -100,33 +99,45 @@ class TemplateModels():
             # Checking Data ---------------------------------------- Finish
 
             # Get Data Category ---------------------------------------- Start
-            # query = CTGR_GET_QUERY
-            # resultCtgr = DBHelper().execute(query)
-            # if len(resultCtgr) == 0 or resultCtgr == None:
-            #     return defined_error("Kategori tidak terdaftar.", "Bad Request", 400)
+            query = CTGR_GET_QUERY
+            resultCtgr = DBHelper().execute(query)
+            if len(resultCtgr) == 0 or resultCtgr == None:
+                return defined_error("Kategori tidak terdaftar.", "Bad Request", 400)
             # Get Data Category ---------------------------------------- Finish
 
             # Join Data ---------------------------------------- Start
+            for template in result:
+                for category in resultCtgr:
+                    if template["category_id"] == category["id"]:
+                        template["category"] = category["category"]
             # Join Data ---------------------------------------- Finish
+
+            # Generate Image URL ---------------------------------------- Start
+            if len(result) < 1:
+                return defined_error("Template is nor already.", 404)
+            if len(result) >= 1:
+                detailRequestURL = str(request.url).find('?')
+                if detailRequestURL != -1:
+                    index = detailRequestURL
+                    request.url = request.url[:index]
+            for item in result:
+                item['thumbnail'] = f"{request.url_root}produk/media/{item['thumbnail']}"
+            # Generate Image URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = []
-            for rsl in result:
-                value = (rsl["category_id"],)
-                resultCtgr = DBHelper().get_data(query, value)
-                category = ""
-                if resultCtgr != 0:
-                    category = resultCtgr["category"]
+            for item in result:
                 data = {
-                    "template_id" : rsl["id"],
-                    "title" : rsl["title"],
-                    "thumbnail" : f"{request.url_root}produk/media/{rsl['thumbnail']}",
-                    "category" : category,
-                    "created_at" : rsl["created_at"],
-                    "updated_at" : rsl["updated_at"]
+                    "template_id" : item["id"],
+                    "title" : item["title"],
+                    "thumbnail" : item['thumbnail'],
+                    "category" : item["category"],
+                    "created_at" : item["created_at"],
+                    "updated_at" : item["updated_at"]
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
+            print(response)
             
             # Return Response ======================================== 
             return success_data("Successed!", response)
@@ -273,6 +284,59 @@ class TemplateModels():
                 "category_id" : result[0]["id"],
                 "category" : result[0]["category"],
                 "created_at": result[0]["created_at"]
+            }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data("Successed!", response)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET DETAIL CATEGORY ============================================================ End
+        
+    # GET DETAIL CATEGORY ============================================================ Begin
+    def show_template(datas):
+        try:
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
+            
+            requiredData = ["template_id"]
+            if requiredData not in datas:
+                return parameter_error(f"Missing {requiredData} in Request Body")
+            # Checking Request Body ---------------------------------------- Finish
+            
+            tempId = datas["template_id"].strip()
+            
+            # Checking Data ---------------------------------------- Start
+            query = TMPLT_GET_BY_ID_QUERY
+            values = (tempId,)
+            result = DBHelper.get_data(query, values)
+            if len(result) == 0 :
+                return defined_error("Template tidak dapat ditemukan.")
+            # Checking Data ---------------------------------------- Finish
+
+            # Generate Data ---------------------------------------- Start
+            template = result[0]
+            if template["thumbnail"] != "":
+                thumbnail = ""
+                template["thumbnail"] = base64.b64encode(template["thumbnail"])
+            if template["css_file"] != "":
+                template["css_file"] = base64.b64encode(template["css_file"])
+            if template["js_file"] != "":
+                template["js_file"] = base64.b64encode(template["js_file"])
+            if template["wallpaper"] != "":
+                template["wallpaper"] = base64.b64encode(template["wallpaper"])
+            # Generate Data ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            response = {
+                "template_id" : template["id"],
+                "thumbnail" : template["category"],
+                "css_file" : template["css_file"],
+                "js_file" : template["js_file"],
+                "wallpaper" : template["wallpaper"],
+                "updated_at": template["updated_at"]
             }
             # Response Data ---------------------------------------- Finish
 

@@ -10,7 +10,7 @@ import time
 
 # USER MODELS ============================================================ Begin
 class UserModels():
-    # CREATE ADMIN ============================================================ Begin
+    # CREATE USER ============================================================ Begin
     def create_user(datas):
         try:
             # Validation Request Body ---------------------------------------- Start
@@ -69,7 +69,7 @@ class UserModels():
 
         except Exception as e:
             return bad_request(str(e))
-    # CREATE ADMIN ============================================================ End
+    # CREATE USER ============================================================ End
 
     # SIGN IN ============================================================ Begin
     def signin_user(datas):

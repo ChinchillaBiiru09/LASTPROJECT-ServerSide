@@ -2,8 +2,8 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+# from flask_limiter import Limiter
+# from flask_limiter.util import get_remote_address
 import os
 
 from .configure import config
@@ -37,8 +37,8 @@ migrate = Migrate(app, db)
 # Config Folder Upload Here
 app.config['ADMIN_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/admin/"
 app.config['USER_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/user/"
-app.config['TEMPLATE_THUMBNAIL_PHOTOS'] = config.STATIC_FOLDER_PATH + "template/thumbnail/"
-app.config['TEMPLATE_WALLPAPER_PHOTOS'] = config.STATIC_FOLDER_PATH + "template/wallpaper/"
+app.config['TEMPLATE_THUMBNAIL_PHOTOS'] = config.STATIC_FOLDER_PATH + "templates/thumbnail/"
+app.config['TEMPLATE_WALLPAPER_PHOTOS'] = config.STATIC_FOLDER_PATH + "templates/wallpaper/"
 app.config['TEMPLATE_CSS_FILE'] = config.STATIC_FOLDER_PATH + "templates/css/"
 app.config['TEMPLATE_JS_FILE'] = config.STATIC_FOLDER_PATH + "templates/js/"
 app.config['USER_INVITATION_FILE'] = config.STATIC_FOLDER_PATH + "invitation/user/"

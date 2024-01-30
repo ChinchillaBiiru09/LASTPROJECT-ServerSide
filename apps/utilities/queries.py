@@ -164,7 +164,7 @@ TMPLT_DELETE_QUERY = """
                         WHERE id=%s AND is_delete=0
                     """
 TMPLT_GET_QUERY = """
-                    SELECT * FROM category 
+                    SELECT * FROM template 
                     WHERE is_delete=0
                 """
 TMPLT_GET_BY_ID_QUERY = """
