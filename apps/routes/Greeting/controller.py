@@ -38,7 +38,7 @@ def create_data():
 # POST https://127.0.0.1:5000/greeting/
 @greeting.get('/')
 @jwt_required()
-def get_all_data():
+def get_data():
     try:
         # Access User ======================================== 
         role = str(get_jwt()["role"])
@@ -58,7 +58,7 @@ def get_all_data():
 # POST https://127.0.0.1:5000/greeting/
 @greeting.get('/user/')
 @jwt_required()
-def get_all_data_by_user():
+def get_data_by_user():
     try:
         # Access User ======================================== 
         id = str(get_jwt()["id"])
@@ -79,7 +79,7 @@ def get_all_data_by_user():
 # POST https://127.0.0.1:5000/greeting/detail
 @greeting.get('/detail')
 @jwt_required()
-def get_data():
+def detail_data():
     try:
         # Access User ======================================== 
         id = str(get_jwt()["id"])
@@ -118,3 +118,23 @@ def delete_data():
     except Exception as e:
         return bad_request(str(e))
 # DELETE GREETING ============================================================ End
+
+
+# VIEW DETAIL TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/greeting/detail
+@greeting.get('/count')
+@jwt_required()
+def count_data():
+    try:
+        # Request Data ======================================== 
+        id = str(get_jwt()["id"])
+
+        # Request Process ======================================== 
+        response = GreetingModels.get_count_greeting(id)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW DETAIL TEMPLATE ============================================================ End

@@ -276,4 +276,32 @@ class GreetingModels():
         except Exception as e:
             return bad_request(str(e))
     # DELETE GREETING ============================================================ End
+
+    
+    # GET ROW-COUNT GREETING ============================================================ Begin
+    def get_count_greeting(user_id):
+        try:
+            # Get Data By User Id ---------------------------------------- Start
+            query = GRTG_GET_BY_USER_QUERY
+            values = (user_id, )
+            result = DBHelper().get_count_filter_data(query, values)
+            # Get Data By User Id ---------------------------------------- Finish
+
+            # Checking Data ---------------------------------------- Start
+            if result == 0 or result == None :
+                return defined_error("Number of greetings not found.")
+            # Checking Data ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            response = {
+                "greeting_count" : result
+            }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data("Successed!", response)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET ROW-COUNT GREETING ============================================================ End
 # GREETING MODEL CLASS ============================================================ End

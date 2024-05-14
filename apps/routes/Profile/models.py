@@ -3,10 +3,17 @@ from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_role, vld_edit_profile
 
+from datetime import datetime
+
 import time, base64
 
 # USER MODELS ============================================================ Begin
 class ProfileModels():
+    # CREATE PROFILE ============================================================ Begin
+    def create_profile():
+        pass
+    # CREATE PROFILE ============================================================ End
+
     # VIEW PROFILE ============================================================ Begin
     def view_profile(userId, userRole):
         try:
@@ -17,23 +24,36 @@ class ProfileModels():
                 userLevel = 2  # 2 = User
             # Set Level User ---------------------------------------- Finish
             
-            # Get Data ---------------------------------------- Start
+            # Get Data From Profile ---------------------------------------- Start
             query = PROF_GET_BY_ID_QUERY
             values = (userId, userLevel)
-            result = DBHelper().get_data(query, values)
-            if len(result) == 0 :
+            result1 = DBHelper().get_data(query, values)
+            if len(result1) == 0 :
                 return defined_error("Gagal menemukan data user.", "Bad Request", 400)
-            # Get Data ---------------------------------------- Finish
+            # Get Data From Profile ---------------------------------------- Finish
+
+            # Get Data From Account ---------------------------------------- Start
+            values = (userId, )
+            if userLevel == 1:
+                query = ADM_GET_BY_ID_QUERY
+            elif userLevel == 2:
+                query = USR_GET_BY_ID_QUERY
+            result2 = DBHelper().get_data(query, values)
+            # Get Data From Account ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
-            base_64 = base64.b64encode(result[0]["photos"]).decode('utf-8')
+            print(type(result1[0]["photos"]))
+            photosBase64 = base64.b64encode(result1[0]["photos"]).decode('utf-8')
+            createdAt = datetime.fromtimestamp(result1[0]['created_at']/1000)
             response = {
-                "id" : result[0]["id"],
-                "first_name" : result[0]["first_name"],
-                "middle_name" : result[0]["middle_name"],
-                "last_name" : result[0]["last_name"],
-                "phone" : result[0]["phone"],
-                "photos" : base_64
+                "id" : result1[0]["id"],
+                "first_name" : result1[0]["first_name"],
+                "middle_name" : result1[0]["middle_name"],
+                "last_name" : result1[0]["last_name"],
+                "email" : result2[0]["email"],
+                "phone" : result1[0]["phone"],
+                "photos" : photosBase64,
+                "created_at" : createdAt
             }
             # Response Data ---------------------------------------- Finish
 

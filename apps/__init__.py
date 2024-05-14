@@ -83,7 +83,8 @@ from .routes.Category.controller import category
 from .routes.Greeting.controller import greeting
 from .routes.Template.controller import template
 from .routes.Profile.controller import profile
-# from .routes.Guest.controller import guest
+from .routes.Invitation.controller import invitation
+from .routes.Guest.controller import guest
 # from .routes.tester.controller import test
 
 # Set Limiter Every Route
@@ -96,5 +97,6 @@ app.register_blueprint(category)
 app.register_blueprint(greeting)
 app.register_blueprint(template)
 app.register_blueprint(profile)
-# app.register_blueprint(guest)
+app.register_blueprint(invitation)
+app.register_blueprint(guest)
 # app.register_blueprint(testDB)

@@ -49,3 +49,24 @@ def signin():
     except Exception as e:
         return bad_request(str(e))
 # SIGN IN USER ============================================================ End
+
+
+# GET USER ============================================================ Begin
+# POST https://127.0.0.1:5000/user/
+@user.get('/')
+@jwt_required()
+def get_all_data():
+    try:
+        # Request Data ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        response = UserModels.view_user(id, role)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# GET USER ============================================================ End

@@ -19,6 +19,10 @@ ADM_ADD_QUERY = """
                     (name, email, password, created_at, updated_at)
                     VALUES (%s, %s, %s, %s, %s)
                 """
+ADM_GET_BY_ID_QUERY = """
+                        SELECT * FROM admin
+                        WHERE id=%s AND is_delete=0
+                    """
 # ======================================================================== 
 # ADMIN QUERY - END ====================================================== 
 # ======================================================================== 
@@ -27,15 +31,20 @@ ADM_ADD_QUERY = """
 # ======================================================================== 
 # USER QUERY - START =====================================================
 # ======================================================================== 
-USR_CHK_EMAIL_QUERY = """SELECT * FROM user WHERE email=%s AND is_delete=0"""
+USR_CHK_EMAIL_QUERY = """
+                        SELECT * FROM user WHERE email=%s AND is_delete=0
+                    """
 USR_ADD_QUERY = """
                     INSERT INTO user 
-                    (name, email, password, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s)
+                    (username, email, password, last_active, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                 """
-PROF_GET_BY_ID_QUERY = """
-                        SELECT * FROM profile 
-                        WHERE user_id=%s AND user_level=%s AND is_delete=0
+USR_GET_QUERY = """
+                    SELECT * FROM user
+                """
+USR_GET_BY_ID_QUERY = """
+                        SELECT * FROM user
+                        WHERE id=%s AND is_delete=0
                     """
 # ======================================================================== 
 # USER QUERY - END =======================================================
@@ -92,7 +101,7 @@ CTGR_DELETE_QUERY = """
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
-CTGR_GET_QUERY = """
+CTGR_GET_ALL_QUERY = """
                     SELECT * FROM category 
                     WHERE is_delete=0
                 """
@@ -123,13 +132,13 @@ GRTG_GET_ALL_QUERY = """
                     SELECT * FROM greeting 
                     WHERE is_delete=0
                 """
-GRTG_GET_BY_USER_QUERY = """
-                            SELECT * FROM greeting 
-                            WHERE user_id=%s AND is_delete=0
-                        """
 GRTG_GET_BY_ID_QUERY = """
                             SELECT * FROM greeting 
                             WHERE id=%s AND is_delete=0
+                        """
+GRTG_GET_BY_USER_QUERY = """
+                            SELECT * FROM greeting 
+                            WHERE user_id=%s AND is_delete=0
                         """
 GRTG_DELETE_QUERY = """
                         UPDATE greeting 
@@ -163,7 +172,7 @@ TMPLT_DELETE_QUERY = """
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
-TMPLT_GET_QUERY = """
+TMPLT_GET_ALL_QUERY = """
                     SELECT * FROM template 
                     WHERE is_delete=0
                 """
@@ -191,22 +200,27 @@ INV_ADD_QUERY = """
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 INV_UPDATE_QUERY = """
-                        UPDATE category 
+                        UPDATE invitation 
                         SET category=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 INV_DELETE_QUERY = """
-                        UPDATE category 
+                        UPDATE invitation 
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
-INV_GET_QUERY = """
-                    SELECT * FROM category 
-                    WHERE is_delete=0
-                """
+INV_GET_ALL_QUERY = """
+                        SELECT * FROM invitation 
+                        WHERE is_delete=0
+                    """
 INV_GET_BY_ID_QUERY = """
-                            SELECT * FROM category 
-                            WHERE id=%s AND is_delete=0
+                        SELECT * FROM invitation 
+                        WHERE id=%s AND is_delete=0
+                    """
+INV_GET_BY_USR_QUERY = """
+                            SELECT * FROM invitation 
+                            WHERE user_id=%s AND user_level=%s 
+                            AND is_delete=0
                         """
 INV_GET_WITH_FILTER_QUERY = """
                             """
@@ -219,31 +233,35 @@ INV_GET_WITH_FILTER_QUERY = """
 # GUEST QUERY - START ====================================================
 # ======================================================================== 
 GUEST_CHK_QUERY = """
-                    SELECT * FROM category 
+                    SELECT * FROM guest 
                     WHERE category=%s AND is_delete=0
                 """
 GUEST_ADD_QUERY = """
-                    INSERT INTO category 
+                    INSERT INTO guest 
                     (category, created_at, created_by, updated_at, updated_by)
                     VALUES (%s, %s, %s, %s, %s)
                 """
 GUEST_UPDATE_QUERY = """
-                        UPDATE category 
+                        UPDATE guest 
                         SET category=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 GUEST_DELETE_QUERY = """
-                        UPDATE category 
+                        UPDATE guest 
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
-GUEST_GET_QUERY = """
-                    SELECT * FROM category 
-                    WHERE is_delete=0
-                """
+GUEST_GET_ALL_QUERY = """
+                        SELECT * FROM guest 
+                        WHERE is_delete=0
+                    """
 GUEST_GET_BY_ID_QUERY = """
-                            SELECT * FROM category 
+                            SELECT * FROM guest 
                             WHERE id=%s AND is_delete=0
+                        """
+GUEST_GET_BY_USR_QUERY = """
+                            SELECT * FROM invitation 
+                            WHERE user_id=%s AND is_delete=0
                         """
 GUEST_GET_WITH_FILTER_QUERY = """
                             """

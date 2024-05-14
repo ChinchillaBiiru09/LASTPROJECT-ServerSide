@@ -44,7 +44,7 @@ def create_data():
 # GET TEMPLATE ============================================================ Begin
 # POST https://127.0.0.1:5000/template/
 @template.get('/')
-def get_all_data():
+def get_data():
     try:
         # Request Process ======================================== 
         response = TemplateModels.view_template()
@@ -109,7 +109,7 @@ def delete_data():
 # POST https://127.0.0.1:5000/template/detail
 @template.get('/detail')
 @jwt_required()
-def get_data():
+def detail_data():
     try:
         # Request Data ======================================== 
         data = request.json
@@ -136,6 +136,23 @@ def show():
 
         # Request Process ======================================== 
         response = TemplateModels.view_detail_template(data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW DETAIL TEMPLATE ============================================================ End
+
+
+# VIEW DETAIL TEMPLATE ============================================================ Begin
+# POST https://127.0.0.1:5000/template/detail
+@template.get('/count')
+@jwt_required()
+def count_data():
+    try:
+        # Request Process ======================================== 
+        response = TemplateModels.get_count_template()
 
         # Request Data ======================================== 
         return response

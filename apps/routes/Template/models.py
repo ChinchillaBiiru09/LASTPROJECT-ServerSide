@@ -9,9 +9,9 @@ from werkzeug.utils import secure_filename
 
 import time, os, base64
 
-# CATEGORY MODEL CLASS ============================================================ Begin
+# TEMPLATE MODEL CLASS ============================================================ Begin
 class TemplateModels():
-    # CREATE CATEGORY ============================================================ Begin
+    # CREATE TEMPLATE ============================================================ Begin
     def add_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -86,20 +86,20 @@ class TemplateModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # CREATE CATEGORY ============================================================ End
+    # CREATE TEMPLATE ============================================================ End
 
-    # GET ALL CATEGORY ============================================================ Begin
+    # GET ALL TEMPLATE ============================================================ Begin
     def view_template():
         try:
             # Checking Data ---------------------------------------- Start
-            query = TMPLT_GET_QUERY
+            query = TMPLT_GET_ALL_QUERY
             result = DBHelper().execute(query)
             if len(result) == 0 or result == None:
                 return defined_error("Belum ada template.", "Bad Request", 400)
             # Checking Data ---------------------------------------- Finish
 
             # Get Data Category ---------------------------------------- Start
-            query = CTGR_GET_QUERY
+            query = CTGR_GET_ALL_QUERY
             resultCtgr = DBHelper().execute(query)
             if len(resultCtgr) == 0 or resultCtgr == None:
                 return defined_error("Kategori tidak terdaftar.", "Bad Request", 400)
@@ -137,16 +137,15 @@ class TemplateModels():
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
-            print(response)
             
             # Return Response ======================================== 
             return success_data("Successed!", response)
         
         except Exception as e:
             return bad_request(str(e))
-    # GET ALL CATEGORY ============================================================ End
+    # GET ALL TEMPLATE ============================================================ End
 
-    # UPDATE CATEGORY ============================================================ Begin
+    # UPDATE TEMPLATE ============================================================ Begin
     def edit_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -199,9 +198,9 @@ class TemplateModels():
             
         except Exception as e:
             return bad_request(str(e))
-    # UPDATE CATEGORY ============================================================ End
+    # UPDATE TEMPLATE ============================================================ End
 
-    # DELETE CATEGORY ============================================================ Begin
+    # DELETE TEMPLATE ============================================================ Begin
     def delete_template(user_id, user_role, datas):
         
         try:
@@ -249,71 +248,28 @@ class TemplateModels():
             
         except Exception as e:
             return bad_request(str(e))
-    # DELETE CATEGORY ============================================================ End
+    # DELETE TEMPLATE ============================================================ End
 
-    # GET DETAIL CATEGORY ============================================================ Begin
+    # GET DETAIL TEMPLATE ============================================================ Begin
     def view_detail_template(datas):
         try:
-            # Access Validation ---------------------------------------- Start
-            # access, message = vld_role(user_role)
-            # if not access:
-            #     return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
-
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["category_id"]
-            if requiredData not in datas:
-                return parameter_error(f"Missing {requiredData} in Request Body")
-            # Checking Request Body ---------------------------------------- Finish
-            
-            ctgrId = datas["category_id"].strip()
-            
-            # Checking Data ---------------------------------------- Start
-            query = CTGR_GET_BY_ID_QUERY
-            values = (ctgrId,)
-            result = DBHelper.get_data(query, values)
-            if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.")
-            # Checking Data ---------------------------------------- Finish
-            
-            # Response Data ---------------------------------------- Start
-            response = {
-                "category_id" : result[0]["id"],
-                "category" : result[0]["category"],
-                "created_at": result[0]["created_at"]
-            }
-            # Response Data ---------------------------------------- Finish
-
-            # Return Response ======================================== 
-            return success_data("Successed!", response)
-        
-        except Exception as e:
-            return bad_request(str(e))
-    # GET DETAIL CATEGORY ============================================================ End
-        
-    # GET DETAIL CATEGORY ============================================================ Begin
-    def show_template(datas):
-        try:
-            # Checking Request Body ---------------------------------------- Start
-            if datas == None:
-                return invalid_params()
-            
-            requiredData = ["template_id"]
-            if requiredData not in datas:
-                return parameter_error(f"Missing {requiredData} in Request Body")
+            # requiredData = ["template_id"]
+            # if requiredData not in datas:
+            #     return parameter_error(f"Missing {requiredData} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
             tempId = datas["template_id"].strip()
             
             # Checking Data ---------------------------------------- Start
-            query = TMPLT_GET_BY_ID_QUERY
+            query = TMPLT_GET_ALL_QUERY
             values = (tempId,)
             result = DBHelper.get_data(query, values)
             if len(result) == 0 :
-                return defined_error("Template tidak dapat ditemukan.")
+                return defined_error("Number of templates not found.")
             # Checking Data ---------------------------------------- Finish
 
             # Generate Data ---------------------------------------- Start
@@ -345,5 +301,75 @@ class TemplateModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # GET DETAIL CATEGORY ============================================================ End
-# CATEGORY MODEL CLASS ============================================================ End
+    # GET DETAIL TEMPLATE ============================================================ End
+        
+    # GET DETAIL TEMPLATE ============================================================ Begin
+    def show_template(datas):
+        try:
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
+            # Checking Request Body ---------------------------------------- Finish
+            
+            # Checking Data ---------------------------------------- Start
+            query = TMPLT_GET_ALL_QUERY
+            result = DBHelper.execute(query)
+            if len(result) == 0 :
+                return defined_error("Template tidak dapat ditemukan.")
+            # Checking Data ---------------------------------------- Finish
+
+            # Generate Data ---------------------------------------- Start
+            for data in result:
+                print(data)
+            # template = result[0]
+            # if template["thumbnail"] != "":
+            #     template["thumbnail"] = base64.b64encode(template["thumbnail"])
+            # if template["css_file"] != "":
+            #     template["css_file"] = base64.b64encode(template["css_file"])
+            # if template["js_file"] != "":
+            #     template["js_file"] = base64.b64encode(template["js_file"])
+            # if template["wallpaper"] != "":
+            #     template["wallpaper"] = base64.b64encode(template["wallpaper"])
+            # Generate Data ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            # response = {
+            #     "template_id" : template["id"],
+            #     "thumbnail" : template["category"],
+            #     "css_file" : template["css_file"],
+            #     "js_file" : template["js_file"],
+            #     "wallpaper" : template["wallpaper"],
+            #     "updated_at": template["updated_at"]
+            # }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data("Successed!")
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET DETAIL TEMPLATE ============================================================ End
+
+    # GET DETAIL TEMPLATE ============================================================ Begin
+    def get_count_template():
+        try:
+            # Checking Data ---------------------------------------- Start
+            query = TMPLT_GET_ALL_QUERY
+            result = DBHelper().get_count_data(query)
+            if result == 0 or result == None :
+                return defined_error("Template tidak dapat ditemukan.")
+            # Checking Data ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            response = {
+                "template_count" : result
+            }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data("Successed!", response)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET DETAIL TEMPLATE ============================================================ End
+# TEMPLATE MODEL CLASS ============================================================ End

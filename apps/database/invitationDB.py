@@ -3,6 +3,7 @@ from .. import db
 class Invitation(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_level = db.Column(db.Integer, nullable=False, comment="1 = Admin, 2 = User")
+    user_id = db.Column(db.Integer, nullable=False)
     category_id = db.Column(db.Integer, nullable=False)
     template_id = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(150), nullable=False)

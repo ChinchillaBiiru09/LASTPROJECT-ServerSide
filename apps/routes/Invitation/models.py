@@ -10,9 +10,9 @@ from werkzeug.utils import secure_filename
 import time, os
 
 
-# CATEGORY MODEL CLASS ============================================================ Begin
+# INVITATION MODEL CLASS ============================================================ Begin
 class InvitationModels():
-    # CREATE CATEGORY ============================================================ Begin
+    # CREATE INVITATION ============================================================ Begin
     def add_invitation(userId, userRole, datas):
         try:
             # Set Level User ---------------------------------------- Start
@@ -78,37 +78,47 @@ class InvitationModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # CREATE CATEGORY ============================================================ End
+    # CREATE INVITATION ============================================================ End
 
-    # GET ALL CATEGORY ============================================================ Begin
+    # GET ALL INVITATION ============================================================ Begin
     def view_invitation():
         try:
             # Checking Data ---------------------------------------- Start
-            query = CTGR_GET_QUERY
+            query = INV_GET_ALL_QUERY
             result = DBHelper().execute(query)
+            print(result)
             if len(result) == 0 or result == None:
-                return defined_error("Belum ada kategori.", "Bad Request", 400)
+                return defined_error("Belum ada invitation.", "Not Found", 404)
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
                 data = {
-                    "category_id" : rsl["id"],
-                    "category" : rsl["category"],
-                    "created_at": rsl["created_at"]
+                    "invitation_id" : rsl["id"],
+                    "user_id" : rsl["user_id"],
+                    "category_id" : rsl["category_id"],
+                    "template_id" : rsl["template_id"],
+                    "invitation_tittle" : rsl["tittle"],
+                    "invitation_wallpaper" : rsl["wallpaper"],
+                    "personal_data" : rsl["personal_data"],
+                    "invitation_code" : rsl["code"],
+                    "invitation_link" : rsl["link"],
+                    "created_at": rsl["created_at"],
+                    "updated_at" : rsl["updated_att"]
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
+            print(response)
             
             # Return Response ======================================== 
             return success_data("Succeed!", response)
         
         except Exception as e:
             return bad_request(str(e))
-    # GET ALL CATEGORY ============================================================ End
+    # GET ALL INVITATION ============================================================ End
 
-    # UPDATE CATEGORY ============================================================ Begin
+    # UPDATE INVITATION ============================================================ Begin
     def edit_invitation(user_id, user_role,  datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -161,9 +171,9 @@ class InvitationModels():
             
         except Exception as e:
             return bad_request(str(e))
-    # UPDATE CATEGORY ============================================================ End
+    # UPDATE INVITATION ============================================================ End
 
-    # DELETE CATEGORY ============================================================ Begin
+    # DELETE INVITATION ============================================================ Begin
     def delete_invitation(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -185,7 +195,7 @@ class InvitationModels():
             # Checking Request Body ---------------------------------------- Finish
             
             # Checking Data ---------------------------------------- Finish
-            query = CTGR_GET_BY_ID_QUERY
+            query = INV_GET_BY_ID_QUERY
             values = (ctgrId,)
             result = DBHelper().get_data(query, values)
             if len(result) == 0 :
@@ -194,7 +204,7 @@ class InvitationModels():
             
             # Delete Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
-            query = CTGR_DELETE_QUERY
+            query = INV_DELETE_QUERY
             values = (timestamp, user_id, ctgrId)
             DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
@@ -211,9 +221,9 @@ class InvitationModels():
             
         except Exception as e:
             return bad_request(str(e))
-    # DELETE CATEGORY ============================================================ End
+    # DELETE INVITATION ============================================================ End
 
-    # GET DETAIL CATEGORY ============================================================ Begin
+    # GET DETAIL INVITATION ============================================================ Begin
     def view_detail_invitation(user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -256,5 +266,38 @@ class InvitationModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # GET DETAIL CATEGORY ============================================================ End
+    # GET DETAIL INVITATION ============================================================ End
+
+    # GET ROW-COUNT INVITATION ============================================================ Begin
+    def get_count_invitation(user_id, user_role):
+        try:
+            # Get Data By Role ---------------------------------------- Start
+            if user_role == "ADMIN":
+                print("ke admin")
+                query = INV_GET_ALL_QUERY
+                result = DBHelper().get_count_data(query)
+            elif user_role == "USER":
+                print("ke user")
+                query = INV_GET_BY_USR_QUERY
+                values = (user_id, 2, )
+                result = DBHelper().get_count_filter_data(query, values)
+            # Get Data By Role ---------------------------------------- Finish
+
+            # Checking Data ---------------------------------------- Start
+            if result == 0 or result == None :
+                return defined_error("Number of invitations not found.")
+            # Checking Data ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            response = {
+                "invitation_count" : result
+            }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data("Successed!", response)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET ROW-COUNT INVITATION ============================================================ End
 # CATEGORY MODEL CLASS ============================================================ End

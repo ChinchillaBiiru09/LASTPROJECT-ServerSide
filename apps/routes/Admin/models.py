@@ -2,7 +2,7 @@ from flask_jwt_extended import create_access_token
 
 from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
 from ...utilities.dbHelper import DBHelper
-from ...utilities.queries import ADM_ADD_QUERY, PROF_ADD_QUERY, LOG_ADD_QUERY
+from ...utilities.queries import *
 from ...utilities.validator import vld_admin_regis, vld_signin
 from ...utilities.utils import hashPassword
 
@@ -41,7 +41,7 @@ class AdminModels():
             timestamp = int(round(time.time()*1000))
             query = ADM_ADD_QUERY
             values = (username, email, passEncrypt, timestamp, timestamp)
-            resReturn = DBHelper().save_data(query, values)
+            resReturn = DBHelper().save_return(query, values)
             if resReturn == None:
                 return defined_error("Gagal menyimpan data.", "Bad Request", 400)
             # Insert Data ---------------------------------------- Finish
@@ -83,7 +83,7 @@ class AdminModels():
             password = datas["password"].strip()
             
             # Data Validation ---------------------------------------- Start
-            checkResult, result, stts = vld_signin(email, password)
+            checkResult, result, stts = vld_signin(email, password, "ADMIN")
             if len(checkResult) != 0:
                 return defined_error(checkResult, "Bad Request", statusCode=stts)
             # Data Validation ---------------------------------------- Finish
@@ -92,7 +92,7 @@ class AdminModels():
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
-                "nama" : result[0]["name"],
+                "name" : result[0]["name"],
                 "role" : "ADMIN"
             }
             
@@ -100,7 +100,13 @@ class AdminModels():
             access_token = create_access_token(email, additional_claims=jwt_payload)
             
             # Send success response
-            return success_data("Sign In Succeed.", access_token)
+            response = {
+                "access_token" : access_token,
+                "role" : "ADMIN"
+            }
+            
+            # Return Response ======================================== 
+            return success_data("Sign In Succeed.", response)
 
         except Exception as e:
             return bad_request(str(e))

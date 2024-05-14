@@ -54,12 +54,13 @@ import library
 o>> BLUEPRINT
 smallletter = Blueprint()
 
-o>> FUNCTION CRUD
+o>> FUNCTION CONTROLLER
 def create_data() -> for api create
-def get_all_data() -> for api get all 
-def get_detail_data() -> for api get detail
+def get_data() -> for api get all 
+def detail_data() -> for api get detail
 def update_data() -> for api update
 def delete_data() -> for api delete
+def count_data() -> for api row count
 def signin() -> for api login 
 def profile() -> for api profile
 def upload_data() -> for api upload 
@@ -67,8 +68,11 @@ def download_data() -> for api download
 etc..
 
 o> MODELS
+o>> CLASS
+class NameModels()
 o>> FUNCTION
-def create_specificfunction()
+def add_nameapi()
+def 
 etc..
 
 o> REQUEST FIELD

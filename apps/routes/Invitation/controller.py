@@ -42,7 +42,7 @@ def create_data():
 # GET CATEGORY ============================================================ Begin
 # POST https://127.0.0.1:5000/invitation/
 @invitation.get('/')
-def get_all_data():
+def get_data():
     try:
         # Request Process ======================================== 
         response = InvitationModels.view_invitation()
@@ -107,7 +107,7 @@ def delete_data():
 # POST https://127.0.0.1:5000/invitation/detail
 @invitation.get('/detail')
 @jwt_required()
-def get_data():
+def detail_data():
     try:
         # Access User ======================================== 
         role = str(get_jwt()["role"])
@@ -124,3 +124,24 @@ def get_data():
     except Exception as e:
         return bad_request(str(e))
 # VIEW DETAIL CATEGORY ============================================================ End
+
+
+# VIEW ROW-COUNT INVITATION ============================================================ Begin
+# POST https://127.0.0.1:5000/invitation/count
+@invitation.get('/count')
+@jwt_required()
+def count_data():
+    try:
+        # Request Data ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+
+        # Request Process ======================================== 
+        response = InvitationModels.get_count_invitation(id, role)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW ROW-COUNT INVITATION ============================================================ End

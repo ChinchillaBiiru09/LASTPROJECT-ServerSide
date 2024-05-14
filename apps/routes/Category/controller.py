@@ -21,6 +21,7 @@ category = Blueprint(
 @jwt_required()
 def create_data():
     try:
+        print(str(get_jwt()))
         # Access User ======================================== 
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
@@ -124,3 +125,20 @@ def get_data():
     except Exception as e:
         return bad_request(str(e))
 # VIEW DETAIL CATEGORY ============================================================ End
+
+
+# VIEW COUNT CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/category/count
+@category.get('/count')
+@jwt_required()
+def count_data():
+    try:
+        # Request Process ======================================== 
+        response = CategoryModels.get_count_category()
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW COUNT CATEGORY ============================================================ End

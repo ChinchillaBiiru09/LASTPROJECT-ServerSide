@@ -56,7 +56,7 @@ class CategoryModels():
     def view_category():
         try:
             # Checking Data ---------------------------------------- Start
-            query = CTGR_GET_QUERY
+            query = CTGR_GET_ALL_QUERY
             result = DBHelper().execute(query)
             if len(result) == 0 or result == None:
                 return defined_error("Belum ada kategori.", "Bad Request", 400)
@@ -229,4 +229,27 @@ class CategoryModels():
         except Exception as e:
             return bad_request(str(e))
     # GET DETAIL CATEGORY ============================================================ End
+
+    # GET ROW-COUNT CATEGORY ============================================================ Begin
+    def get_count_category():
+        try:
+            # Checking Data ---------------------------------------- Start
+            query = CTGR_GET_ALL_QUERY
+            result = DBHelper().get_count_data(query)
+            if result == 0 or result == None :
+                return defined_error("Number of categories not found.")
+            # Checking Data ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            response = {
+                "category_count" : result
+            }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data("Successed!", response)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET ROW-COUNT CATEGORY ============================================================ End
 # CATEGORY MODEL CLASS ============================================================ End

@@ -137,7 +137,7 @@ def vld_user_regis(fname, mname, lname, phone, email, password, repassword):
     # Return Checker ======================================== 
     return checkResult 
 
-def vld_signin(email, password):
+def vld_signin(email, password, role):
     checkResult = []
 
     if email == "":
@@ -156,17 +156,22 @@ def vld_signin(email, password):
     if email_checker(email):
         checkResult.append(f"Email tidak valid.")
     
-    stts = 499
-    query = ADM_CHK_EMAIL_QUERY
+    # Cek Role
+    stts = 200
     values = (email,)
-    result = DBHelper().get_data(query, values)
-    if len(result) == 0 or result == None:
+    if role == "ADMIN":
+        query = ADM_CHK_EMAIL_QUERY
+        result = DBHelper().get_data(query, values)
+    elif role == "USER":
         query = USR_CHK_EMAIL_QUERY
         result = DBHelper().get_data(query, values)
-        if len(result) == 0 or result == None:
-            stts = 400
-            checkResult.append(f"Email belum terdaftar.")
     
+    # Cek data email ready or not
+    if len(result) == 0 or result == None:
+        stts = 400
+        checkResult.append(f"Email belum terdaftar.")
+    
+    # cek password
     if len(result) != 0:
         savedPassword = result[0]['password']
         validatePass = password_compare(savedPassword, password)
