@@ -1,4 +1,5 @@
 from flask_jwt_extended import create_access_token
+from flask import current_app as app
 from datetime import datetime
 
 from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
@@ -7,7 +8,7 @@ from ...utilities.queries import *
 from ...utilities.utils import hashPassword
 from ...utilities.validator import vld_user_regis, vld_signin, vld_role
 
-import time
+import time, jwt
 
 # USER MODELS ============================================================ Begin
 class UserModels():
@@ -100,8 +101,7 @@ class UserModels():
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
-                "name" : result[0]["username"],
-                "role" : "USER"
+                "name" : result[0]["username"]
             }
             # Data Payload ---------------------------------------- Finish
 

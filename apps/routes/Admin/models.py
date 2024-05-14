@@ -1,4 +1,6 @@
 from flask_jwt_extended import create_access_token
+from flask import current_app as app
+from datetime import datetime
 
 from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
 from ...utilities.dbHelper import DBHelper
@@ -6,7 +8,7 @@ from ...utilities.queries import *
 from ...utilities.validator import vld_admin_regis, vld_signin
 from ...utilities.utils import hashPassword
 
-import time
+import time, jwt
 
 # BLOCK FIRST/BASE ============================================================ Begin
 class AdminModels():
@@ -71,6 +73,7 @@ class AdminModels():
     # SIGN IN ============================================================ Begin
     def signin_admin(datas):
         try:
+            # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
@@ -78,9 +81,12 @@ class AdminModels():
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body")
+            # Checking Request Body ---------------------------------------- Finish
             
+            # Initialize Data Request ---------------------------------------- Start
             email = datas["email"].strip().lower()
             password = datas["password"].strip()
+            # Initialize Data Request ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
             checkResult, result, stts = vld_signin(email, password, "ADMIN")
@@ -88,22 +94,23 @@ class AdminModels():
                 return defined_error(checkResult, "Bad Request", statusCode=stts)
             # Data Validation ---------------------------------------- Finish
             
-            # Create jwt_payload
+            # Data Payload ---------------------------------------- Start
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
-                "name" : result[0]["name"],
-                "role" : "ADMIN"
+                "name" : result[0]["name"]
             }
+            # Data Payload ---------------------------------------- Finish
             
-            # Create access_token by email & jwt_payload
+            # Access Token by Email ======================================== 
             access_token = create_access_token(email, additional_claims=jwt_payload)
             
-            # Send success response
+            # Data Response ---------------------------------------- Start
             response = {
                 "access_token" : access_token,
                 "role" : "ADMIN"
             }
+            # Data Response ---------------------------------------- Finish
             
             # Return Response ======================================== 
             return success_data("Sign In Succeed.", response)

@@ -21,7 +21,6 @@ category = Blueprint(
 @jwt_required()
 def create_data():
     try:
-        print(str(get_jwt()))
         # Access User ======================================== 
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
@@ -43,7 +42,7 @@ def create_data():
 # GET CATEGORY ============================================================ Begin
 # POST https://127.0.0.1:5000/category/
 @category.get('/')
-def get_all_data():
+def get_data():
     try:
         # Request Process ======================================== 
         response = CategoryModels.view_category()
@@ -108,7 +107,7 @@ def delete_data():
 # POST https://127.0.0.1:5000/category/detail
 @category.get('/detail')
 @jwt_required()
-def get_data():
+def detail_data():
     try:
         # Access User ======================================== 
         role = str(get_jwt()["role"])
