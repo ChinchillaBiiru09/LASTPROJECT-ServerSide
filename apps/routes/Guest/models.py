@@ -61,46 +61,46 @@ class GuestModels():
     #         return bad_request(str(e))
     # # CREATE GUEST ============================================================ End
 
-    # # GET ALL GUEST ============================================================ Begin
-    # def view_guest(user_role):
-    #     try:
-    #         # Access Validation ---------------------------------------- Start
-    #         access, message = vld_role(user_role)
-    #         if not access: # Not True = User
-    #             return defined_error(message, "Forbidden", 403)
-    #         # Access Validation ---------------------------------------- Finish
+    # GET ALL GUEST ============================================================ Begin
+    def view_guest(user_role):
+        try:
+            # Access Validation ---------------------------------------- Start
+            access, message = vld_role(user_role)
+            if not access: # Not True = User
+                return defined_error(message, "Forbidden", 403)
+            # Access Validation ---------------------------------------- Finish
 
-    #         # Checking Data ---------------------------------------- Start
-    #         query = GUEST_GET_ALL_QUERY
-    #         result = DBHelper().execute(query)
-    #         if len(result) == 0 or result == None:
-    #             return defined_error("Belum ada daftar tamu untuk user manapun.", "Bad Request", 400)
-    #         # Checking Data ---------------------------------------- Finish
+            # Checking Data ---------------------------------------- Start
+            query = GUEST_GET_ALL_QUERY
+            result = DBHelper().execute(query)
+            if len(result) == 0 or result == None:
+                return defined_error("Belum ada daftar tamu untuk user manapun.", "Bad Request", 400)
+            # Checking Data ---------------------------------------- Finish
             
-    #         # Response Data ---------------------------------------- Start
-    #         response = []
-    #         for rsl in result:
-    #             data = {
-    #                 "greeting_id" : rsl["id"],
-    #                 "name" : rsl["name"],
-    #                 "email" : rsl["email"],
-    #                 "greeting" : rsl["greeting"],
-    #                 "invitation_code" : rsl["invitation_code"],
-    #                 "user_owner" : rsl["user_id"],
-    #                 "created_at": rsl["created_at"]
-    #             }
-    #             response.append(data)
-    #         # Response Data ---------------------------------------- Finish
+            # Response Data ---------------------------------------- Start
+            response = []
+            for rsl in result:
+                data = {
+                    "guest_id" : rsl["id"],
+                    "event" : rsl["category_id"],
+                    "name" : rsl["name"],
+                    "alias" : rsl["alias"],
+                    "invitation_code" : rsl["invitation_code"],
+                    "user_owner" : rsl["user_id"],
+                    "created_at": rsl["created_at"]
+                }
+                response.append(data)
+            # Response Data ---------------------------------------- Finish
             
-    #         # Return Response ======================================== 
-    #         return success_data("Successed!", response)
+            # Return Response ======================================== 
+            return success_data("Successed!", response)
         
-    #     except Exception as e:
-    #         return bad_request(str(e))
-    # # GET ALL GUEST ============================================================ End
+        except Exception as e:
+            return bad_request(str(e))
+    # GET ALL GUEST ============================================================ End
 
     # # GET ALL GUEST ============================================================ Begin
-    # def view_all_guest_by_user(user_id, user_role):
+    # def view_guest_by_user(user_id, user_role):
     #     try:
     #         # Access Validation ---------------------------------------- Start
     #         access, message = vld_role(user_role)

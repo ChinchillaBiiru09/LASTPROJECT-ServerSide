@@ -34,24 +34,24 @@ guest = Blueprint(
 # # CREATE GUEST ============================================================ End
 
 
-# # GET GUEST ============================================================ Begin
-# # POST https://127.0.0.1:5000/guest/
-# @guest.get('/')
-# @jwt_required()
-# def get_all_data():
-#     try:
-#         # Access User ======================================== 
-#         role = str(get_jwt()["role"])
+# GET GUEST ============================================================ Begin
+# POST https://127.0.0.1:5000/guest/
+@guest.get('/')
+@jwt_required()
+def get_data():
+    try:
+        # Access User ======================================== 
+        role = str(get_jwt()["role"])
 
-#         # Request Process ======================================== 
-#         response = GuestModels.view_all_greeting(role)
+        # Request Process ======================================== 
+        response = GuestModels.view_all_greeting(role)
 
-#         # Request Data ======================================== 
-#         return response
+        # Request Data ======================================== 
+        return response
 
-#     except Exception as e:
-#         return bad_request(str(e))
-# # GET GUEST ============================================================ End
+    except Exception as e:
+        return bad_request(str(e))
+# GET GUEST ============================================================ End
 
 
 # # VIEW DETAIL GUEST ============================================================ Begin
