@@ -121,7 +121,10 @@ class TemplateModels():
                     index = detailRequestURL
                     request.url = request.url[:index]
             for item in result:
-                item['thumbnail'] = f"{request.url_root}produk/media/{item['thumbnail']}"
+                item["thumbnail"] = f"{request.url_root}template/media/thumbnail/{item["thumbnail"]}"
+                item["css_file"] = f"{request.url_root}template/media/css/{item["css_file"]}"
+                item["js_file"] = f"{request.url_root}template/media/js/{item["js_file"]}"
+                item["wallpaper"] = f"{request.url_root}template/media/wallpaper/{item["wallpaper"]}"
             # Generate Image URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -130,7 +133,10 @@ class TemplateModels():
                 data = {
                     "template_id" : item["id"],
                     "title" : item["title"],
-                    "thumbnail" : item['thumbnail'],
+                    "thumbnail" : item["thumbnail"],
+                    "css_file" : item["css_file"],
+                    "js_file" : item["js_file"],
+                    "wallpaper": item["wallpaper"],
                     "category" : item["category"],
                     "created_at" : item["created_at"],
                     "updated_at" : item["updated_at"]

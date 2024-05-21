@@ -260,11 +260,17 @@ GUEST_GET_BY_ID_QUERY = """
                             WHERE id=%s AND is_delete=0
                         """
 GUEST_GET_BY_USR_QUERY = """
-                            SELECT * FROM invitation 
+                            SELECT * FROM guest 
                             WHERE user_id=%s AND is_delete=0
                         """
 GUEST_GET_WITH_FILTER_QUERY = """
                             """
+GUEST_GET_GROUP_COUNT_QUERY = """
+                            SELECT category_id, code, user_id, 
+                            COUNT(*) as count FROM guest
+                            WHERE user_id=%s AND is_delete=0
+                            GROUP BY code
+                        """
 # ======================================================================== 
 # GUEST QUERY - END ======================================================
 # ======================================================================== 

@@ -35,16 +35,17 @@ guest = Blueprint(
 
 
 # GET GUEST ============================================================ Begin
-# POST https://127.0.0.1:5000/guest/
+# POST https://127.0.0.1:5000/guest/ {User Only}
 @guest.get('/')
 @jwt_required()
 def get_data():
     try:
         # Access User ======================================== 
+        id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
 
         # Request Process ======================================== 
-        response = GuestModels.view_all_greeting(role)
+        response = GuestModels.view_guest(id, role)
 
         # Request Data ======================================== 
         return response

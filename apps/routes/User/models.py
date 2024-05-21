@@ -101,7 +101,8 @@ class UserModels():
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
-                "name" : result[0]["username"]
+                "name" : result[0]["username"],
+                "role" : "USER"
             }
             # Data Payload ---------------------------------------- Finish
 

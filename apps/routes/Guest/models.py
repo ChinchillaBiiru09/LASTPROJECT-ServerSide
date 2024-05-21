@@ -62,32 +62,39 @@ class GuestModels():
     # # CREATE GUEST ============================================================ End
 
     # GET ALL GUEST ============================================================ Begin
-    def view_guest(user_role):
+    def view_guest(user_id, user_role):
         try:
             # Access Validation ---------------------------------------- Start
             access, message = vld_role(user_role)
-            if not access: # Not True = User
+            if access: # False = User
                 return defined_error(message, "Forbidden", 403)
             # Access Validation ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
-            query = GUEST_GET_ALL_QUERY
-            result = DBHelper().execute(query)
+            query1 = GUEST_GET_GROUP_COUNT_QUERY
+            values = (user_id, )
+            result = DBHelper().get_data(query1, values)
             if len(result) == 0 or result == None:
-                return defined_error("Belum ada daftar tamu untuk user manapun.", "Bad Request", 400)
+                return defined_error("Belum ada daftar tamu untuk acara manapun.", "Not Found", 404)
             # Checking Data ---------------------------------------- Finish
+
+            # Set Category ---------------------------------------- Start
+            query2 = CTGR_GET_ALL_QUERY
+            category = DBHelper().execute(query2)
+            for ctg in category:
+                for rsl in result:
+                    if rsl['category_id'] == ctg['id']:
+                        rsl['category_id'] = ctg['category']
+            # Set Category ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
                 data = {
-                    "guest_id" : rsl["id"],
-                    "event" : rsl["category_id"],
-                    "name" : rsl["name"],
-                    "alias" : rsl["alias"],
-                    "invitation_code" : rsl["invitation_code"],
+                    "event" : rsl['category_id'],
+                    "invitation_code" : rsl["code"],
                     "user_owner" : rsl["user_id"],
-                    "created_at": rsl["created_at"]
+                    "count" : rsl['count']
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
@@ -161,15 +168,18 @@ class GuestModels():
     #         # Checking Data ---------------------------------------- Finish
             
     #         # Response Data ---------------------------------------- Start
-    #         response = {
-    #             "greeting_id" : result[0]["id"],
-    #             "name" : result[0]["name"],
-    #             "email" : result[0]["email"],
-    #             "greeting" : result[0]["greeting"],
-    #             "invitation_code" : result[0]["invitation_code"],
-    #             "user_owner" : result[0]["user_id"],
-    #             "created_at": result[0]["created_at"]
-    #         }
+    #         response = []
+            # for rsl in result:
+            #     data = {
+            #         "guest_id" : rsl["id"],
+            #         "event" : rsl["category_id"],
+            #         "name" : rsl["name"],
+            #         "alias" : rsl["alias"],
+            #         "invitation_code" : rsl["code"],
+            #         "user_owner" : rsl["user_id"],
+            #         "created_at": rsl["created_at"]
+            #     }
+            #     response.append(data)
     #         # Response Data ---------------------------------------- Finish
 
     #         # Return Response ======================================== 

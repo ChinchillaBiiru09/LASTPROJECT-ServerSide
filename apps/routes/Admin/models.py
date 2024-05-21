@@ -98,7 +98,8 @@ class AdminModels():
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
-                "name" : result[0]["name"]
+                "name" : result[0]["name"],
+                "role" : "ADMIN"
             }
             # Data Payload ---------------------------------------- Finish
             
