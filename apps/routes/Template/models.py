@@ -97,7 +97,7 @@ class TemplateModels():
             if len(result) == 0 or result == None:
                 return defined_error("Belum ada template.", "Bad Request", 400)
             # Checking Data ---------------------------------------- Finish
-
+            
             # Get Data Category ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             resultCtgr = DBHelper().execute(query)
@@ -121,10 +121,10 @@ class TemplateModels():
                     index = detailRequestURL
                     request.url = request.url[:index]
             for item in result:
-                item["thumbnail"] = f"{request.url_root}template/media/thumbnail/{item["thumbnail"]}"
-                item["css_file"] = f"{request.url_root}template/media/css/{item["css_file"]}"
-                item["js_file"] = f"{request.url_root}template/media/js/{item["js_file"]}"
-                item["wallpaper"] = f"{request.url_root}template/media/wallpaper/{item["wallpaper"]}"
+                item["thumbnail"] = f"{request.url_root}template/media/thumbnail/{item['thumbnail']}"
+                item["css_file"] = f"{request.url_root}template/media/css/{item['css_file']}"
+                item["js_file"] = f"{request.url_root}template/media/js/{item['js_file']}"
+                item["wallpaper"] = f"{request.url_root}template/media/wallpaper/{item['wallpaper']}"
             # Generate Image URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start

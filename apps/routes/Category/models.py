@@ -153,15 +153,15 @@ class CategoryModels():
             
             ctgrId = datas["category_id"].strip()
             if ctgrId == "":
-                return defined_error("ID kategori tidak boleh kosong", "Defined Error", 400)
+                return defined_error("ID kategori tidak boleh kosong", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
             
             # Checking Data ---------------------------------------- Finish
             query = CTGR_GET_BY_ID_QUERY
             values = (ctgrId,)
-            result = DBHelper().get_data(query, values)
-            if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.", "Bad Request", 400)
+            result = DBHelper().get_count_filter_data(query, values)
+            if result == 0 or result is None:
+                return defined_error("Kategori tidak dapat ditemukan.", "Not Found", 404)
             # Checking Data ---------------------------------------- Finish
             
             # Delete Data ---------------------------------------- Start
@@ -179,7 +179,7 @@ class CategoryModels():
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Deleted Successfully!", result)
+            return success("Deleted Successfully!")
             
         except Exception as e:
             return bad_request(str(e))

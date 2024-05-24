@@ -46,6 +46,11 @@ USR_GET_BY_ID_QUERY = """
                         SELECT * FROM user
                         WHERE id=%s AND is_delete=0
                     """
+USR_DELETE_QUERY = """
+                        UPDATE user 
+                        SET is_delete=1, deleted_at=%s, deleted_by=%s
+                        WHERE id=%s AND is_delete=0
+                    """
 # ======================================================================== 
 # USER QUERY - END =======================================================
 # ======================================================================== 
