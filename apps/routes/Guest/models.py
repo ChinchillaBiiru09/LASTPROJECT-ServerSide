@@ -1,4 +1,4 @@
-from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
+from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_greeting, vld_role
@@ -65,9 +65,9 @@ class GuestModels():
     def view_guest(user_id, user_role):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
+            access = vld_role(user_role)
             if access: # False = User
-                return defined_error(message, "Forbidden", 403)
+                return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
@@ -100,7 +100,7 @@ class GuestModels():
             # Response Data ---------------------------------------- Finish
             
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
@@ -306,9 +306,10 @@ class GuestModels():
                 "guest_count" : result
             }
             # Response Data ---------------------------------------- Finish
+            print(response)
 
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))

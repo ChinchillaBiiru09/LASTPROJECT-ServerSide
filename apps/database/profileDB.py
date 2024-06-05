@@ -9,7 +9,7 @@ class Profile(db.Model):
     middle_name = db.Column(db.String(75), nullable=True)
     last_name = db.Column(db.String(75), nullable=True)
     phone = db.Column(db.String(20), nullable=True)
-    photos = db.Column(LONGBLOB(), nullable=True)
+    photos = db.Column(db.Text(), nullable=True, server_default='default_avatar.png')
     created_at = db.Column(db.BigInteger, nullable=False)
     updated_at = db.Column(db.BigInteger, nullable=False)
     deleted_at = db.Column(db.BigInteger, nullable=True)

@@ -137,47 +137,48 @@ def vld_user_regis(fname, mname, lname, phone, email, password, repassword):
     # Return Checker ======================================== 
     return checkResult 
 
-def vld_signin(email, password, role):
+def vld_signin(email, password, level):
     checkResult = []
 
     if email == "":
-        checkResult.append(f"Email tidak boleh kosong")
+        checkResult.append("Email tidak boleh kosong.")
     if password == "":
-        checkResult.append(f"Password tidak boleh kosong")
-
+        checkResult.append("Password tidak boleh kosong.")
 
     sanitMail, charMail = sanitize_email_char(email)
     if sanitMail:
-        checkResult.append(f"Email tidak boleh mengandung karakter {charMail}")
+        checkResult.append(f"Email tidak boleh mengandung karakter {charMail}.")
     sanitPass, charPass = sanitize_passwd_char(password)
     if sanitPass:
-        checkResult.append(f"Password tidak boleh mengandung karakter {charPass}")
+        checkResult.append(f"Password tidak boleh mengandung karakter {charPass}.")
     
     if email_checker(email):
-        checkResult.append(f"Email tidak valid.")
+        checkResult.append("Email tidak valid.")
     
     # Cek Role
-    stts = 200
     values = (email,)
-    if role == "ADMIN":
-        query = ADM_CHK_EMAIL_QUERY
-        result = DBHelper().get_data(query, values)
-    elif role == "USER":
-        query = USR_CHK_EMAIL_QUERY
-        result = DBHelper().get_data(query, values)
+    query = ADM_CHK_EMAIL_QUERY if level == 1 else USR_CHK_EMAIL_QUERY
+    result = DBHelper().get_data(query, values)
     
     # Cek data email ready or not
+    stts = 200
     if len(result) == 0 or result == None:
-        stts = 400
-        checkResult.append(f"Email belum terdaftar.")
+        stts = 404
+        checkResult.append("Email belum terdaftar.")
     
-    # cek password
+    # Cek password
     if len(result) != 0:
         savedPassword = result[0]['password']
         validatePass = password_compare(savedPassword, password)
         if not validatePass:
             stts = 400
-            checkResult.append(f"Akun tidak valid.")
+            checkResult.append("Akun tidak valid.")
+    
+    # Get photo profile
+    query = PROF_GET_BY_ID_QUERY
+    values = (result[0]['id'], level)
+    profile = DBHelper().get_data(query, values)
+    result[0]['photos'] = profile[0]['photos']
     
     return checkResult, result, stts
 
@@ -251,7 +252,7 @@ def vld_role(role):
     if role.upper() == "ADMIN":
         access = True
 
-    return access, "Sorry! Access denied." 
+    return access
 # ROLE VALIDATION ============================================================ End
 
 # CATEGORY VALIDATION ============================================================ Begin
@@ -259,7 +260,7 @@ def vld_category(category):
     checkResult = []
 
     if category == "":
-        checkResult.append(f"Kategori tidak boleh kosong")
+        checkResult.append("Kategori tidak boleh kosong.")
     
     # Sanitize Category ---------------------------------------- Start
     sanitCtgr, charCtgr = sanitize_all_char(category)
@@ -268,13 +269,13 @@ def vld_category(category):
     # Sanitize Category ---------------------------------------- Finish
     
     if string_checker(category):
-        checkResult.append(f"Kategori tidak valid.")
+        checkResult.append("Kategori tidak valid.")
 
     query = CTGR_CHK_QUERY
     values = (category,)
-    result = DBHelper().get_data(query, values)
-    if len(result) != 0:
-        checkResult.append(f"Kategori sudah terdaftar.")
+    result = DBHelper().get_count_filter_data(query, values)
+    if result != 0:
+        checkResult.append("Kategori sudah terdaftar.")
 
     return checkResult
 # CATEGORY VALIDATION ============================================================ End
@@ -338,9 +339,9 @@ def vld_template(title, thumbnail, css, wallpaper):
 
     query = TMPLT_CHK_QUERY
     values = (title,)
-    result = DBHelper().get_data(query, values)
-    if len(result) != 0:
-        checkResult.append(f"Judul sudah terdaftar.")
+    result = DBHelper().get_count_filter_data(query, values)
+    if result != 0:
+        checkResult.append("Judul sudah terdaftar.")
 
     return checkResult
 # TEMPLATE VALIDATION ============================================================ End

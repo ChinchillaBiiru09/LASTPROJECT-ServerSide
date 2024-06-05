@@ -1,14 +1,13 @@
 from flask_jwt_extended import create_access_token
-from flask import current_app as app
 from datetime import datetime
 
-from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
+from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.utils import hashPassword
+from ...utilities.utils import hashPassword, default_image
 from ...utilities.validator import vld_user_regis, vld_signin, vld_role
 
-import time, jwt
+import time
 
 # USER MODELS ============================================================ Begin
 class UserModels():
@@ -22,10 +21,10 @@ class UserModels():
             requiredData = ["first_name", "middle_name", "last_name", "phone_number", "email", "password", "retype_password"]
             for req in requiredData:
                 if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body")
+                    return parameter_error(f"Missing {req} in Request Body.")
             # Validation Request Body ---------------------------------------- Finish
             
-            # Initialize Data ---------------------------------------- Start
+            # Initialize Data Input ---------------------------------------- Start
             firstName = datas["first_name"]
             middleName = datas["middle_name"]
             lastName = datas["last_name"]
@@ -33,7 +32,7 @@ class UserModels():
             email = datas["email"].strip().lower()
             password = datas["password"].strip()
             retypePassword = datas["retype_password"].strip()
-            # Initialize Data ---------------------------------------- Finish
+            # Initialize Data Input ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
             checkResult = vld_user_regis(firstName, middleName, lastName, phone, email, password, retypePassword)
@@ -52,22 +51,23 @@ class UserModels():
             # Insert Data ---------------------------------------- Finish
 
             # Insert Profile ---------------------------------------- Start
+            photos = default_image()
             userId = resReturn
             level = 2  # 1:Admin, 2:User
             query = PROF_ADD_QUERY
-            values = (userId, level, firstName, middleName, lastName, phone, 0, timestamp, timestamp)
+            values = (userId, level, firstName, middleName, lastName, phone, photos, timestamp, timestamp)
             DBHelper().save_data(query, values)
             # Insert Profile ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             activity = f"User baru dengan id {userId} telah berhasil mendaftar."
             query = LOG_ADD_QUERY
-            values = (userId, activity, )
+            values = (userId, level, activity, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Succeed!")
+            return success(statusCode=201)
 
         except Exception as e:
             return bad_request(str(e))
@@ -83,25 +83,41 @@ class UserModels():
             requiredData = ["email", "password"]
             for req in requiredData:
                 if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body")
+                    return parameter_error(f"Missing {req} in Request Body.")
             # Checking Request Body ---------------------------------------- Finish
             
-            # Initialize Data Request ---------------------------------------- Start
+            # Initialize Data Input ---------------------------------------- Start
             email = datas["email"].strip().lower()
             password = datas["password"].strip()
-            # Initialize Data Request ---------------------------------------- Finish
+            # Initialize Data Input ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
-            checkResult, result, stts = vld_signin(email, password, "USER")
+            level = 2
+            checkResult, result, stts = vld_signin(email, password, level)
             if len(checkResult) != 0:
                 return defined_error(checkResult, "Bad Request", statusCode=stts)
             # Data Validation ---------------------------------------- Finish
+
+            # Update Data Last Active ---------------------------------------- Start
+            timestamp = int(round(time.time()*1000))
+            query = USR_UPDATE_ACTIVE_QUERY
+            values = (timestamp, result[0]["id"])
+            DBHelper().save_data(query, values)
+            # Update Data Last Active ---------------------------------------- Finish
+            
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"User dengan id {result[0]['id']} telah berhasil log in."
+            query = LOG_ADD_QUERY
+            values = (result[0]["id"], level, activity, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
             
             # Data Payload ---------------------------------------- Start
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
                 "name" : result[0]["username"],
+                # "photos" : result[0]["photos"],
                 "role" : "USER"
             }
             # Data Payload ---------------------------------------- Finish
@@ -117,26 +133,27 @@ class UserModels():
             # Data Response ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Sign In Succeed.", response)
+            return success_data(response)
 
         except Exception as e:
             return bad_request(str(e))
     # SIGN IN ============================================================ End
     
     # GET ALL USER ============================================================ Begin
+    # Clear
     def view_user(user_id, user_role):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
+            access = vld_role(user_role)
             if not access: # Access = True -> Admin
-                return defined_error(message, "Forbidden", 403)
+                return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
-            query = USR_GET_QUERY
+            query = USR_GET_ALL_QUERY
             result = DBHelper().execute(query)
-            if len(result) == 0 or result == None:
-                return defined_error("Belum ada data user.", "Bad Request", 400)
+            if len(result) < 1 or result is None:
+                return not_found("Data user tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
@@ -146,13 +163,13 @@ class UserModels():
                     "user_id" : rsl["id"],
                     "username" : rsl["username"],
                     "status" : "Active" if rsl["is_delete"] == 0 else "Blocked",                    
-                    "last_active": datetime.fromtimestamp(rsl["created_at"]/1000)
+                    "last_active": datetime.fromtimestamp(rsl["last_active"]/1000)
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
             
             # Return Response ======================================== 
-            return success_data("Succeed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
@@ -162,9 +179,9 @@ class UserModels():
     def delete_user(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
+            access = vld_role(user_role)
             if not access: # Access = True -> Admin
-                return defined_error(message, "Forbidden", 403)
+                return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
@@ -172,11 +189,11 @@ class UserModels():
                 return invalid_params()
             
             if "user_id" not in datas:
-                return parameter_error(f"Missing 'user_id' in request body")
+                return parameter_error("Missing 'user_id' in request body.")
             
             usrId = datas["user_id"]
             if usrId == "":
-                return defined_error("Id user tidak boleh kosong", "Defined Error", 499)
+                return defined_error("Id user tidak boleh kosong.", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
@@ -184,62 +201,51 @@ class UserModels():
             values = (usrId,)
             result = DBHelper().get_count_filter_data(query, values)
             if result == 0 or result is None:
-                return defined_error("Belum ada data user.", "Not Found", 404)
+                return not_found(f"Data user dengan id {usrId} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
 
             # Delete Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = USR_DELETE_QUERY
             values = (timestamp, user_id, usrId)
-            DBHelper().save_data(query, values)
+            # DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menghapus user {usrId}"
+            activity = f"Admin dengan id {user_id} menghapus user {usrId}."
             query = LOG_ADD_QUERY
             values = (user_id, activity, )
-            DBHelper().save_data(query, values)
+            # DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
             
             # Return Response ======================================== 
-            return success("Deleted Successfully!")
+            return success(message="Deleted!")
         
         except Exception as e:
             return bad_request(str(e))
     # DELETE USER ============================================================ End
     
-    # GET DETAIL USER ============================================================ Begin
-    def detail_user(datas, user_id, user_role):
+    # GET ROW-COUNT USER ============================================================ Begin
+    # Clear
+    def get_count_user():
         try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
-
             # Checking Data ---------------------------------------- Start
-            query = USR_GET_QUERY
-            result = DBHelper().execute(query)
-            if len(result) == 0 or result == None:
-                return defined_error("Belum ada data user.", "Bad Request", 400)
+            query = USR_GET_ALL_QUERY
+            result = DBHelper().get_count_data(query)
+            if result < 1 or result is None :
+                return not_found("User tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
-
-            # Response Data ---------------------------------------- Start
-            response = []
-            for rsl in result:
-                data = {
-                    "user_id" : rsl["id"],
-                    "username" : rsl["username"],
-                    "status" : "Active" if rsl["is_delete"] == 0 else "Blocked",                    
-                    "last_active": datetime.fromtimestamp(rsl["created_at"]/1000)
-                }
-                response.append(data)
-            # Response Data ---------------------------------------- Finish
             
+            # Response Data ---------------------------------------- Start
+            response = {
+                "user_count" : result
+            }
+            # Response Data ---------------------------------------- Finish
+
             # Return Response ======================================== 
-            return success_data("Succeed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
-    # GET DETAIL USER ============================================================ End
+    # GET ROW-COUNT USER ============================================================ End
 # USER MODELS ============================================================ End

@@ -8,6 +8,8 @@ from .models import UserModels
 user = Blueprint(
     name='user',
     import_name=__name__,
+    static_folder = '../../static/photos/user',
+    static_url_path="/media",
     url_prefix='/user'
 )
 # BLUEPRINT ============================================================ End
@@ -52,7 +54,7 @@ def signin():
 
 
 # GET USER ============================================================ Begin
-# POST https://127.0.0.1:5000/user/
+# GET https://127.0.0.1:5000/user/
 @user.get('/')
 @jwt_required()
 def get_data():
@@ -73,7 +75,7 @@ def get_data():
 
 
 # GET USER ============================================================ Begin
-# POST https://127.0.0.1:5000/user/
+# DELETE https://127.0.0.1:5000/user/
 @user.delete('/')
 @jwt_required()
 def delete_data():
@@ -97,17 +99,13 @@ def delete_data():
 
 
 # GET USER ============================================================ Begin
-# POST https://127.0.0.1:5000/user/
-@user.get('/detail')
+# GET https://127.0.0.1:5000/user/count
+@user.get('/count')
 @jwt_required()
-def detail_data():
+def count_data():
     try:
         # Request Data ======================================== 
-        id = str(get_jwt()["id"])
-        role = str(get_jwt()["role"])
-
-        # Request Data ======================================== 
-        response = UserModels.view_user(id, role)
+        response = UserModels.get_count_user()
 
         # Request Data ======================================== 
         return response

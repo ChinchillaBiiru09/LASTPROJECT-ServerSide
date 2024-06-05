@@ -1,10 +1,10 @@
-from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
+from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_role, vld_invitation
 from ...utilities.utils import random_number, saving_image, random_string_number
 
-from flask import request, current_app as app
+from flask import current_app as app
 from werkzeug.utils import secure_filename
 
 import time, os
@@ -81,14 +81,35 @@ class InvitationModels():
     # CREATE INVITATION ============================================================ End
 
     # GET ALL INVITATION ============================================================ Begin
-    def view_invitation():
+    def view_invitation(user_id, user_role, datas):
         try:
+            # Set Level User ---------------------------------------- Start
+            access = vld_role(user_role) # Access = True -> Admin
+            userLevel = 1 if access else 2 # 1 = Admin | 2 = User
+            # Set Level User ---------------------------------------- Finish
+
+            # Checking Request Body ---------------------------------------- Start
+            if len(datas) != 0:
+                if "user_id" not in datas:
+                    return parameter_error("Missing 'user_id' in request body.")
+                
+                user_id = datas["user_id"]
+                userLevel = 2
+                if user_id == "":
+                    return defined_error("Id user tidak boleh kosong.", "Defined Error", 499)
+            # Checking Request Body ---------------------------------------- Finish
+            
             # Checking Data ---------------------------------------- Start
-            query = INV_GET_ALL_QUERY
-            result = DBHelper().execute(query)
-            print(result)
-            if len(result) == 0 or result == None:
-                return defined_error("Belum ada invitation.", "Not Found", 404)
+            if access:
+                query = INV_GET_ALL_QUERY
+                result = DBHelper().execute(query)
+            else:
+                query = INV_GET_USER_ID_QUERY
+                values = (user_id, userLevel, )
+                result = DBHelper().get_data(query, values)
+            
+            if len(result) < 1 or result == None:
+                return not_found("Undangan tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -109,10 +130,9 @@ class InvitationModels():
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
-            print(response)
             
             # Return Response ======================================== 
-            return success_data("Succeed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
@@ -269,22 +289,22 @@ class InvitationModels():
     # GET DETAIL INVITATION ============================================================ End
 
     # GET ROW-COUNT INVITATION ============================================================ Begin
+    # Clear
     def get_count_invitation(user_id, user_role):
         try:
             # Get Data By Role ---------------------------------------- Start
-            if user_role == "ADMIN":
-                print("ke admin")
+            access = vld_role(user_role)
+            if access: # Access = True -> Admin
                 query = INV_GET_ALL_QUERY
                 result = DBHelper().get_count_data(query)
-            elif user_role == "USER":
-                print("ke user")
+            else:
                 query = INV_GET_BY_USR_QUERY
                 values = (user_id, 2, )
                 result = DBHelper().get_count_filter_data(query, values)
             # Get Data By Role ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
-            if result == 0 or result == None :
+            if result < 1 or result is None :
                 return defined_error("Number of invitations not found.")
             # Checking Data ---------------------------------------- Finish
             
@@ -295,7 +315,7 @@ class InvitationModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))

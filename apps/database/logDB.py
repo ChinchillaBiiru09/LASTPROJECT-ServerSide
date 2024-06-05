@@ -5,6 +5,7 @@ import time
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, nullable=False)
+    user_level = db.Column(db.Integer, nullable=False, comment="1 = Admin, 2 = User")
     activity = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.BigInteger, nullable=True, server_default = str(int(round(time.time()*1000))))
     is_delete = db.Column(db.Integer, nullable=True, server_default='0')

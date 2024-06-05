@@ -1,4 +1,4 @@
-from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
+from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_category, vld_role
@@ -11,9 +11,9 @@ class CategoryModels():
     def add_category(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
+            access = vld_role(user_role)
+            if not access: # Access = True -> Admin
+                return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
@@ -21,7 +21,7 @@ class CategoryModels():
                 return invalid_params()
             
             if "category" not in datas:
-                return parameter_error(f"Missing 'category' in Request Body")
+                return parameter_error("Missing 'category' in Request Body.")
             # Checking Request Body ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
@@ -39,14 +39,14 @@ class CategoryModels():
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}"
+            activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}."
             query = LOG_ADD_QUERY
             values = (user_id, activity, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Succeed!")
+            return success(statusCode=201)
         
         except Exception as e:
             return bad_request(str(e))
@@ -59,7 +59,7 @@ class CategoryModels():
             query = CTGR_GET_ALL_QUERY
             result = DBHelper().execute(query)
             if len(result) == 0 or result == None:
-                return defined_error("Belum ada kategori.", "Bad Request", 400)
+                return not_found("Kategori tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -74,19 +74,19 @@ class CategoryModels():
             # Response Data ---------------------------------------- Finish
             
             # Return Response ======================================== 
-            return success_data("Succeed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
     # GET ALL CATEGORY ============================================================ End
 
     # UPDATE CATEGORY ============================================================ Begin
-    def edit_category(user_id, user_role,  datas):
+    def edit_category(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
+            access = vld_role(user_role)
+            if not access: # Access = True -> Admin
+                return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
@@ -96,20 +96,22 @@ class CategoryModels():
             requiredData = ["category_id", "category"]
             for req in requiredData:
                 if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body")
+                    return parameter_error(f"Missing {req} in Request Body.")
             # Checking Request Body ---------------------------------------- Finish
             
-            ctgrId = datas["category_id"].strip()
-            ctgr = datas["category"].strip()
+            # Initialize Data Input ---------------------------------------- Start
+            catgId = datas["category_id"]
+            category = datas["category"].strip()
+            # Initialize Data Input ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
             query = CTGR_GET_BY_ID_QUERY
-            values = (ctgrId,)
-            result = DBHelper().get_data(query, values)
-            if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.")
+            values = (catgId,)
+            result = DBHelper().get_count_filter_data(query, values)
+            if result == 0 :
+                return not_found(f"Kategori dengan id {catgId} tidak dapat ditemukan.")
             
-            ctgrCheck = vld_category(ctgr)
+            ctgrCheck = vld_category(category)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -117,19 +119,19 @@ class CategoryModels():
             # Update Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = CTGR_UPDATE_QUERY
-            values = (ctgr, timestamp, user_id, ctgrId)
+            values = (category, timestamp, user_id, catgId)
             DBHelper().save_data(query, values)
             # Update Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {ctgr}"
+            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {ctgr}."
             query = LOG_ADD_QUERY
             values = (user_id, activity, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Succeed!")
+            return success(message="Updated!")
             
         except Exception as e:
             return bad_request(str(e))
@@ -139,9 +141,9 @@ class CategoryModels():
     def delete_category(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
+            access = vld_role(user_role)
+            if not access: # Access = True -> Admin
+                return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
@@ -149,37 +151,37 @@ class CategoryModels():
                 return invalid_params()
             
             if "category_id" not in datas:
-                return parameter_error(f"Missing 'category_id' in Request Body")
+                return parameter_error("Missing 'category_id' in Request Body.")
             
-            ctgrId = datas["category_id"].strip()
-            if ctgrId == "":
-                return defined_error("ID kategori tidak boleh kosong", "Defined Error", 499)
+            catgId = datas["category_id"]
+            if catgId == "":
+                return defined_error("Id kategori tidak boleh kosong.", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
             
             # Checking Data ---------------------------------------- Finish
             query = CTGR_GET_BY_ID_QUERY
-            values = (ctgrId,)
+            values = (catgId,)
             result = DBHelper().get_count_filter_data(query, values)
             if result == 0 or result is None:
-                return defined_error("Kategori tidak dapat ditemukan.", "Not Found", 404)
+                return not_found(f"Kategori dengan Id {catgId} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Delete Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = CTGR_DELETE_QUERY
-            values = (timestamp, user_id, ctgrId)
+            values = (timestamp, user_id, catgId)
             DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menghapus kategori {ctgrId}"
+            activity = f"Admin dengan id {user_id} menghapus kategori {catgId}."
             query = LOG_ADD_QUERY
             values = (user_id, activity, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Deleted Successfully!")
+            return success(message="Deleted!")
             
         except Exception as e:
             return bad_request(str(e))
@@ -189,10 +191,9 @@ class CategoryModels():
     def view_detail_category(user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
-            print(user_role)
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
+            access = vld_role(user_role)
+            if not access: # Access = True -> Admin
+                return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
@@ -200,19 +201,19 @@ class CategoryModels():
                 return invalid_params()
             
             if "category_id" not in datas:
-                return parameter_error(f"Missing 'category_id' in Request Body")
+                return parameter_error("Missing 'category_id' in Request Body.")
             
-            ctgrId = datas["category_id"].strip()
-            if ctgrId == "":
-                return defined_error("ID kategori tidak boleh kosong", "Defined Error", 400)
+            catgId = datas["category_id"]
+            if catgId == "":
+                return defined_error("Id kategori tidak boleh kosong.", "Defined Error", 400)
             # Checking Request Body ---------------------------------------- Finish
             
             # Checking Data ---------------------------------------- Start
             query = CTGR_GET_BY_ID_QUERY
-            values = (ctgrId,)
+            values = (catgId,)
             result = DBHelper().get_data(query, values)
             if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.")
+                return not_found(f"Kategori dengan Id {catgId} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -224,7 +225,7 @@ class CategoryModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Succeed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
@@ -237,7 +238,7 @@ class CategoryModels():
             query = CTGR_GET_ALL_QUERY
             result = DBHelper().get_count_data(query)
             if result == 0 or result == None :
-                return defined_error("Number of categories not found.")
+                return not_found("Kategori tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -247,7 +248,7 @@ class CategoryModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))

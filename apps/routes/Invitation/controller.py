@@ -10,6 +10,8 @@ from .models import InvitationModels
 invitation = Blueprint(
     name='invitation',
     import_name=__name__,
+    static_folder = '../../static/invitation',
+    static_url_path="/media",
     url_prefix='/invitation'
 )
 # BLUEPRINT ============================================================ End
@@ -40,12 +42,20 @@ def create_data():
 
 
 # GET CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/invitation/
+# GET https://127.0.0.1:5000/invitation/
 @invitation.get('/')
+@jwt_required()
 def get_data():
     try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+        
+        # Request Data ======================================== 
+        data = request.args
+
         # Request Process ======================================== 
-        response = InvitationModels.view_invitation()
+        response = InvitationModels.view_invitation(id, role, data)
 
         # Request Data ======================================== 
         return response
@@ -56,7 +66,7 @@ def get_data():
 
 
 # UPDATE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/invitation/
+# PUT https://127.0.0.1:5000/invitation/
 @invitation.put('/')
 @jwt_required()
 def update_data():
@@ -80,7 +90,7 @@ def update_data():
 
 
 # DELETE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/invitation/
+# DELETE https://127.0.0.1:5000/invitation/
 @invitation.delete('/')
 @jwt_required()
 def delete_data():
@@ -104,7 +114,7 @@ def delete_data():
 
 
 # VIEW DETAIL CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/invitation/detail
+# GET https://127.0.0.1:5000/invitation/detail
 @invitation.get('/detail')
 @jwt_required()
 def detail_data():
@@ -127,7 +137,7 @@ def detail_data():
 
 
 # VIEW ROW-COUNT INVITATION ============================================================ Begin
-# POST https://127.0.0.1:5000/invitation/count
+# GET https://127.0.0.1:5000/invitation/count
 @invitation.get('/count')
 @jwt_required()
 def count_data():

@@ -35,6 +35,7 @@ migrate = Migrate(app, db)
 # )
 
 # Config Folder Upload Here
+app.config['DEFAULT_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/"
 app.config['ADMIN_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/admin/"
 app.config['USER_PHOTOS'] = config.STATIC_FOLDER_PATH + "photos/user/"
 app.config['TEMPLATE_THUMBNAIL_PHOTOS'] = config.STATIC_FOLDER_PATH + "templates/thumbnail/"

@@ -3,8 +3,8 @@
 # ======================================================================== 
 LOG_ADD_QUERY = """
                     INSERT INTO log 
-                    (user_id, activity)
-                    VALUES (%s, %s)
+                    (user_id, user_level, activity)
+                    VALUES (%s, %s, %s)
                 """
 # ======================================================================== 
 # LOG QUERY - END ========================================================
@@ -23,6 +23,11 @@ ADM_GET_BY_ID_QUERY = """
                         SELECT * FROM admin
                         WHERE id=%s AND is_delete=0
                     """
+ADM_UPDATE_ACTIVE_QUERY = """
+                            UPDATE admin 
+                            SET last_active=%s
+                            WHERE id=%s AND is_delete=0
+                        """
 # ======================================================================== 
 # ADMIN QUERY - END ====================================================== 
 # ======================================================================== 
@@ -39,13 +44,19 @@ USR_ADD_QUERY = """
                     (username, email, password, last_active, created_at, updated_at)
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """
-USR_GET_QUERY = """
-                    SELECT * FROM user
-                """
+USR_GET_ALL_QUERY = """
+                        SELECT * FROM user
+                        WHERE is_delete=0
+                    """
 USR_GET_BY_ID_QUERY = """
                         SELECT * FROM user
                         WHERE id=%s AND is_delete=0
                     """
+USR_UPDATE_ACTIVE_QUERY = """
+                            UPDATE user 
+                            SET last_active=%s
+                            WHERE id=%s AND is_delete=0
+                        """
 USR_DELETE_QUERY = """
                         UPDATE user 
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
@@ -78,6 +89,10 @@ PROF_UPDATE_QUERY = """
 PROF_CHECK_QUERY = """
                        SELECT * FROM profile 
                        WHERE user_id=%s AND user_level=%s AND is_delete=0
+                    """
+PROF_PHOTO_BY_ID_QUERY = """
+                        SELECT id, user_id, user_level, photos FROM profile 
+                        WHERE user_id=%s AND user_level=%s AND is_delete=0
                     """
 # ======================================================================== 
 # PROFILE QUERY - END ====================================================
@@ -168,12 +183,13 @@ TMPLT_ADD_QUERY = """
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 TMPLT_UPDATE_QUERY = """
-                        UPDATE category 
-                        SET category=%s, updated_at=%s, updated_by=%s
+                        UPDATE template 
+                        SET title=%s, thumbnail=%s, css_file=%s, js_file=%s, 
+                        wallpaper=%s, category_id=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 TMPLT_DELETE_QUERY = """
-                        UPDATE category 
+                        UPDATE template 
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
@@ -182,7 +198,7 @@ TMPLT_GET_ALL_QUERY = """
                     WHERE is_delete=0
                 """
 TMPLT_GET_BY_ID_QUERY = """
-                            SELECT * FROM category 
+                            SELECT * FROM template 
                             WHERE id=%s AND is_delete=0
                         """
 TMPLT_GET_WITH_FILTER_QUERY = """
@@ -217,6 +233,10 @@ INV_DELETE_QUERY = """
 INV_GET_ALL_QUERY = """
                         SELECT * FROM invitation 
                         WHERE is_delete=0
+                    """
+INV_GET_USER_ID_QUERY = """
+                        SELECT * FROM invitation 
+                        WHERE user_id=%s AND user_level=%s AND is_delete=0
                     """
 INV_GET_BY_ID_QUERY = """
                         SELECT * FROM invitation 
@@ -295,4 +315,4 @@ TEST_GET_QUERY = """
                 """
 # ======================================================================== 
 # TESTER QUERY - END =====================================================
-# ======================================================================== 
+# ========================================================================

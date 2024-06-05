@@ -56,14 +56,14 @@ smallletter = Blueprint()
 
 o>> FUNCTION CONTROLLER
 def create_data() -> for api create
-def get_data() -> for api get all 
-def detail_data() -> for api get detail
+def get_data() -> for api get all
 def update_data() -> for api update
 def delete_data() -> for api delete
+def detail_data() -> for api get detail
 def count_data() -> for api row count
-def signin() -> for api login 
+def signin() -> for api login
 def profile() -> for api profile
-def upload_data() -> for api upload 
+def upload_data() -> for api upload
 def download_data() -> for api download
 etc..
 
@@ -71,9 +71,13 @@ o> MODELS
 o>> CLASS
 class NameModels()
 o>> FUNCTION
-def add_nameapi()
-def 
-etc..
+    def add_nameapi()
+    def view_nameapi()
+    def edit_nameapi()
+    def delete_nameapi()
+    def view_detail_nameapi()
+    def get_count_nameapi()
+    etc..
 
 o> REQUEST FIELD
 smallcase+_underscore
@@ -104,3 +108,14 @@ o> 5xx -> Server Error,
 o>> 500 -> Internal Server Error
 o>> 502 -> Bad Gateway
 o>> 504 -> Gateway Timeout
+
+C. REQUEST BODY SETTING
+O> JSON Key Name
+nameapi_namekey -> template_id
+
+
+D. ERROR TEXT SETTING
+
+# return not_found("Number of categories not found.")
+".... tidak dapat ditemukan."
+".... dengan id ... tidak dapat ditemukan."

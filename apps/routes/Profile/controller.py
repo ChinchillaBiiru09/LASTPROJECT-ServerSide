@@ -26,7 +26,10 @@ def get_data():
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        response = ProfileModels.view_profile(id, role)
+        data = request.args
+
+        # Request Data ======================================== 
+        response = ProfileModels.view_profile(id, role, data)
 
         # Request Data ======================================== 
         return response

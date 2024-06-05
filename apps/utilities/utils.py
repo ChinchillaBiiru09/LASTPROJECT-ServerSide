@@ -1,7 +1,14 @@
+from flask import current_app as app
 import string, random
 import hashlib, uuid
 import cv2, base64, numpy as np
-import re, hashlib
+import re, hashlib, os
+
+def default_image():
+    file_path = os.path.join(app.config['DEFAULT_PHOTOS'], "default_avatar.png")
+    with open(file_path, 'rb') as file:
+        blob_data = file.read()
+    return blob_data
 
 def saving_image(encodedData, fileName):
     encodedData = encodedData.split(',')[1]
