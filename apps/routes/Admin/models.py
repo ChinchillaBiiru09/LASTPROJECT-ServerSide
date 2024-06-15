@@ -1,7 +1,5 @@
 from flask_jwt_extended import create_access_token
-from flask import current_app as app
-from datetime import datetime
-
+from flask import request, current_app as app
 
 from ..Profile.models import ProfileModels
 from ...utilities.responseHelper import *
@@ -15,6 +13,7 @@ import time, jwt
 # BLOCK FIRST/BASE ============================================================ Begin
 class AdminModels():
     # CREATE ADMIN ============================================================ Begin
+    # Clear
     def create_admin(datas):
         try:
             # Checking Request Body ---------------------------------------- Start
@@ -29,7 +28,7 @@ class AdminModels():
             
             # Initialize Data Input ---------------------------------------- Start
             username = datas["username"].strip()
-            email = datas["email"].strip().lower()
+            email = datas["email"].strip()
             password = datas["password"].strip()
             retypePassword = datas["retype_password"].strip()
             # Initialize Data Input ---------------------------------------- Finish
@@ -44,38 +43,40 @@ class AdminModels():
             passEncrypt = hashPassword(password)
             timestamp = int(round(time.time()*1000))
             query = ADM_ADD_QUERY
-            values = (username, email, passEncrypt, timestamp, timestamp)
-            # resReturn = DBHelper().save_return(query, values)
-            # if resReturn == None:
-            #     return defined_error("Gagal menyimpan data.", "Bad Request", 400)
+            values = (username, email, passEncrypt, timestamp, timestamp, timestamp)
+            resReturn = 1
+            resReturn = DBHelper().save_return(query, values)
+            if resReturn is None:
+                return defined_error("Gagal menyimpan data.", "Bad Request", 400)
             # Insert Data ---------------------------------------- Finish
 
             # Insert Profile ---------------------------------------- Start
             try:
                 data = {
-                    "user_id": 0,
+                    "user_id": resReturn,
                     "level": 1, # 1 = Admin, 2 = User
                     "first_name": username, 
                     "middle_name": "", 
                     "last_name": "", 
-                    "phone": 0
+                    "phone": "0"
                 }
-                profile = ProfileModels().create_profile(data)
-                print(profile)
+                profile = ProfileModels.create_profile(data)
             except Exception as e:
                 return bad_request(str(e))
-            # userId = resReturn
-            # level = 1  
-            # query = PROF_ADD_QUERY
-            # values = (userId, level, username, "", "", "", 0, timestamp, timestamp)
-            # DBHelper().save_data(query, values)
             # Insert Profile ---------------------------------------- Finish
             
             # Log Activity Record ---------------------------------------- Start
-            # activity = f"Admin baru dengan id {userId} telah berhasil ditambahkan."
-            # query = LOG_ADD_QUERY
-            # values = (userId, activity, )
-            # DBHelper().save_data(query, values)
+            if profile.status_code == 200:
+                activity = f"Admin baru dengan id {resReturn} telah berhasil mendafftar."
+                query = LOG_ADD_QUERY
+                values = (resReturn, 1, activity, timestamp, )
+                DBHelper().save_data(query, values)
+            else:
+                query = ADM_DELETE_QUERY
+                values = (timestamp, resReturn, )
+                DBHelper().save_data(query, values)
+                
+                return bad_request("Gagal membuat akun.")
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
@@ -86,6 +87,7 @@ class AdminModels():
     # CREATE ADMIN ============================================================ End
 
     # SIGN IN ============================================================ Begin
+    # Clear
     def signin_admin(datas):
         try:
             # Checking Request Body ---------------------------------------- Start
@@ -120,15 +122,26 @@ class AdminModels():
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan id {result[0]['id']} telah berhasil log in."
             query = LOG_ADD_QUERY
-            values = (result[0]["id"], level, activity, )
+            values = (result[0]["id"], level, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
+
+            # Generate File URL ---------------------------------------- Start
+            if len(result) >= 1:
+                detailRequestURL = str(request.url).find('?')
+                if detailRequestURL != -1:
+                    index = detailRequestURL
+                    request.url = request.url[:index]
+            for item in result:
+                item["photos"] = f"{request.url_root}admin/media/{item['photos']}"
+            # Generate File URL ---------------------------------------- Finish
             
             # Data Payload ---------------------------------------- Start
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
-                "name" : result[0]["name"],
+                "name" : result[0]["username"],
+                "photos" : result[0]["photos"],
                 "role" : "ADMIN"
             }
             # Data Payload ---------------------------------------- Finish

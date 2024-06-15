@@ -103,7 +103,7 @@ def vld_user_regis(fname, mname, lname, phone, email, password, repassword):
     if mname != "":
         sanitMName, charMName = sanitize_all_char(mname)
         if sanitMName:
-            checkResult.append(f"Nama tengah tidak boleh mengandung karakter {charMName}")
+            checkResult.append(f"Nama tengah tidak boleh mengandung karakter '{charMName}'.")
         if string_checker(mname):
             checkResult.append(f"Nama tengah tidak valid.")
     # Checking Middle Name - If Ready ---------------------------------------- Finish
@@ -256,26 +256,44 @@ def vld_role(role):
 # ROLE VALIDATION ============================================================ End
 
 # CATEGORY VALIDATION ============================================================ Begin
-def vld_category(category):
+def vld_category(category, format_data, is_create=True):
     checkResult = []
 
+    # Check Null Value ---------------------------------------- Start
     if category == "":
         checkResult.append("Kategori tidak boleh kosong.")
-    
+    if type(format_data) != dict:
+        checkResult.append("Format data tidak valid.")
+    if format_data is None or len(format_data) < 1:
+        checkResult.append("Format data undangan tidak boleh kosong.")
+    # Check Null Value ---------------------------------------- Finish
+
     # Sanitize Category ---------------------------------------- Start
     sanitCtgr, charCtgr = sanitize_all_char(category)
     if sanitCtgr:
         checkResult.append(f"Kategori tidak boleh mengandung karakter {charCtgr}")
     # Sanitize Category ---------------------------------------- Finish
     
+    # Check String Value ---------------------------------------- Start
     if string_checker(category):
         checkResult.append("Kategori tidak valid.")
+    # Check String Value ---------------------------------------- Finish
 
-    query = CTGR_CHK_QUERY
-    values = (category,)
-    result = DBHelper().get_count_filter_data(query, values)
-    if result != 0:
-        checkResult.append("Kategori sudah terdaftar.")
+    # Check Duplicate Category ---------------------------------------- Start
+    mandatory = ["name_a", "date", "time", "address"]
+    for default in mandatory:
+        if default not in format_data:
+            checkResult.append(f"Minimal tambahkan format {default}.")
+    # Check Duplicate Category ---------------------------------------- Finish
+
+    # Check Duplicate Category ---------------------------------------- Start
+    if is_create:
+        query = CTGR_CHK_QUERY
+        values = (category,)
+        result = DBHelper().get_count_filter_data(query, values)
+        if result > 0:
+            checkResult.append("Kategori sudah terdaftar.")
+    # Check Duplicate Category ---------------------------------------- Finish
 
     return checkResult
 # CATEGORY VALIDATION ============================================================ End

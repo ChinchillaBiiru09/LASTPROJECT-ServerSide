@@ -1,10 +1,12 @@
 from flask_jwt_extended import create_access_token
+from flask import request
 from datetime import datetime
 
+from ..Profile.models import ProfileModels
 from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.utils import hashPassword, default_image
+from ...utilities.utils import hashPassword, split_date_time
 from ...utilities.validator import vld_user_regis, vld_signin, vld_role
 
 import time
@@ -12,6 +14,7 @@ import time
 # USER MODELS ============================================================ Begin
 class UserModels():
     # CREATE USER ============================================================ Begin
+    # Clear
     def create_user(datas):
         try:
             # Validation Request Body ---------------------------------------- Start
@@ -29,7 +32,7 @@ class UserModels():
             middleName = datas["middle_name"]
             lastName = datas["last_name"]
             phone = datas["phone_number"].strip()
-            email = datas["email"].strip().lower()
+            email = datas["email"].strip()
             password = datas["password"].strip()
             retypePassword = datas["retype_password"].strip()
             # Initialize Data Input ---------------------------------------- Finish
@@ -51,19 +54,32 @@ class UserModels():
             # Insert Data ---------------------------------------- Finish
 
             # Insert Profile ---------------------------------------- Start
-            photos = default_image()
-            userId = resReturn
-            level = 2  # 1:Admin, 2:User
-            query = PROF_ADD_QUERY
-            values = (userId, level, firstName, middleName, lastName, phone, photos, timestamp, timestamp)
-            DBHelper().save_data(query, values)
+            try:
+                data = {
+                    "user_id": resReturn,
+                    "level": 2, # 1 = Admin, 2 = User
+                    "first_name": firstName, 
+                    "middle_name": middleName, 
+                    "last_name": lastName, 
+                    "phone": phone
+                }
+                profile = ProfileModels.create_profile(data)
+            except Exception as e:
+                return bad_request(str(e))
             # Insert Profile ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"User baru dengan id {userId} telah berhasil mendaftar."
-            query = LOG_ADD_QUERY
-            values = (userId, level, activity, )
-            DBHelper().save_data(query, values)
+            if profile.status_code == 200:
+                activity = f"User baru dengan id {resReturn} telah berhasil mendaftar."
+                query = LOG_ADD_QUERY
+                values = (resReturn, 2, activity, )
+                DBHelper().save_data(query, values)
+            else:
+                query = USR_DELETE_QUERY
+                values = (timestamp, resReturn, resReturn, )
+                DBHelper().save_data(query, values)
+                
+                return bad_request("Gagal membuat akun.")
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
@@ -74,6 +90,7 @@ class UserModels():
     # CREATE USER ============================================================ End
 
     # SIGN IN ============================================================ Begin
+    # Clear
     def signin_user(datas):
         try:
             # Checking Request Body ---------------------------------------- Start
@@ -108,16 +125,26 @@ class UserModels():
             # Log Activity Record ---------------------------------------- Start
             activity = f"User dengan id {result[0]['id']} telah berhasil log in."
             query = LOG_ADD_QUERY
-            values = (result[0]["id"], level, activity, )
+            values = (result[0]["id"], level, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
+
+            # Generate File URL ---------------------------------------- Start
+            if len(result) >= 1:
+                detailRequestURL = str(request.url).find('?')
+                if detailRequestURL != -1:
+                    index = detailRequestURL
+                    request.url = request.url[:index]
+            for item in result:
+                item["photos"] = f"{request.url_root}user/media/{item['photos']}"
+            # Generate File URL ---------------------------------------- Finish
             
             # Data Payload ---------------------------------------- Start
             jwt_payload = {
                 "id" : result[0]["id"],
                 "email" : email,
                 "name" : result[0]["username"],
-                # "photos" : result[0]["photos"],
+                "photos" : result[0]["photos"],
                 "role" : "USER"
             }
             # Data Payload ---------------------------------------- Finish
@@ -159,11 +186,12 @@ class UserModels():
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
+                lastActive = split_date_time(datetime.fromtimestamp(rsl["last_active"]/1000))
                 data = {
                     "user_id" : rsl["id"],
                     "username" : rsl["username"],
                     "status" : "Active" if rsl["is_delete"] == 0 else "Blocked",                    
-                    "last_active": datetime.fromtimestamp(rsl["last_active"]/1000)
+                    "last_active": lastActive
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish

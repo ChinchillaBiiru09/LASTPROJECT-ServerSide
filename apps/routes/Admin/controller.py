@@ -10,6 +10,8 @@ from .models import AdminModels
 admin = Blueprint(
     name='admin',
     import_name=__name__,
+    static_folder = '../../static/photos/admin',
+    static_url_path="/media",
     url_prefix='/admin'
 )
 # BLUEPRINT ============================================================ End

@@ -2,16 +2,18 @@ from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_template, vld_role
-from ...utilities.utils import random_number, saving_image, saving_file
+from ...utilities.utils import random_number, saving_image, saving_file, split_date_time
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 import time, os, base64
 
 # TEMPLATE MODEL CLASS ============================================================ Begin
 class TemplateModels():
     # CREATE TEMPLATE ============================================================ Begin
+    # Clear
     def add_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -96,14 +98,14 @@ class TemplateModels():
             query = TMPLT_GET_ALL_QUERY
             result = DBHelper().execute(query)
             if len(result) < 1 or result is None:
-                return not_found("Template tidak dapat ditemukan.")
+                return not_found("Data template tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Get Data Category ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             resultCtgr = DBHelper().execute(query)
             if len(resultCtgr) < 1 or resultCtgr is None:
-                return not_found("Kategori tidak dapat ditemukan.")
+                return not_found("Data kategori tidak dapat ditemukan.")
             # Get Data Category ---------------------------------------- Finish
 
             # Join Data ---------------------------------------- Start
@@ -128,17 +130,19 @@ class TemplateModels():
             
             # Response Data ---------------------------------------- Start
             response = []
-            for item in result:
+            for rsl in result:
+                createdAt = split_date_time(datetime.fromtimestamp(rsl['created_at']/1000))
+                updatedAt = split_date_time(datetime.fromtimestamp(rsl['updated_at']/1000))
                 data = {
-                    "template_id" : item["id"],
-                    "title" : item["title"],
-                    "thumbnail" : item["thumbnail"],
-                    "css_file" : item["css_file"],
-                    "js_file" : item["js_file"],
-                    "wallpaper": item["wallpaper"],
-                    "category" : item["category"],
-                    "created_at" : item["created_at"],
-                    "updated_at" : item["updated_at"]
+                    "template_id" : rsl["id"],
+                    "title" : rsl["title"],
+                    "thumbnail" : rsl["thumbnail"],
+                    "css_file" : rsl["css_file"],
+                    "js_file" : rsl["js_file"],
+                    "wallpaper": rsl["wallpaper"],
+                    "category" : rsl["category"],
+                    "created_at" : createdAt,
+                    "updated_at" : updatedAt
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
@@ -316,7 +320,7 @@ class TemplateModels():
             return bad_request(str(e))
     # GET DETAIL TEMPLATE ============================================================ End
         
-    # GET DETAIL TEMPLATE ============================================================ Begin
+    # VIEW TEMPLATE ============================================================ Begin
     def show_template(datas):
         try:
             # Checking Request Body ---------------------------------------- Start
@@ -368,16 +372,17 @@ class TemplateModels():
         
         except Exception as e:
             return bad_request(str(e))
-    # GET DETAIL TEMPLATE ============================================================ End
+    # VIEW TEMPLATE ============================================================ End
 
     # GET ROW-COUNT TEMPLATE ============================================================ Begin
+    # Clear
     def get_count_template():
         try:
             # Checking Data ---------------------------------------- Start
             query = TMPLT_GET_ALL_QUERY
             result = DBHelper().get_count_data(query)
-            if result == 0 or result is None :
-                return not_found("Template tidak dapat ditemukan.")
+            if result < 1 or result is None :
+                return not_found("Data template tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start

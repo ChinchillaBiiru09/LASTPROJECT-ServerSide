@@ -3,9 +3,17 @@
 # ======================================================================== 
 LOG_ADD_QUERY = """
                     INSERT INTO log 
-                    (user_id, user_level, activity)
-                    VALUES (%s, %s, %s)
+                    (user_id, user_level, activity, created_at)
+                    VALUES (%s, %s, %s, %s)
                 """
+LOG_GET_QUERY = """
+                    SELECT * FROM log
+                    WHERE is_delete=0
+                """
+LOG_GET_BY_USER_QUERY = """
+                            SELECT * FROM log
+                            WHERE user_id=%s AND user_level=%s AND is_delete=0
+                        """
 # ======================================================================== 
 # LOG QUERY - END ========================================================
 # ======================================================================== 
@@ -16,8 +24,8 @@ LOG_ADD_QUERY = """
 ADM_CHK_EMAIL_QUERY = """SELECT * FROM admin WHERE email=%s AND is_delete=0"""
 ADM_ADD_QUERY = """
                     INSERT INTO admin 
-                    (name, email, password, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s)
+                    (username, email, password, last_active, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                 """
 ADM_GET_BY_ID_QUERY = """
                         SELECT * FROM admin
@@ -28,6 +36,15 @@ ADM_UPDATE_ACTIVE_QUERY = """
                             SET last_active=%s
                             WHERE id=%s AND is_delete=0
                         """
+ADM_DELETE_QUERY = """
+                        UPDATE admin 
+                        SET is_delete=1, deleted_at=%s
+                        WHERE id=%s AND is_delete=0
+                    """
+ADM_DELETE_PERMANENT_QUERY = """
+                                DELETE FROM admin
+                                WHERE id=%s AND is_delete=0
+                            """
 # ======================================================================== 
 # ADMIN QUERY - END ====================================================== 
 # ======================================================================== 
@@ -108,12 +125,12 @@ CTGR_CHK_QUERY = """
                 """
 CTGR_ADD_QUERY = """
                     INSERT INTO category 
-                    (category, created_at, created_by, updated_at, updated_by)
-                    VALUES (%s, %s, %s, %s, %s)
+                    (category, format_data, created_at, created_by, updated_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                 """
 CTGR_UPDATE_QUERY = """
                         UPDATE category 
-                        SET category=%s, updated_at=%s, updated_by=%s
+                        SET category=%s, format_data=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 CTGR_DELETE_QUERY = """

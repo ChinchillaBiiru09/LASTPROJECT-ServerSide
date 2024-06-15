@@ -16,10 +16,10 @@ class InvitationModels():
     def add_invitation(userId, userRole, datas):
         try:
             # Set Level User ---------------------------------------- Start
-            userLevel = 1  # 1 = Admin
+            accLevel = 1  # 1 = Admin
             access, message = vld_role(userRole)
             if not access:
-                userLevel = 2  # 2 = User
+                accLevel = 2  # 2 = User
             # Set Level User ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
@@ -62,7 +62,7 @@ class InvitationModels():
             invCode = str(random_string_number(6))
             invLink =  app.config['FE_URL']+"/"+userId+"/"+title
             query = INV_ADD_QUERY
-            values = (userLevel, categoryId, templateId, title, wallpaper, personalData, invSett, invCode, invLink, timestamp, userId, timestamp, userId)
+            values = (accLevel, categoryId, templateId, title, wallpaper, personalData, invSett, invCode, invLink, timestamp, userId, timestamp, userId)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
@@ -81,12 +81,13 @@ class InvitationModels():
     # CREATE INVITATION ============================================================ End
 
     # GET ALL INVITATION ============================================================ Begin
+    # Clear
     def view_invitation(user_id, user_role, datas):
         try:
-            # Set Level User ---------------------------------------- Start
+            # Set Level Access ---------------------------------------- Start
             access = vld_role(user_role) # Access = True -> Admin
-            userLevel = 1 if access else 2 # 1 = Admin | 2 = User
-            # Set Level User ---------------------------------------- Finish
+            accLevel = 1 if access else 2 # 1 = Admin | 2 = User
+            # Set Level Access ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
             if len(datas) != 0:
@@ -94,7 +95,7 @@ class InvitationModels():
                     return parameter_error("Missing 'user_id' in request body.")
                 
                 user_id = datas["user_id"]
-                userLevel = 2
+                accLevel = 2
                 if user_id == "":
                     return defined_error("Id user tidak boleh kosong.", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
@@ -105,11 +106,11 @@ class InvitationModels():
                 result = DBHelper().execute(query)
             else:
                 query = INV_GET_USER_ID_QUERY
-                values = (user_id, userLevel, )
+                values = (user_id, accLevel, )
                 result = DBHelper().get_data(query, values)
             
-            if len(result) < 1 or result == None:
-                return not_found("Undangan tidak dapat ditemukan.")
+            if len(result) < 1 or result is None:
+                return not_found("Data undangan tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start

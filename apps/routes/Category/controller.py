@@ -40,7 +40,7 @@ def create_data():
 
 
 # GET CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
+# GET https://127.0.0.1:5000/category/
 @category.get('/')
 def get_data():
     try:
@@ -56,7 +56,7 @@ def get_data():
 
 
 # UPDATE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
+# PUT https://127.0.0.1:5000/category/
 @category.put('/')
 @jwt_required()
 def update_data():
@@ -80,7 +80,7 @@ def update_data():
 
 
 # DELETE CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/
+# DELETE https://127.0.0.1:5000/category/
 @category.delete('/')
 @jwt_required()
 def delete_data():
@@ -103,8 +103,8 @@ def delete_data():
 # DELETE CATEGORY ============================================================ End
 
 
-# VIEW DETAIL CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/detail
+# GET DETAIL CATEGORY ============================================================ Begin
+# GET https://127.0.0.1:5000/category/detail
 @category.get('/detail')
 @jwt_required()
 def detail_data():
@@ -123,11 +123,11 @@ def detail_data():
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW DETAIL CATEGORY ============================================================ End
+# GET DETAIL CATEGORY ============================================================ End
 
 
-# VIEW COUNT CATEGORY ============================================================ Begin
-# POST https://127.0.0.1:5000/category/count
+# GET COUNT CATEGORY ============================================================ Begin
+# GET https://127.0.0.1:5000/category/count
 @category.get('/count')
 @jwt_required()
 def count_data():
@@ -140,4 +140,4 @@ def count_data():
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW COUNT CATEGORY ============================================================ End
+# GET COUNT CATEGORY ============================================================ End

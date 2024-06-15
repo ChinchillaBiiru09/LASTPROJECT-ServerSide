@@ -1,75 +1,67 @@
-A. FORMAT COMMENT 
+A. BACKEND FORMAT COMMENT 
 o> BLOCK COMMENT
-# BLOCK FIRST/BASE ============================================================ Begin
-# Block Second ---------------------------------------- Start
-# Request Data ======================================== 
-# POST https://127.0.0.1:5000/admin/login
-# Block Second ---------------------------------------- Finish
-# BLOCK FIRST/BASE ============================================================ End
+    # BLOCK FIRST/BASE ============================================================ Begin
+    # Block Second ---------------------------------------- Start
+    # Request Data ======================================== 
+    # POST https://127.0.0.1:5000/admin/login
+    # Block Second ---------------------------------------- Finish
+    # BLOCK FIRST/BASE ============================================================ End
 
 
 o> SINGLE BLOCK
-# Block Content ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# End Block Content ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Block Content ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # End Block Content ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-o> BLOCK COMMENT
-# ============================================================== 
-# COMMENT - START
-# ============================================================== 
-# ============================================================== 
-# COMMENT - END
-# ============================================================== 
+o> SINGLE LINE
+    # Return Response ======================================== 
 
-o> BLOCK HTML
-<!-- ============================================================== -->
-<!-- Comment -->
-<!-- ============================================================== -->
-<!-- ============================================================== -->
-<!-- End Comment -->
-<!-- ============================================================== -->
 
 o> FOLDER ROUTES NAME
-routes/FolderName
+    routes/FolderName
+
 
 o> FILE ROUTES NAME
-routes/FolderName/fileName
+    routes/FolderName/fileName
+
 
 o> INITIALIZATION NAME
-class BigFirstLetter():
-    def use_underscore():
-        likeThis = 
+    class BigFirstLetter():
+        def use_underscore():
+            likeThis = ""
+
 
 o> CONTROLLERS
 o>> IMPORT FORMAT
-from package import something
-from package import something
-from package import something
+    from package import something
+    from package import something
+    from package import something
 
-from folder.file import function/class
-from folder.file import function/class
+    from folder.file import function/class
+    from folder.file import function/class
 
-import library
+    import library
 
 o>> BLUEPRINT
-smallletter = Blueprint()
+    smallletter = Blueprint()
 
 o>> FUNCTION CONTROLLER
-def create_data() -> for api create
-def get_data() -> for api get all
-def update_data() -> for api update
-def delete_data() -> for api delete
-def detail_data() -> for api get detail
-def count_data() -> for api row count
-def signin() -> for api login
-def profile() -> for api profile
-def upload_data() -> for api upload
-def download_data() -> for api download
-etc..
+    def create_data() -> for api create
+    def get_data() -> for api get all
+    def update_data() -> for api update
+    def delete_data() -> for api delete
+    def detail_data() -> for api get detail
+    def count_data() -> for api row count
+    def signin() -> for api login
+    def upload_data() -> for api upload
+    def download_data() -> for api download
+    etc..
+
 
 o> MODELS
 o>> CLASS
-class NameModels()
+    class NameModels()
+
 o>> FUNCTION
     def add_nameapi()
     def view_nameapi()
@@ -79,12 +71,47 @@ o>> FUNCTION
     def get_count_nameapi()
     etc..
 
+
 o> REQUEST FIELD
-smallcase+_underscore
+    smallcase+_underscore
 
 
 
-B. STATUS HTTP RESPONSE
+B. FRONTEND FORMAT COMMENT
+o> BLOCK ATTRIBUTE PAGE
+    # ============================================================== 
+    # COMMENT - START
+    # ============================================================== 
+    # ============================================================== 
+    # COMMENT - END
+    # ============================================================== 
+
+o> BLOCK HTML
+    <!-- ============================================================== -->
+    <!-- Comment -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- End Comment -->
+    <!-- ============================================================== -->
+
+o> BLOCK Content
+    <!-- ============================================================== -->
+    <!-- Comment -->
+    <!-- End Comment -->
+    <!-- ============================================================== -->
+
+o> BLOCK PART OR LOOPING AREA
+    <!-- ============================================================== -->
+    <!-- Comment -->
+    <!-- End Comment -->
+
+    <!-- Comment -->
+    <!-- End Comment -->
+    <!-- ============================================================== -->
+
+
+
+C. STATUS HTTP RESPONSE
 o> 1xx -> Information, 
 o>> None
 
@@ -109,13 +136,19 @@ o>> 500 -> Internal Server Error
 o>> 502 -> Bad Gateway
 o>> 504 -> Gateway Timeout
 
-C. REQUEST BODY SETTING
+
+
+D. REQUEST BODY SETTING
 O> JSON Key Name
-nameapi_namekey -> template_id
+    nameapi_namekey -> template_id
 
 
-D. ERROR TEXT SETTING
+f"Admin dengan id {user_id} menambahkan template baru: {title}."
 
-# return not_found("Number of categories not found.")
-".... tidak dapat ditemukan."
-".... dengan id ... tidak dapat ditemukan."
+
+
+E. ERROR TEXT SETTING
+    return not_found("Number of categories not found.")
+    return not_found("Data .... tidak dapat ditemukan.")
+    return not_found("Data .... dengan id ... tidak dapat ditemukan.")
+    return not_found(f"Data .... untuk user {user_id} tidak dapat ditemukan.")

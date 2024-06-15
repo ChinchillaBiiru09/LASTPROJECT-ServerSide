@@ -86,7 +86,8 @@ from .routes.Template.controller import template
 from .routes.Profile.controller import profile
 from .routes.Invitation.controller import invitation
 from .routes.Guest.controller import guest
-# from .routes.tester.controller import test
+from .routes.Log.controller import log
+from .routes.tester.controller import test
 
 # Set Limiter Every Route
 # limiter.limit("5/minute;12/hours")(admin)
@@ -100,4 +101,5 @@ app.register_blueprint(template)
 app.register_blueprint(profile)
 app.register_blueprint(invitation)
 app.register_blueprint(guest)
-# app.register_blueprint(testDB)
+app.register_blueprint(log)
+app.register_blueprint(test)

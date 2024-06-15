@@ -1,0 +1,94 @@
+date =>  [
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}, 
+    {'created_M_Y': 'Jul 2023'}]
+
+data date =>  [
+    {'date': datetime.datetime(2023, 7, 13, 11, 55, 31, 388000)}, 
+    {'date': datetime.datetime(2023, 7, 13, 11, 55, 31, 388000)}, 
+    {'date': datetime.datetime(2023, 7, 13, 11, 55, 31, 388000)}, 
+    {'date': datetime.datetime(2023, 7, 13, 11, 55, 31, 388000)}, 
+    {'date': datetime.datetime(2023, 7, 13, 11, 55, 31, 388000)}]
+
+[
+    {
+        'my': 'Jul 2023', 
+        'act': [
+            {'log_id': 20, 'user_id': 7, 'user_role': 'Admin', 
+            'activity': 'Admin baru dengan id 7 telah berhasil ditambahkan.', 
+            'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 
+            'created_time': '11:55:31', 
+            'date': {
+                'day': 'Kamis', 'month': 'Jul', 'year': '2023', 
+                'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 
+                'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'
+                }
+            }, 
+            {'log_id': 21, 'user_id': 7, 'user_role': 'Admin', 
+            'activity': 'Admin dengan id 7 menambahkan kategori baru: abcd', 
+            'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 
+            'created_date': '13 Jul 2023', 'created_time': '11:55:31', 
+            'date': {
+                'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 
+                'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 
+                'full': 'Kamis, 13 Jul 2023, 11:55:31'
+                }
+            }, 
+            {'log_id': 23, 'user_id': 7, 'user_role': 'Admin', 
+            'activity': 'Admin dengan id 7 menghapus user 2', 
+            'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 
+            'created_date': '13 Jul 2023', 'created_time': '11:55:31', 
+            'date': {
+                'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 
+                'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 
+                'full': 'Kamis, 13 Jul 2023, 11:55:31'
+                }
+            }, 
+            {'log_id': 24, 'user_id': 7, 'user_role': 'Admin', 
+            'activity': 'Admin dengan id 7 menghapus user 2', 
+            'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 
+            'created_date': '13 Jul 2023', 'created_time': '11:55:31', 
+            'date': {
+                'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 
+                'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 
+                'full': 'Kamis, 13 Jul 2023, 11:55:31'
+                }
+            }, 
+            {'log_id': 26, 'user_id': 7, 'user_role': 'Admin', 
+            'activity': 'Admin dengan id 7 telah berhasil log in.', 
+            'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 
+            'created_time': '11:55:31', 
+            'date': {
+                'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 
+                'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 
+                'full': 'Kamis, 13 Jul 2023, 11:55:31'
+                }
+            }, {'log_id': 27, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 
+Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, 
+{'log_id': 28, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 29, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 30, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 31, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 
+Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, 
+{'log_id': 32, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 33, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 34, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 35, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 
+Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, 
+{'log_id': 36, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 47, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 48, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 49, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 
+Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, 
+{'log_id': 50, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 51, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 52, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 53, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 
+Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, 
+{'log_id': 55, 'user_id': 7, 'user_role': 'Admin', 'activity': 'Admin dengan id 7 telah berhasil log in.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 56, 'user_id': 7, 'user_role': 'Admin', 'activity': 'coba contoh ku.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 
+'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}, {'log_id': 57, 'user_id': 7, 'user_role': 'Admin', 'activity': 'coba contoh ku.', 'created_at': 'Kamis, 13 Jul 2023, 11:55:31', 'created_date': '13 Jul 2023', 'created_time': '11:55:31', 'date': {'day': 'Kamis', 'month': 'Jul', 'year': '2023', 'time': '11:55:31', 'day_month': '13 Jul', 'month_year': 'Jul 2023', 'date': '13 Jul 2023', 'full': 'Kamis, 13 Jul 2023, 11:55:31'}}]}, 
+{'my': 'Jun 2024', 'act': [{'log_id': 58, 'user_id': 7, 'user_role': 'Admin', 'activity': 'coba contoh ku.', 'created_at': 'Selasa, 11 Jun 2024, 10:46:56', 'created_date': '11 Jun 2024', 'created_time': '10:46:56', 'date': {'day': 'Selasa', 'month': 'Jun', 'year': '2024', 'time': '10:46:56', 'day_month': '11 Jun', 'month_year': 'Jun 2024', 'date': '11 
+Jun 2024', 'full': 'Selasa, 11 Jun 2024, 10:46:56'}}, 
+{'log_id': 59, 'user_id': 7, 'user_role': 'Admin', 'activity': 'coba contoh ku.', 'created_at': 'Selasa, 11 Jun 2024, 10:47:05', 'created_date': '11 Jun 2024', 'created_time': '10:47:05', 'date': {'day': 'Selasa', 'month': 'Jun', 'year': '2024', 'time': '10:47:05', 'day_month': '11 Jun', 'month_year': 'Jun 2024', 'date': '11 Jun 2024', 'full': 'Selasa, 11 Jun 2024, 10:47:05'}}, {'log_id': 60, 'user_id': 7, 'user_role': 'Admin', 'activity': 'coba contoh ku.', 'created_at': 'Selasa, 11 Jun 2024, 10:47:06', 'created_date': '11 Jun 2024', 'created_time': '10:47:06', 'date': {'day': 'Selasa', 'month': 'Jun', 'year': '2024', 'time': '10:47:06', 'day_month': '11 Jun', 'month_year': 'Jun 2024', 'date': '11 Jun 2024', 'full': 'Selasa, 11 Jun 2024, 10:47:06'}}, {'log_id': 61, 'user_id': 7, 'user_role': 'Admin', 'activity': 'coba contoh ku.', 'created_at': 'Selasa, 11 Jun 2024, 10:47:07', 'created_date': '11 Jun 2024', 'created_time': 
+'10:47:07', 'date': {'day': 'Selasa', 'month': 'Jun', 'year': '2024', 'time': '10:47:07', 'day_month': '11 Jun', 'month_year': 'Jun 2024', 'date': '11 Jun 2024', 'full': 'Selasa, 11 Jun 2024, 10:47:07'}}, {'log_id': 62, 'user_id': 7, 'user_role': 'Admin', 'activity': 'coba contoh ku.', 'created_at': 'Selasa, 11 Jun 2024, 10:47:09', 'created_date': '11 Jun 2024', 'created_time': '10:47:09', 'date': {'day': 'Selasa', 'month': 'Jun', 'year': '2024', 'time': '10:47:09', 'day_month': '11 Jun', 'month_year': 'Jun 2024', 'date': '11 Jun 2024', 'full': 'Selasa, 11 Jun 2024, 10:47:09'}}]}]

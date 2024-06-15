@@ -42,7 +42,7 @@ def create_data():
 
 
 # GET TEMPLATE ============================================================ Begin
-# POST https://127.0.0.1:5000/template/
+# GET https://127.0.0.1:5000/template/
 @template.get('/')
 def get_data():
     try:
@@ -58,7 +58,7 @@ def get_data():
 
 
 # UPDATE TEMPLATE ============================================================ Begin
-# POST https://127.0.0.1:5000/template/
+# PUT https://127.0.0.1:5000/template/
 @template.put('/')
 @jwt_required()
 def update_data():
@@ -82,7 +82,7 @@ def update_data():
 
 
 # DELETE TEMPLATE ============================================================ Begin
-# POST https://127.0.0.1:5000/template/
+# DELETE https://127.0.0.1:5000/template/
 @template.delete('/')
 @jwt_required()
 def delete_data():
@@ -105,8 +105,8 @@ def delete_data():
 # DELETE TEMPLATE ============================================================ End
 
 
-# VIEW DETAIL TEMPLATE ============================================================ Begin
-# POST https://127.0.0.1:5000/template/detail
+# GET DETAIL TEMPLATE ============================================================ Begin
+# GET https://127.0.0.1:5000/template/detail
 @template.get('/detail')
 @jwt_required()
 def detail_data():
@@ -122,11 +122,11 @@ def detail_data():
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW DETAIL TEMPLATE ============================================================ End
+# GET DETAIL TEMPLATE ============================================================ End
 
 
-# VIEW DETAIL TEMPLATE ============================================================ Begin
-# POST https://127.0.0.1:5000/template/detail
+# VIEW TEMPLATE ============================================================ Begin
+# GET https://127.0.0.1:5000/template/detail
 @template.get('/show')
 @jwt_required()
 def show():
@@ -142,11 +142,11 @@ def show():
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW DETAIL TEMPLATE ============================================================ End
+# VIEW TEMPLATE ============================================================ End
 
 
-# VIEW DETAIL TEMPLATE ============================================================ Begin
-# POST https://127.0.0.1:5000/template/detail
+# GET COUNT TEMPLATE ============================================================ Begin
+# GET https://127.0.0.1:5000/template/detail
 @template.get('/count')
 @jwt_required()
 def count_data():
@@ -159,4 +159,4 @@ def count_data():
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW DETAIL TEMPLATE ============================================================ End
+# GET COUNT TEMPLATE ============================================================ End

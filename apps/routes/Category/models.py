@@ -1,13 +1,14 @@
 from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.validator import vld_category, vld_role
+from ...utilities.validator import vld_role, vld_category
 
-import time
+import time, json
 
 # CATEGORY MODEL CLASS ============================================================ Begin
 class CategoryModels():
     # CREATE CATEGORY ============================================================ Begin
+    # Clear
     def add_category(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -20,28 +21,32 @@ class CategoryModels():
             if datas == None:
                 return invalid_params()
             
-            if "category" not in datas:
-                return parameter_error("Missing 'category' in Request Body.")
+            requiredData = ["category", "format_data"]
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body.")
             # Checking Request Body ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
             category = datas["category"].strip()
-            ctgrCheck = vld_category(category)
+            formatData = datas["format_data"]
+            ctgrCheck = vld_category(category, formatData)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
             
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
+            formatData = json.dumps(formatData)
             query = CTGR_ADD_QUERY
-            values = (category, timestamp, user_id, timestamp, user_id)
+            values = (category, formatData, timestamp, user_id, timestamp, user_id)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
+            values = (user_id, 1, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
@@ -53,6 +58,7 @@ class CategoryModels():
     # CREATE CATEGORY ============================================================ End
 
     # GET ALL CATEGORY ============================================================ Begin
+    # Clear
     def view_category():
         try:
             # Checking Data ---------------------------------------- Start
@@ -68,6 +74,7 @@ class CategoryModels():
                 data = {
                     "category_id" : rsl["id"],
                     "category" : rsl["category"],
+                    "format_data" : json.loads(rsl["format_data"]),
                     "created_at": rsl["created_at"]
                 }
                 response.append(data)
@@ -81,6 +88,7 @@ class CategoryModels():
     # GET ALL CATEGORY ============================================================ End
 
     # UPDATE CATEGORY ============================================================ Begin
+    # Clear
     def edit_category(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -93,7 +101,7 @@ class CategoryModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["category_id", "category"]
+            requiredData = ["category_id", "category", "format_data"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
@@ -102,33 +110,36 @@ class CategoryModels():
             # Initialize Data Input ---------------------------------------- Start
             catgId = datas["category_id"]
             category = datas["category"].strip()
+            formatData = datas["format_data"]
             # Initialize Data Input ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
             query = CTGR_GET_BY_ID_QUERY
             values = (catgId,)
-            result = DBHelper().get_count_filter_data(query, values)
-            if result == 0 :
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 :
                 return not_found(f"Kategori dengan id {catgId} tidak dapat ditemukan.")
             
-            ctgrCheck = vld_category(category)
+            ctgrCheck = vld_category(category, formatData, False)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
             
             # Update Data ---------------------------------------- Start
+            formatData = json.dumps(formatData)
             timestamp = int(round(time.time()*1000))
             query = CTGR_UPDATE_QUERY
-            values = (category, timestamp, user_id, catgId)
+            values = (category, formatData, timestamp, user_id, catgId)
             DBHelper().save_data(query, values)
             # Update Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {ctgr}."
+            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {category}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
+            values = (user_id, 1, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
+            print("oke")
 
             # Return Response ======================================== 
             return success(message="Updated!")

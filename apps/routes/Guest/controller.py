@@ -35,7 +35,7 @@ guest = Blueprint(
 
 
 # GET GUEST ============================================================ Begin
-# POST https://127.0.0.1:5000/guest/ {User Only}
+# GET https://127.0.0.1:5000/guest/
 @guest.get('/')
 @jwt_required()
 def get_data():
@@ -44,8 +44,11 @@ def get_data():
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
 
+        # Request Data ======================================== 
+        data = request.args
+
         # Request Process ======================================== 
-        response = GuestModels.view_guest(id, role)
+        response = GuestModels.view_guest(id, role, data)
 
         # Request Data ======================================== 
         return response
@@ -55,29 +58,8 @@ def get_data():
 # GET GUEST ============================================================ End
 
 
-# # VIEW DETAIL GUEST ============================================================ Begin
-# # POST https://127.0.0.1:5000/guest/detail
-# @guest.get('/detail')
-# @jwt_required()
-# def get_data():
-#     try:
-#         # Access User ======================================== 
-#         id = str(get_jwt()["id"])
-#         role = str(get_jwt()["role"])
-
-#         # Request Process ======================================== 
-#         response = GuestModels.view_detail_greeting(id, role)
-
-#         # Request Data ======================================== 
-#         return response
-
-#     except Exception as e:
-#         return bad_request(str(e))
-# # VIEW DETAIL GUEST ============================================================ End
-
-
 # # DELETE GUEST ============================================================ Begin
-# # POST https://127.0.0.1:5000/guest/
+# # DELETE https://127.0.0.1:5000/guest/
 # @guest.delete('/')
 # @jwt_required()
 # def delete_data():
@@ -100,8 +82,29 @@ def get_data():
 # # DELETE GUEST ============================================================ End
 
 
-# VIEW DETAIL GUEST ============================================================ Begin
-# POST https://127.0.0.1:5000/guest/count
+# # GET DETAIL GUEST ============================================================ Begin
+# # GET https://127.0.0.1:5000/guest/detail
+# @guest.get('/detail')
+# @jwt_required()
+# def detail_data():
+#     try:
+#         # Access User ======================================== 
+#         id = str(get_jwt()["id"])
+#         role = str(get_jwt()["role"])
+
+#         # Request Process ======================================== 
+#         response = GuestModels.view_detail_greeting(id, role)
+
+#         # Request Data ======================================== 
+#         return response
+
+#     except Exception as e:
+#         return bad_request(str(e))
+# # GET DETAIL GUEST ============================================================ End
+
+
+# GET COUNT GUEST ============================================================ Begin
+# GET https://127.0.0.1:5000/guest/count
 @guest.get('/count')
 @jwt_required()
 def count_data():
@@ -117,4 +120,4 @@ def count_data():
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW DETAIL GUEST ============================================================ End
+# GET COUNT GUEST ============================================================ End

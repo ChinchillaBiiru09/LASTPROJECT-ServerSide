@@ -4,6 +4,9 @@ import hashlib, uuid
 import cv2, base64, numpy as np
 import re, hashlib, os
 
+
+##########################################################################################################
+# FILE MANAGEMENT
 def default_image():
     file_path = os.path.join(app.config['DEFAULT_PHOTOS'], "default_avatar.png")
     with open(file_path, 'rb') as file:
@@ -21,6 +24,9 @@ def saving_file(encodedData, fileName):
     with open(fileName, "wb") as file:
         file.write(arr)
 
+
+##########################################################################################################
+# RANDOM CHARACTER
 def random_string_number(length):
     lowers = string.ascii_lowercase
     uppers = string.ascii_uppercase
@@ -39,16 +45,14 @@ def random_number(length):
     numbers = ''.join(random.choice(number) for i in range(length))
     return numbers
 
-def hashPassword(password):
-    """fungsi untuk hashing password menggunakan salt"""
-    salt = uuid.uuid4().hex
-    return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
 
+##########################################################################################################
+# SANITIZING STRING
 def sanitize_all_char(string):
     special_char = [
         "(", ")", "{", "}", "[", "]", "<", ">", 
         "--", "_", "-", "*", "%", "+", "/", "'", 
-        "$", "&", "`", "#", ".", ",", '"', ";", ":",
+        "$", "&", "`", "#", ",", '"', ";", ":",
         "!", "?", "@", "^", "=", "~"
         ]
     for i in string:
@@ -93,11 +97,11 @@ def sanitize_phone_char(number):
 
 ##########################################################################################################
 # CHECKER
-
 def string_checker(strings):
-    error = True
-    if all(chr.isalpha() or chr.isspace() for chr in strings):
-        error = False
+    error = False
+    for chr in strings:
+        if chr.isdigit():
+            error = True
     return error
 
 def phone_checker(numbers):
@@ -135,9 +139,55 @@ def password_checker(password):
         message += "Password harus memiliki setidaknya satu huruf kecil."
     return error, message
 
+
+##########################################################################################################
+# TRANSFORM DATA
 def password_compare(hashedText, password):
     """fungsi untuk komparasi password yang sudah di hash dengan password dari user"""
     _hashedText, salt = hashedText.split(':')
     return _hashedText == hashlib.sha256(salt.encode() + password.encode()).hexdigest()
 
+def hashPassword(password):
+    """fungsi untuk hashing password menggunakan salt"""
+    salt = uuid.uuid4().hex
+    return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
 
+def split_date_time(datetimes):
+    # Menyimpan Hari dan Bulan yang Sudah Di Format dan Diubah Ke Bahasa Indonesia
+    dayFormat = ""
+    monthFormat = ""
+    
+    # List Hari dan Bulan Dalam Bahasa Inggris dan Indonesia
+    # bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    hari = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    
+    # Ambil Hari dan Bulan dari Data yang datetime yang Akan di Format
+    dayData = datetimes.strftime("%A")
+    monthData = datetimes.strftime("%B")
+    yearData = datetimes.strftime("%Y")
+    timeData = datetimes.strftime("%H:%M:%S")
+    
+    # Ubah Hari dan Bulan ke Bahasa Indonesia
+    for day in days:
+        if day == dayData:
+            dayFormat = hari[days.index(day)]
+    for month in months:
+        if month == monthData:
+            monthFormat = bulan[months.index(month)]
+    
+    # Format datetime
+    datetimes = {
+        "day" : dayFormat,
+        "month" : monthFormat,
+        "year" : yearData,
+        "time" : timeData,
+        "day_month" : datetimes.strftime(f"%d {monthFormat}"),
+        "month_year" : datetimes.strftime(f"{monthFormat} %Y"),
+        "date" : datetimes.strftime(f"%d {monthFormat} %Y"),
+        "full" : datetimes.strftime(f"{dayFormat}, %d {monthFormat} %Y, %H:%M:%S")
+    }
+    
+    return datetimes

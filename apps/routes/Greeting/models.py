@@ -1,4 +1,4 @@
-from ...utilities.responseHelper import invalid_params, parameter_error, defined_error, bad_request, success, success_data
+from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_greeting, vld_role
@@ -62,58 +62,28 @@ class GreetingModels():
     # CREATE GREETING ============================================================ End
 
     # GET ALL GREETING ============================================================ Begin
-    def view_all_greeting(user_role):
+    # Clear
+    def view_greeting(user_id, user_role, datas):
         try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access: # Not True = User
-                return defined_error(message, "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
+            # Access Validation ======================================== 
+            access = vld_role(user_role)
 
-            # Checking Data ---------------------------------------- Start
-            query = GRTG_GET_ALL_QUERY
-            result = DBHelper().execute(query)
-            if len(result) == 0 or result == None:
-                return defined_error("Belum ada ucapan selamat untuk user manapun.", "Bad Request", 400)
-            # Checking Data ---------------------------------------- Finish
-            
-            # Response Data ---------------------------------------- Start
-            response = []
-            for rsl in result:
-                data = {
-                    "greeting_id" : rsl["id"],
-                    "name" : rsl["name"],
-                    "email" : rsl["email"],
-                    "greeting" : rsl["greeting"],
-                    "invitation_code" : rsl["invitation_code"],
-                    "user_owner" : rsl["user_id"],
-                    "created_at": rsl["created_at"]
-                }
-                response.append(data)
-            # Response Data ---------------------------------------- Finish
-            
-            # Return Response ======================================== 
-            return success_data("Successed!", response)
-        
-        except Exception as e:
-            return bad_request(str(e))
-    # GET ALL GREETING ============================================================ End
-
-    # GET ALL GREETING ============================================================ Begin
-    def view_all_greeting_by_user(user_id, user_role):
-        try:
-            # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if access: # True = Admin
-                return defined_error("Hanya User yang dapat mengakses Menu ini.", "Forbidden", 403)
-            # Access Validation ---------------------------------------- Finish
+            # Checking Request Body ---------------------------------------- Start
+            if access: # Access = True -> Admin
+                if "user_id" not in datas:
+                    return parameter_error("Missing 'user_id' in request body.")
+                
+                user_id = datas["user_id"]
+                if user_id == "":
+                    return defined_error("Id user tidak boleh kosong.", "Defined Error", 499)
+            # Checking Request Body ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
             query = GRTG_GET_BY_USER_QUERY
-            values = (user_id,)
-            result = DBHelper().get_data(query,values)
-            if len(result) == 0 or result == None:
-                return defined_error("Belum ada ucapan selamat dari calon tamu.", "Bad Request", 400)
+            values = (user_id, )
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 or result is None:
+                return not_found(f"Data ucapan selamat untuk user {user_id} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -132,14 +102,53 @@ class GreetingModels():
             # Response Data ---------------------------------------- Finish
             
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
     # GET ALL GREETING ============================================================ End
 
+    # # GET ALL GREETING ============================================================ Begin
+    # def view_greeting_by_user(user_id, user_role):
+    #     try:
+    #         # Access Validation ---------------------------------------- Start
+    #         access, message = vld_role(user_role)
+    #         if access: # True = Admin
+    #             return defined_error("Hanya User yang dapat mengakses Menu ini.", "Forbidden", 403)
+    #         # Access Validation ---------------------------------------- Finish
+
+    #         # Checking Data ---------------------------------------- Start
+    #         query = GRTG_GET_BY_USER_QUERY
+    #         values = (user_id,)
+    #         result = DBHelper().get_data(query,values)
+    #         if len(result) == 0 or result == None:
+    #             return defined_error("Belum ada ucapan selamat dari calon tamu.", "Bad Request", 400)
+    #         # Checking Data ---------------------------------------- Finish
+            
+    #         # Response Data ---------------------------------------- Start
+    #         response = []
+    #         for rsl in result:
+    #             data = {
+    #                 "greeting_id" : rsl["id"],
+    #                 "name" : rsl["name"],
+    #                 "email" : rsl["email"],
+    #                 "greeting" : rsl["greeting"],
+    #                 "invitation_code" : rsl["invitation_code"],
+    #                 "user_owner" : rsl["user_id"],
+    #                 "created_at": rsl["created_at"]
+    #             }
+    #             response.append(data)
+    #         # Response Data ---------------------------------------- Finish
+            
+    #         # Return Response ======================================== 
+    #         return success_data("Successed!", response)
+        
+    #     except Exception as e:
+    #         return bad_request(str(e))
+    # # GET ALL GREETING ============================================================ End
+
     # GET DETAIL GREETING ============================================================ Begin
-    def view_greeting(user_role, datas):
+    def view_detail_greeting(user_role, datas):
         try:
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
@@ -276,7 +285,6 @@ class GreetingModels():
         except Exception as e:
             return bad_request(str(e))
     # DELETE GREETING ============================================================ End
-
     
     # GET ROW-COUNT GREETING ============================================================ Begin
     def get_count_greeting(user_id):

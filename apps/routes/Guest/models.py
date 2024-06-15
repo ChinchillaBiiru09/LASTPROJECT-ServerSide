@@ -62,25 +62,33 @@ class GuestModels():
     # # CREATE GUEST ============================================================ End
 
     # GET ALL GUEST ============================================================ Begin
-    def view_guest(user_id, user_role):
+    # Clear
+    def view_guest(user_id, user_role, datas):
         try:
-            # Access Validation ---------------------------------------- Start
+            # Access Validation ======================================== 
             access = vld_role(user_role)
-            if access: # False = User
-                return authorization_error()
-            # Access Validation ---------------------------------------- Finish
+
+            # Checking Request Body ---------------------------------------- Start
+            if access: # Access = True -> Admin
+                if "user_id" not in datas:
+                    return parameter_error("Missing 'user_id' in request body.")
+                
+                user_id = datas["user_id"]
+                if user_id == "":
+                    return defined_error("Id user tidak boleh kosong.", "Defined Error", 499)
+            # Checking Request Body ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
-            query1 = GUEST_GET_GROUP_COUNT_QUERY
+            query = GUEST_GET_GROUP_COUNT_QUERY
             values = (user_id, )
-            result = DBHelper().get_data(query1, values)
-            if len(result) == 0 or result == None:
-                return defined_error("Belum ada daftar tamu untuk acara manapun.", "Not Found", 404)
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 or result is None:
+                return not_found(f"Data tamu untuk user {user_id} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
 
             # Set Category ---------------------------------------- Start
-            query2 = CTGR_GET_ALL_QUERY
-            category = DBHelper().execute(query2)
+            query = CTGR_GET_ALL_QUERY
+            category = DBHelper().execute(query)
             for ctg in category:
                 for rsl in result:
                     if rsl['category_id'] == ctg['id']:
@@ -288,6 +296,7 @@ class GuestModels():
     # # DELETE GUEST ============================================================ End
 
     # GET ROW-COUNT GUEST ============================================================ Begin
+    # Clear
     def get_count_guest(user_id):
         try:
             # Get Data By User Id ---------------------------------------- Start
@@ -297,8 +306,8 @@ class GuestModels():
             # Get Data By User Id ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
-            if result == 0 or result == None :
-                return defined_error("Number of guests not found.")
+            if result < 1 or result == None :
+                return not_found("Data tamu tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -306,7 +315,6 @@ class GuestModels():
                 "guest_count" : result
             }
             # Response Data ---------------------------------------- Finish
-            print(response)
 
             # Return Response ======================================== 
             return success_data(response)
