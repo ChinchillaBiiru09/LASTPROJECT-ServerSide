@@ -228,14 +228,18 @@ TMPLT_GET_WITH_FILTER_QUERY = """
 # ========================================================================
 # INVITATION QUERY - START ===============================================
 # ========================================================================
-INV_CHK_QUERY = """
-                    SELECT * FROM invitation 
-                    WHERE title=%s AND is_delete=0
-                """
+INV_CHK_TITLE_QUERY = """
+                            SELECT title FROM invitation 
+                            WHERE title=%s AND is_delete=0
+                        """
+INV_CHK_CODE_QUERY = """
+                        SELECT code FROM invitation 
+                        WHERE code=%s AND is_delete=0
+                    """
 INV_ADD_QUERY = """
                     INSERT INTO invitation 
-                    (user_level, category_id, template_id, title, wallpaper, personal_data, inv_setting, code, link, created_at, created_by, updated_at, updated_by)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (user_level, user_id, category_id, template_id, title, wallpaper, personal_data, inv_setting, code, link, created_at, created_by, updated_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 INV_UPDATE_QUERY = """
                         UPDATE invitation 

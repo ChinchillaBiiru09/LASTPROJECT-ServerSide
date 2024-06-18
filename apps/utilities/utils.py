@@ -89,7 +89,7 @@ def sanitize_phone_char(number):
         "$", "&", "`", ",", '"', ";", ":",
         "?", "^", "=", "~"
     ]
-    for i in string:
+    for i in number:
         if i in special_char:
             return True, i
     return False, ""

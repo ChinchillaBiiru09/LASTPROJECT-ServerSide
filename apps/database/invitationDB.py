@@ -1,5 +1,13 @@
 from .. import db
-
+""" 
+    # EXAMPLE
+    |   id    |   user_level    |           user_id            |   created_at  |   created_by  |   updated_at  |   updated_by  |   deleted_at  |   deleted_by  |   is_delete   |
+    |  (int)  |    (sting)    |          (text)           |    (bigint)   |     (int)     |    (bigint)   |      (int)    |    (bigint)   |      (int)    |     (int)     |
+    |---------|---------------|---------------------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|
+    |         |               |{"woman_name" : "required",|               |               |               |               |               |               |               |
+    |    1    |  Pernikahan   | "man_name" : "required",  |    12345678   |       1       |    12345678   |       1       |    12345678   |       1       |       0       |
+    |         |               | "address" : "optional" }  |               |               |               |               |               |               |               |
+"""
 class Invitation(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_level = db.Column(db.Integer, nullable=False, comment="1 = Admin, 2 = User")

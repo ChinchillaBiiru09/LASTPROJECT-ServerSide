@@ -17,7 +17,7 @@ invitation = Blueprint(
 # BLUEPRINT ============================================================ End
 
 
-# CREATE CATEGORY ============================================================ Begin
+# CREATE INVITATION ============================================================ Begin
 # POST https://127.0.0.1:5000/invitation/
 @invitation.post('/')
 @jwt_required()
@@ -38,10 +38,10 @@ def create_data():
 
     except Exception as e:
         return bad_request(str(e))
-# CREATE CATEGORY ============================================================ End
+# CREATE INVITATION ============================================================ End
 
 
-# GET CATEGORY ============================================================ Begin
+# GET INVITATION ============================================================ Begin
 # GET https://127.0.0.1:5000/invitation/
 @invitation.get('/')
 @jwt_required()
@@ -62,10 +62,10 @@ def get_data():
 
     except Exception as e:
         return bad_request(str(e))
-# GET CATEGORY ============================================================ End
+# GET INVITATION ============================================================ End
 
 
-# UPDATE CATEGORY ============================================================ Begin
+# UPDATE INVITATION ============================================================ Begin
 # PUT https://127.0.0.1:5000/invitation/
 @invitation.put('/')
 @jwt_required()
@@ -86,10 +86,10 @@ def update_data():
 
     except Exception as e:
         return bad_request(str(e))
-# UPDATE CATEGORY ============================================================ End
+# UPDATE INVITATION ============================================================ End
 
 
-# DELETE CATEGORY ============================================================ Begin
+# DELETE INVITATION ============================================================ Begin
 # DELETE https://127.0.0.1:5000/invitation/
 @invitation.delete('/')
 @jwt_required()
@@ -110,10 +110,10 @@ def delete_data():
 
     except Exception as e:
         return bad_request(str(e))
-# DELETE CATEGORY ============================================================ End
+# DELETE INVITATION ============================================================ End
 
 
-# VIEW DETAIL CATEGORY ============================================================ Begin
+# VIEW DETAIL INVITATION ============================================================ Begin
 # GET https://127.0.0.1:5000/invitation/detail
 @invitation.get('/detail')
 @jwt_required()
@@ -133,7 +133,7 @@ def detail_data():
 
     except Exception as e:
         return bad_request(str(e))
-# VIEW DETAIL CATEGORY ============================================================ End
+# VIEW DETAIL INVITATION ============================================================ End
 
 
 # VIEW ROW-COUNT INVITATION ============================================================ Begin

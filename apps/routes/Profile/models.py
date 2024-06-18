@@ -2,7 +2,7 @@ from flask import request
 from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.validator import vld_role, vld_edit_profile
+from ...utilities.validator import vld_role, vld_profile
 from ...utilities.utils import split_date_time
 
 from datetime import datetime
@@ -76,7 +76,7 @@ class ProfileModels():
             # Initialize Data ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            checkResult, result = vld_edit_profile(user_id, accLevel, fName, mName, lName, phone)
+            checkResult, result = vld_profile(user_id, accLevel, fName, mName, lName, phone)
             if len(checkResult) != 0:
                 return defined_error(checkResult, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish

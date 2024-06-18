@@ -90,7 +90,7 @@ def delete_data():
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Process ======================================== 
         response = CategoryModels.delete_category(id, role, data)
@@ -113,7 +113,7 @@ def detail_data():
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Process ======================================== 
         response = CategoryModels.view_detail_category(role, data)

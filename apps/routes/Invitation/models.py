@@ -7,20 +7,21 @@ from ...utilities.utils import random_number, saving_image, random_string_number
 from flask import current_app as app
 from werkzeug.utils import secure_filename
 
-import time, os
+import time, os, json
 
 
 # INVITATION MODEL CLASS ============================================================ Begin
 class InvitationModels():
     # CREATE INVITATION ============================================================ Begin
-    def add_invitation(userId, userRole, datas):
+    # Clear
+    def add_invitation(user_id, user_role, datas):
         try:
-            # Set Level User ---------------------------------------- Start
-            accLevel = 1  # 1 = Admin
-            access, message = vld_role(userRole)
-            if not access:
-                accLevel = 2  # 2 = User
-            # Set Level User ---------------------------------------- Finish
+            # Access Validation ---------------------------------------- Start
+            accLevel = 2  # 1 = Admin | 2 = User
+            access = vld_role(user_role)
+            if access: # Access = True -> Admin
+                return authorization_error()
+            # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
@@ -29,21 +30,20 @@ class InvitationModels():
             requiredData = ["category_id", "template_id", "title", "wallpaper", "personal_data", "inv_setting"]
             for req in requiredData:
                 if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body")
+                    return parameter_error(f"Missing {req} in Request Body.")
             # Checking Request Body ---------------------------------------- Finish
 
             # Initialize Request Data ---------------------------------------- Start
-            categoryId = datas["category_id"].strip()
-            templateId = datas["template_id"].strip()
-            title = datas["title"].title().strip()
+            categoryId = datas["category_id"]
+            templateId = datas["template_id"]
+            title = datas["title"].strip()
             wallpaper = datas["wallpaper"]
             personalData = datas["personal_data"]
             invSett = datas["inv_setting"]
             # Initialize Request Data ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
-            randomNumber = str(random_number(5))
-            invCheck, personalData = vld_invitation(categoryId, templateId, title, personalData, randomNumber)
+            invCheck, personalData, invCode = vld_invitation(categoryId, templateId, title, personalData)
             if len(invCheck) != 0:
                 return defined_error(invCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -52,36 +52,38 @@ class InvitationModels():
             # wallpaper
             wallpaperPath = ""
             if wallpaper != "":
-                wallpaperFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper.jpg")
+                wallpaperFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_wallpaper.jpg")
                 wallpaperPath = os.path.join(app.config['USER_INVITATION_FILE'], wallpaperFileName)
                 saving_image(wallpaper, wallpaperPath)
             # Saving File ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
-            invCode = str(random_string_number(6))
-            invLink =  app.config['FE_URL']+"/"+userId+"/"+title
+            titlelink = title.replace(' ', '-')
+            invLink =  app.config['FE_URL']+"/"+invCode+"/"+titlelink
+            personalData = json.dumps(personalData)
+            invSett = json.dumps(invSett)
             query = INV_ADD_QUERY
-            values = (accLevel, categoryId, templateId, title, wallpaper, personalData, invSett, invCode, invLink, timestamp, userId, timestamp, userId)
+            values = (accLevel, user_id, categoryId, templateId, title, wallpaper, personalData, invSett, invCode, invLink, timestamp, user_id, timestamp, user_id)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"User dengan id {userId} telah membuat undangan baru: {title}"
+            activity = f"User dengan id {user_id} telah membuat undangan baru: {title}."
             query = LOG_ADD_QUERY
-            values = (userId, activity, )
+            values = (user_id, accLevel, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Succeed!")
+            return success(statusCode=201)
         
         except Exception as e:
             return bad_request(str(e))
     # CREATE INVITATION ============================================================ End
 
     # GET ALL INVITATION ============================================================ Begin
-    # Clear
+    # 
     def view_invitation(user_id, user_role, datas):
         try:
             # Set Level Access ---------------------------------------- Start
@@ -121,13 +123,13 @@ class InvitationModels():
                     "user_id" : rsl["user_id"],
                     "category_id" : rsl["category_id"],
                     "template_id" : rsl["template_id"],
-                    "invitation_tittle" : rsl["tittle"],
+                    "invitation_title" : rsl["title"],
                     "invitation_wallpaper" : rsl["wallpaper"],
                     "personal_data" : rsl["personal_data"],
                     "invitation_code" : rsl["code"],
                     "invitation_link" : rsl["link"],
                     "created_at": rsl["created_at"],
-                    "updated_at" : rsl["updated_att"]
+                    "updated_at" : rsl["updated_at"]
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
