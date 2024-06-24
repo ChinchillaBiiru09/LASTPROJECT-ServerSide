@@ -405,7 +405,6 @@ def vld_invitation(categoryId, templateId, title, personalData):
     query = INV_CHK_TITLE_QUERY
     values = (title, )
     ckInvit = DBHelper().get_count_filter_data(query, values)
-    print(ckInvit)
     if ckInvit > 0:
         checkResult.append(f"Judul sudah terpakai.")
     # Check Data Title & Template ---------------------------------------- Finish

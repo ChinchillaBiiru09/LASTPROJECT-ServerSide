@@ -126,7 +126,7 @@ def detail_data():
 
 
 # VIEW TEMPLATE ============================================================ Begin
-# GET https://127.0.0.1:5000/template/detail
+# GET https://127.0.0.1:5000/template/show
 @template.get('/show')
 @jwt_required()
 def show():
@@ -146,13 +146,37 @@ def show():
 
 
 # GET COUNT TEMPLATE ============================================================ Begin
-# GET https://127.0.0.1:5000/template/detail
+# GET https://127.0.0.1:5000/template/count
 @template.get('/count')
 @jwt_required()
 def count_data():
     try:
         # Request Process ======================================== 
         response = TemplateModels.get_count_template()
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# GET COUNT TEMPLATE ============================================================ End
+
+
+# GET COUNT TEMPLATE ============================================================ Begin
+# GET https://127.0.0.1:5000/template/request
+@template.post('/request')
+@jwt_required()
+def request_data():
+    try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = TemplateModels.create_request_template(id, role, data)
 
         # Request Data ======================================== 
         return response

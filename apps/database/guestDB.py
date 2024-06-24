@@ -8,6 +8,7 @@ class Guest(db.Model):
     name = db.Column(db.String(150), nullable=False)
     alias = db.Column(db.String(60), nullable=True)
     user_id = db.Column(db.Integer, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
     code = db.Column(db.String(6), nullable=False)
     created_at = db.Column(db.BigInteger, nullable=False)
     created_by = db.Column(db.Integer, nullable=False)

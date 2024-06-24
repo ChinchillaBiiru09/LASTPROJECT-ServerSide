@@ -1,14 +1,16 @@
-# CREATE VIRTUAL ENVIRONMENT
+# PREPARE PROJECT
+## CREATE VIRTUAL ENVIRONMENT
 -
 
-# INSTALATION PACKAGE
+## INSTALATION PACKAGE
 -
 
-# DATABASE
+## DATABASE
 - flask db init
 - flask db migrate
 - flask db upgrade
+(if can't update later version, use this: flask db stamp head)
 
-# RUNNING PROGRAM
+## RUNNING PROGRAM
 - use 'venv/Scripts/activate' or 'activate'
 - type 'flask run', and enter.

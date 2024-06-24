@@ -10,7 +10,7 @@ from .models import InvitationModels
 invitation = Blueprint(
     name='invitation',
     import_name=__name__,
-    static_folder = '../../static/invitation',
+    static_folder = '../../static/invitation/user',
     static_url_path="/media",
     url_prefix='/invitation'
 )

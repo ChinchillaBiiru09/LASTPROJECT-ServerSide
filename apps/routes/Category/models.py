@@ -91,7 +91,6 @@ class CategoryModels():
     # GET ALL CATEGORY ============================================================ End
 
     # UPDATE CATEGORY ============================================================ Begin
-    # Clear
     def edit_category(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -115,7 +114,7 @@ class CategoryModels():
             category = datas["category"].strip()
             formatData = datas["format_data"]
             # Initialize Data Input ---------------------------------------- Finish
-            
+
             # Data Validation ---------------------------------------- Start
             query = CTGR_GET_BY_ID_QUERY
             values = (catgId,)
@@ -123,25 +122,26 @@ class CategoryModels():
             if len(result) < 1 :
                 return not_found(f"Data kategori dengan id {catgId} tidak dapat ditemukan.")
             
-            ctgrCheck = vld_category(category, formatData, False)
-            if len(ctgrCheck) != 0:
-                return defined_error(ctgrCheck, "Bad Request", 400)
-            # Data Validation ---------------------------------------- Finish
+            print(datas)
+            # ctgrCheck = vld_category(category, formatData, False)
+            # if len(ctgrCheck) != 0:
+            #     return defined_error(ctgrCheck, "Bad Request", 400)
+            # # Data Validation ---------------------------------------- Finish
             
-            # Update Data ---------------------------------------- Start
-            formatData = json.dumps(formatData)
-            timestamp = int(round(time.time()*1000))
-            query = CTGR_UPDATE_QUERY
-            values = (category, formatData, timestamp, user_id, catgId)
-            DBHelper().save_data(query, values)
-            # Update Data ---------------------------------------- Finish
+            # # Update Data ---------------------------------------- Start
+            # formatData = json.dumps(formatData)
+            # timestamp = int(round(time.time()*1000))
+            # query = CTGR_UPDATE_QUERY
+            # values = (category, formatData, timestamp, user_id, catgId)
+            # DBHelper().save_data(query, values)
+            # # Update Data ---------------------------------------- Finish
 
-            # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {category}."
-            query = LOG_ADD_QUERY
-            values = (user_id, 1, activity, timestamp, )
-            DBHelper().save_data(query, values)
-            # Log Activity Record ---------------------------------------- Finish
+            # # Log Activity Record ---------------------------------------- Start
+            # activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {category}."
+            # query = LOG_ADD_QUERY
+            # values = (user_id, 1, activity, timestamp, )
+            # DBHelper().save_data(query, values)
+            # # Log Activity Record ---------------------------------------- Finish
             print("oke")
 
             # Return Response ======================================== 
@@ -237,7 +237,7 @@ class CategoryModels():
                 "category_id" : result[0]["id"],
                 "category" : result[0]["category"],
                 "format_data" : json.loads(result[0]["format_data"]),
-                "created_at": result[0]["created_at"]
+                "created_at": split_date_time(datetime.fromtimestamp(result[0]["created_at"]/1000))
             }
             # Response Data ---------------------------------------- Finish
 

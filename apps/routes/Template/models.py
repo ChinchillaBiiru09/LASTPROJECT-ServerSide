@@ -13,7 +13,6 @@ import time, os, base64
 # TEMPLATE MODEL CLASS ============================================================ Begin
 class TemplateModels():
     # CREATE TEMPLATE ============================================================ Begin
-    # Clear
     def add_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -33,7 +32,7 @@ class TemplateModels():
             # Checking Request Body ---------------------------------------- Finish
             
             # Initialize Data Input ---------------------------------------- Start
-            title = datas["tmplt_title"].title().strip()
+            title = datas["tmplt_title"].strip()
             thumbnail = datas["tmplt_thumbnail"]
             css = datas["css_file"]
             js = datas["js_file"]
@@ -91,7 +90,6 @@ class TemplateModels():
     # CREATE TEMPLATE ============================================================ End
 
     # GET ALL TEMPLATE ============================================================ Begin
-    # Clear
     def view_template():
         try:
             # Checking Data ---------------------------------------- Start
@@ -397,4 +395,69 @@ class TemplateModels():
         except Exception as e:
             return bad_request(str(e))
     # GET ROW-COUNT TEMPLATE ============================================================ End
+
+    # REQUEST TEMPLATE ============================================================ Begin
+    # Clear// input data checker belum
+    def create_request_template(user_id, user_role, datas):
+        try:
+            # Access Validation ---------------------------------------- Start
+            access = vld_role(user_role)
+            acclevel = 2
+            if access: # Access = True -> Admin
+                return authorization_error()
+            # Access Validation ---------------------------------------- Finish
+
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
+            
+            requiredData = ["category_id", "template_design", "description", "deadline", "type"]
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body.")
+            # Checking Request Body ---------------------------------------- Finish
+            
+            # Initialize Data Input ---------------------------------------- Start
+            tempDesign = datas["template_design"]
+            descript = datas["description"]
+            deadline = datas["deadline"]
+            type = datas["type"]
+            catgId = datas["category_id"]
+            # Initialize Data Input ---------------------------------------- Finish
+
+            # Data Validation ---------------------------------------- Start
+            # tmpltCheck = vld_template(tempDesign, thumbnail, css, wallpaper)
+            # if len(tmpltCheck) != 0:
+            #     return defined_error(tmpltCheck, "Bad Request", 400)
+            # Data Validation ---------------------------------------- Finish
+
+            # Saving File ---------------------------------------- Start
+            randomNumber = str(random_number(5))
+            # Design Photos
+            designFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_design_user_"+user_id+".jpg")
+            designPath = os.path.join(app.config['TEMPLATE_REQUEST_DESIGN'], designFileName)
+            saving_image(tempDesign, designPath)
+            # Saving File ---------------------------------------- Finish
+            
+            # Insert Data ---------------------------------------- Start
+            status = 0 # 0 = waiting | 1 = checked | 2 = acc | decline
+            timestamp = int(round(time.time()*1000))
+            query = REQ_ADD_QUERY
+            values = (user_id, acclevel, catgId, designFileName, descript, deadline, type, status, timestamp, user_id, timestamp, user_id)
+            DBHelper().save_data(query, values)
+            # Insert Data ---------------------------------------- Finish
+
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"User dengan id {user_id} mengirimkan request template baru."
+            query = LOG_ADD_QUERY
+            values = (user_id, acclevel, activity, timestamp, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success(statusCode=201)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # REQUEST TEMPLATE ============================================================ End
 # TEMPLATE MODEL CLASS ============================================================ End

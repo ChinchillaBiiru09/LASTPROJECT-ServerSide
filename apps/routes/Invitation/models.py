@@ -2,10 +2,11 @@ from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_role, vld_invitation
-from ...utilities.utils import random_number, saving_image, random_string_number
+from ...utilities.utils import random_number, saving_image, split_date_time,random_string_number
 
-from flask import current_app as app
+from flask import request, current_app as app
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 import time, os, json
 
@@ -50,7 +51,7 @@ class InvitationModels():
             
             # Saving File ---------------------------------------- Start
             # wallpaper
-            wallpaperPath = ""
+            wallpaperFileName = ""
             if wallpaper != "":
                 wallpaperFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_wallpaper.jpg")
                 wallpaperPath = os.path.join(app.config['USER_INVITATION_FILE'], wallpaperFileName)
@@ -64,7 +65,7 @@ class InvitationModels():
             personalData = json.dumps(personalData)
             invSett = json.dumps(invSett)
             query = INV_ADD_QUERY
-            values = (accLevel, user_id, categoryId, templateId, title, wallpaper, personalData, invSett, invCode, invLink, timestamp, user_id, timestamp, user_id)
+            values = (accLevel, user_id, categoryId, templateId, title, wallpaperFileName, personalData, invSett, invCode, invLink, timestamp, user_id, timestamp, user_id)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
@@ -114,10 +115,22 @@ class InvitationModels():
             if len(result) < 1 or result is None:
                 return not_found("Data undangan tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
+
+            # Generate File URL ---------------------------------------- Start
+            if len(result) >= 1:
+                detailRequestURL = str(request.url).find('?')
+                if detailRequestURL != -1:
+                    index = detailRequestURL
+                    request.url = request.url[:index]
+            for item in result:
+                item["wallpaper"] = f"{request.url_root}invitation/media/{item['wallpaper']}"
+            # Generate File URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
+                createdAt = split_date_time(datetime.fromtimestamp(rsl['created_at']/1000))
+                updatedAt = split_date_time(datetime.fromtimestamp(rsl['updated_at']/1000))
                 data = {
                     "invitation_id" : rsl["id"],
                     "user_id" : rsl["user_id"],
@@ -128,11 +141,12 @@ class InvitationModels():
                     "personal_data" : rsl["personal_data"],
                     "invitation_code" : rsl["code"],
                     "invitation_link" : rsl["link"],
-                    "created_at": rsl["created_at"],
-                    "updated_at" : rsl["updated_at"]
+                    "created_at": createdAt,
+                    "updated_at" : updatedAt
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
+            print(response)
             
             # Return Response ======================================== 
             return success_data(response)
