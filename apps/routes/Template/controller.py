@@ -112,7 +112,7 @@ def delete_data():
 def detail_data():
     try:
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Process ======================================== 
         response = TemplateModels.view_detail_template(data)
@@ -132,10 +132,10 @@ def detail_data():
 def show():
     try:
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Process ======================================== 
-        response = TemplateModels.view_detail_template(data)
+        response = TemplateModels.show_template(data)
 
         # Request Data ======================================== 
         return response

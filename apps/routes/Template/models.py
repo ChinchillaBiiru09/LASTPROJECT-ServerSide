@@ -282,28 +282,29 @@ class TemplateModels():
             # Checking Data ---------------------------------------- Start
             query = TMPLT_GET_BY_ID_QUERY
             values = (tempId,)
-            result = DBHelper.get_data(query, values)
+            result = DBHelper().get_data(query, values)
             if len(result) == 0 :
                 return not_found(f"Template dengan Id {tempId} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
 
-            # Generate Data ---------------------------------------- Start
+            # Generate File URL ---------------------------------------- Start
             template = result[0]
-            if template["thumbnail"] != "":
-                thumbnail = ""
-                template["thumbnail"] = base64.b64encode(template["thumbnail"])
-            if template["css_file"] != "":
-                template["css_file"] = base64.b64encode(template["css_file"])
-            if template["js_file"] != "":
-                template["js_file"] = base64.b64encode(template["js_file"])
-            if template["wallpaper"] != "":
-                template["wallpaper"] = base64.b64encode(template["wallpaper"])
-            # Generate Data ---------------------------------------- Finish
+            if len(result) >= 1:
+                detailRequestURL = str(request.url).find('?')
+                if detailRequestURL != -1:
+                    index = detailRequestURL
+                    request.url = request.url[:index]
+            for item in result:
+                template["thumbnail"] = f"{request.url_root}template/media/thumbnail/{template['thumbnail']}"
+                template["css_file"] = f"{request.url_root}template/media/css/{template['css_file']}"
+                template["js_file"] = f"{request.url_root}template/media/js/{template['js_file']}"
+                template["wallpaper"] = f"{request.url_root}template/media/wallpaper/{template['wallpaper']}"
+            # Generate File URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = {
                 "template_id" : template["id"],
-                "thumbnail" : template["category"],
+                "thumbnail" : template["thumbnail"],
                 "css_file" : template["css_file"],
                 "js_file" : template["js_file"],
                 "wallpaper" : template["wallpaper"],
@@ -332,17 +333,17 @@ class TemplateModels():
                 return defined_error("Id template tidak boleh kosong.", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
             
-            # Checking Data ---------------------------------------- Start
-            query = TMPLT_GET_BY_ID_QUERY
-            values = (tempId,)
-            result = DBHelper.get_data(query, values)
-            if len(result) == 0 :
-                return not_found(f"Template dengan Id {tempId} tidak dapat ditemukan.")
-            # Checking Data ---------------------------------------- Finish
+            # # Checking Data ---------------------------------------- Start
+            # query = TMPLT_GET_BY_ID_QUERY
+            # values = (tempId,)
+            # result = DBHelper.get_data(query, values)
+            # if len(result) == 0 :
+            #     return not_found(f"Template dengan Id {tempId} tidak dapat ditemukan.")
+            # # Checking Data ---------------------------------------- Finish
 
             # Generate Data ---------------------------------------- Start
-            for data in result:
-                print(data)
+            # for data in result:
+            #     print(data)
             # template = result[0]
             # if template["thumbnail"] != "":
             #     template["thumbnail"] = base64.b64encode(template["thumbnail"])
@@ -353,8 +354,19 @@ class TemplateModels():
             # if template["wallpaper"] != "":
             #     template["wallpaper"] = base64.b64encode(template["wallpaper"])
             # Generate Data ---------------------------------------- Finish
+
+            # Generate File URL ---------------------------------------- Start
+            detailRequestURL = str(request.url).find('?')
+            if detailRequestURL != -1:
+                index = detailRequestURL
+                request.url = request.url[:index]
+            htmlTemplate = f"{request.url_root}template/media/html/template_1.html"
+            # Generate File URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
+            response = {
+                "template" : htmlTemplate
+            }
             # response = {
             #     "template_id" : template["id"],
             #     "thumbnail" : template["category"],
@@ -366,7 +378,7 @@ class TemplateModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data(0)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))

@@ -84,7 +84,7 @@ class InvitationModels():
     # CREATE INVITATION ============================================================ End
 
     # GET ALL INVITATION ============================================================ Begin
-    # 
+    # Clear
     def view_invitation(user_id, user_role, datas):
         try:
             # Set Level Access ---------------------------------------- Start
@@ -115,6 +115,20 @@ class InvitationModels():
             if len(result) < 1 or result is None:
                 return not_found("Data undangan tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
+            
+            # Get Data Category ---------------------------------------- Start
+            query = CTGR_GET_ALL_QUERY
+            resultCtgr = DBHelper().execute(query)
+            if len(resultCtgr) < 1 or resultCtgr is None:
+                return not_found("Data kategori tidak dapat ditemukan.")
+            # Get Data Category ---------------------------------------- Finish
+
+            # Join Data ---------------------------------------- Start
+            for invitation in result:
+                for category in resultCtgr:
+                    if invitation["category_id"] == category["id"]:
+                        invitation["category"] = category["category"]
+            # Join Data ---------------------------------------- Finish
 
             # Generate File URL ---------------------------------------- Start
             if len(result) >= 1:
@@ -127,26 +141,33 @@ class InvitationModels():
             # Generate File URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
+            query1 = GUEST_GET_BY_CODE_QUERY
+            query2 = GRTG_GET_BY_CODE_QUERY
             response = []
             for rsl in result:
+                values = (rsl['code'], )
+                guest = DBHelper().get_data(query1, values)
+                greeting = DBHelper().get_data(query2, values)
                 createdAt = split_date_time(datetime.fromtimestamp(rsl['created_at']/1000))
                 updatedAt = split_date_time(datetime.fromtimestamp(rsl['updated_at']/1000))
                 data = {
                     "invitation_id" : rsl["id"],
                     "user_id" : rsl["user_id"],
                     "category_id" : rsl["category_id"],
+                    "category" : rsl["category"],
                     "template_id" : rsl["template_id"],
                     "invitation_title" : rsl["title"],
                     "invitation_wallpaper" : rsl["wallpaper"],
                     "personal_data" : rsl["personal_data"],
                     "invitation_code" : rsl["code"],
                     "invitation_link" : rsl["link"],
+                    "guest_count" : guest[0]["count"],
+                    "greeting_count" : greeting[0]["count"],
                     "created_at": createdAt,
                     "updated_at" : updatedAt
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
-            print(response)
             
             # Return Response ======================================== 
             return success_data(response)

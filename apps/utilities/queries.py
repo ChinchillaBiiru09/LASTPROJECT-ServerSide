@@ -177,6 +177,10 @@ GRTG_GET_BY_USER_QUERY = """
                             SELECT * FROM greeting 
                             WHERE user_id=%s AND is_delete=0
                         """
+GRTG_GET_BY_CODE_QUERY = """
+                            SELECT id, invitation_code, COUNT(*) as count FROM greeting 
+                            WHERE invitation_code=%s AND is_delete=0
+                        """
 GRTG_DELETE_QUERY = """
                         UPDATE greeting 
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
@@ -325,6 +329,10 @@ GUEST_GET_BY_ID_QUERY = """
 GUEST_GET_BY_USR_QUERY = """
                             SELECT * FROM guest 
                             WHERE user_id=%s AND is_delete=0
+                        """
+GUEST_GET_BY_CODE_QUERY = """
+                            SELECT id, code, COUNT(*) as count FROM guest 
+                            WHERE code=%s AND is_delete=0
                         """
 GUEST_GET_WITH_FILTER_QUERY = """
                             """

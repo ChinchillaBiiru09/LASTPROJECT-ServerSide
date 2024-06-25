@@ -32,9 +32,9 @@ class CategoryModels():
             # Data Validation ---------------------------------------- Start
             category = datas["category"].strip()
             formatData = datas["format_data"]
-            ctgrCheck = vld_category(category, formatData)
-            if len(ctgrCheck) != 0:
-                return defined_error(ctgrCheck, "Bad Request", 400)
+            # ctgrCheck = vld_category(category, formatData)
+            # if len(ctgrCheck) != 0:
+            #     return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
             
             # Insert Data ---------------------------------------- Start
@@ -42,15 +42,16 @@ class CategoryModels():
             formatData = json.dumps(formatData)
             query = CTGR_ADD_QUERY
             values = (category, formatData, timestamp, user_id, timestamp, user_id)
-            DBHelper().save_data(query, values)
+            # DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan id {user_id} menambahkan kategori baru: {category}."
             query = LOG_ADD_QUERY
             values = (user_id, 1, activity, timestamp, )
-            DBHelper().save_data(query, values)
+            # DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
+            print("BERHASIL")
 
             # Return Response ======================================== 
             return success(statusCode=201)
@@ -123,25 +124,27 @@ class CategoryModels():
                 return not_found(f"Data kategori dengan id {catgId} tidak dapat ditemukan.")
             
             print(datas)
-            # ctgrCheck = vld_category(category, formatData, False)
-            # if len(ctgrCheck) != 0:
-            #     return defined_error(ctgrCheck, "Bad Request", 400)
-            # # Data Validation ---------------------------------------- Finish
+            ctgrCheck = vld_category(category, formatData, False)
+            print("koko ka?")
+            print(ctgrCheck)
+            if len(ctgrCheck) != 0:
+                return defined_error(ctgrCheck, "Bad Request", 400)
+            # Data Validation ---------------------------------------- Finish
             
-            # # Update Data ---------------------------------------- Start
-            # formatData = json.dumps(formatData)
-            # timestamp = int(round(time.time()*1000))
-            # query = CTGR_UPDATE_QUERY
-            # values = (category, formatData, timestamp, user_id, catgId)
-            # DBHelper().save_data(query, values)
-            # # Update Data ---------------------------------------- Finish
+            # Update Data ---------------------------------------- Start
+            formatData = json.dumps(formatData)
+            timestamp = int(round(time.time()*1000))
+            query = CTGR_UPDATE_QUERY
+            values = (category, formatData, timestamp, user_id, catgId)
+            DBHelper().save_data(query, values)
+            # Update Data ---------------------------------------- Finish
 
-            # # Log Activity Record ---------------------------------------- Start
-            # activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {category}."
-            # query = LOG_ADD_QUERY
-            # values = (user_id, 1, activity, timestamp, )
-            # DBHelper().save_data(query, values)
-            # # Log Activity Record ---------------------------------------- Finish
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {category}."
+            query = LOG_ADD_QUERY
+            values = (user_id, 1, activity, timestamp, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
             print("oke")
 
             # Return Response ======================================== 
