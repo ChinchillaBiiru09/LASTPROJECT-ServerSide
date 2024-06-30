@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from flask import current_app as app
 from flask_jwt_extended import jwt_required, get_jwt
 
-from ...utilities.responseHelper import bad_request
+from ...utilities.responseHelper import bad_request, success, success_data
 from .models import InvitationModels
 
 
@@ -123,7 +123,7 @@ def detail_data():
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Process ======================================== 
         response = InvitationModels.view_detail_invitation(role, data)
@@ -148,6 +148,30 @@ def count_data():
 
         # Request Process ======================================== 
         response = InvitationModels.get_count_invitation(id, role)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW ROW-COUNT INVITATION ============================================================ End
+
+
+# VIEW ROW-COUNT INVITATION ============================================================ Begin
+# GET https://127.0.0.1:5000/invitation/count
+@invitation.get('/share')
+# @jwt_required()
+def share_data():
+    try:
+        # Request Data ======================================== 
+        # id = str(get_jwt()["id"])
+        # role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = InvitationModels.share_invitation(data)
 
         # Request Data ======================================== 
         return response

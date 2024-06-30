@@ -1,65 +1,76 @@
 from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.validator import vld_greeting, vld_role
+from ...utilities.validator import vld_guest, vld_role
+from ...utilities.utils import split_date_time
 
+from datetime import datetime
 import time
 
 # GUEST MODEL CLASS ============================================================ Begin
 class GuestModels():
-    # # CREATE GUEST ============================================================ Begin
-    # def add_guest(datas):   
-    #     try:
-    #         # Checking Request Body ---------------------------------------- Start
-    #         if datas == None:
-    #             return invalid_params()
+    # CREATE GUEST ============================================================ Begin
+    def add_guest(user_id, user_role, datas):   
+        try:
+            # Set Access Level ---------------------------------------- Start
+            access = vld_role(user_role)
+            accLevel = 2
+            if access: # Access = True -> Admin
+                return authorization_error()
+            # Set Access Level ---------------------------------------- Finish
             
-    #         requiredData = ["invitationCode", "name", "email", "greeting"]
-    #         for req in requiredData:
-    #             if req not in datas:
-    #                 return parameter_error(f"Missing {req} in Request Body")
-    #         # Checking Request Body ---------------------------------------- Finish
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
             
-    #         # Intialize ---------------------------------------- Start
-    #         invCode = datas["invitationCode"].strip()
-    #         name = datas["name"].strip().title()
-    #         email = datas["email"].strip()
-    #         greeting = datas["greeting"]
-    #         # Intialize ---------------------------------------- Finish
-
-    #         # Data Validation ---------------------------------------- Start
-    #         checkResult = vld_greeting(invCode,name,email,greeting)
-    #         if len(checkResult) != 0:
-    #             return defined_error(checkResult, "Bad Request", 400)
-    #         # Data Validation ---------------------------------------- Finish
-
-    #         # Get User ID ---------------------------------------- Start
-    #         query = INV_CODE_CHK_QUERY
-    #         values = (invCode,)
-    #         result = DBHelper().get_data(query, values)
-    #         user_owner_id = result[0]["id"]
-    #         # Get User ID ---------------------------------------- End
+            requiredData = ["invitation_code", "name", "address", "phone"]
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body")
+            # Checking Request Body ---------------------------------------- Finish
             
-    #         # Insert Data ---------------------------------------- Start
-    #         timestamp = int(round(time.time()*1000))
-    #         query = GUEST_ADD_QUERY
-    #         values = (name, email, greeting, invCode, user_owner_id, timestamp)
-    #         DBHelper().save_data(query, values)
-    #         # Insert Data ---------------------------------------- Finish
+            # Intialize ---------------------------------------- Start
+            invCode = datas["invitation_code"]
+            name = datas["name"]
+            address = datas["address"]
+            phone = datas["phone"]
+            # Intialize ---------------------------------------- Finish
 
-    #         # Log Activity Record ---------------------------------------- Start
-    #         activity = f"User dengan id {user_owner_id} mendapatkan ucapan selamat dari: {email}"
-    #         query = LOG_ADD_QUERY
-    #         values = (user_owner_id, activity, )
-    #         DBHelper().save_data(query, values)
-    #         # Log Activity Record ---------------------------------------- Finish
+            # Data Validation ---------------------------------------- Start
+            checkResult = vld_guest(name,address,phone)
+            if len(checkResult) != 0:
+                return defined_error(checkResult, "Bad Request", 400)
+            # Data Validation ---------------------------------------- Finish
 
-    #         # Return Response ======================================== 
-    #         return success("Succeed!")
+            # Get User ID ---------------------------------------- Start
+            query = INV_CHK_CODE_QUERY
+            values = (invCode,)
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1:
+                return not_found(f"Data undangan dengan kode {invCode} tidak dapat ditemukan.")
+            # Get User ID ---------------------------------------- End
+            
+            # Insert Data ---------------------------------------- Start
+            inv = result[0]
+            timestamp = int(round(time.time()*1000))
+            query = GUEST_ADD_QUERY
+            values = (user_id, accLevel, inv['category_id'], invCode, name, address, phone, timestamp, user_id, timestamp, user_id)
+            DBHelper().save_data(query, values)
+            # Insert Data ---------------------------------------- Finish
+
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"User dengan id {user_id} menambahkan data tamu baru: {name}."
+            query = LOG_ADD_QUERY
+            values = (user_id, accLevel, activity, timestamp, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success(statusCode=201)
         
-    #     except Exception as e:
-    #         return bad_request(str(e))
-    # # CREATE GUEST ============================================================ End
+        except Exception as e:
+            return bad_request(str(e))
+    # CREATE GUEST ============================================================ End
 
     # GET ALL GUEST ============================================================ Begin
     # Clear
@@ -153,49 +164,123 @@ class GuestModels():
     #         return bad_request(str(e))
     # # GET ALL GUEST ============================================================ End
 
-    # # GET DETAIL GUEST ============================================================ Begin
-    # def view_detail_guest(user_role, datas):
-    #     try:
-    #         # Checking Request Body ---------------------------------------- Start
-    #         if datas == None:
-    #             return invalid_params()
+    # GET DETAIL GUEST ============================================================ Begin
+    # Clear
+    def view_detail_guest(user_role, datas):
+        try:
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
             
-    #         requiredData = ["greeting_id"]
-    #         if requiredData not in datas:
-    #             return parameter_error(f"Missing {requiredData} in Request Body")
-    #         # Checking Request Body ---------------------------------------- Finish
+            if "invitation_code" not in datas:
+                return parameter_error("Missing 'invitation_code' in Request Body.")
             
-    #         grtgId = datas["greeting_id"].strip()
+            invCode = datas["invitation_code"]
+            if invCode == "":
+                return defined_error("Kode undangan tidak boleh kosong.", "Defined Error", 400)
+            # Checking Request Body ---------------------------------------- Finish
             
-    #         # Checking Data ---------------------------------------- Start
-    #         query = GRTG_GET_BY_ID_QUERY
-    #         values = (grtgId,)
-    #         result = DBHelper.get_data(query, values)
-    #         if len(result) == 0 :
-    #             return defined_error("Ucapan selamat tidak dapat ditemukan.")
-    #         # Checking Data ---------------------------------------- Finish
+            # Checking Data ---------------------------------------- Start
+            query = GUEST_GET_BY_CODE_QUERY
+            values = (invCode,)
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 :
+                return defined_error(f"Data tamu untuk kode undangan {invCode} tidak dapat ditemukan.")
+            # Checking Data ---------------------------------------- Finish
             
-    #         # Response Data ---------------------------------------- Start
-    #         response = []
-            # for rsl in result:
-            #     data = {
-            #         "guest_id" : rsl["id"],
-            #         "event" : rsl["category_id"],
-            #         "name" : rsl["name"],
-            #         "alias" : rsl["alias"],
-            #         "invitation_code" : rsl["code"],
-            #         "user_owner" : rsl["user_id"],
-            #         "created_at": rsl["created_at"]
-            #     }
-            #     response.append(data)
-    #         # Response Data ---------------------------------------- Finish
+            # Set Category ---------------------------------------- Start
+            query = CTGR_GET_ALL_QUERY
+            category = DBHelper().execute(query)
+            for ctg in category:
+                for rsl in result:
+                    if rsl['category_id'] == ctg['id']:
+                        rsl['category'] = ctg['category']
+            # Set Category ---------------------------------------- Finish
 
-    #         # Return Response ======================================== 
-    #         return success_data("Successed!", response)
+            # Response Data ---------------------------------------- Start
+            response = []
+            for rsl in result:
+                createdAt = split_date_time(datetime.fromtimestamp(rsl["created_at"]/1000))
+                updatedAt = split_date_time(datetime.fromtimestamp(rsl["updated_at"]/1000))
+                data = {
+                    "guest_id" : rsl["id"],
+                    "category_id" : rsl["category_id"],
+                    "event" : rsl["category"],
+                    "name" : rsl["name"],
+                    "phone" : rsl["phone"],
+                    "alias" : rsl["alias"],
+                    "invitation_code" : rsl["code"],
+                    "user_owner" : rsl["user_id"],
+                    "created_at": createdAt,
+                    "updated_at": updatedAt
+                }
+                response.append(data)
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return response
         
-    #     except Exception as e:
-    #         return bad_request(str(e))
-    # # GET DETAIL GUEST ============================================================ End
+        except Exception as e:
+            return bad_request(str(e))
+    # GET DETAIL GUEST ============================================================ End
+
+    # GET DETAIL GUEST ============================================================ Begin
+    # Clear
+    def view_guest_by_id(datas):
+        try:
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
+            
+            if "guest_id" not in datas:
+                return parameter_error("Missing 'guest_id' in Request Body.")
+            
+            guestId = datas["guest_id"]
+            if guestId == "":
+                return defined_error("Id tamu tidak boleh kosong.", "Defined Error", 400)
+            # Checking Request Body ---------------------------------------- Finish
+            
+            # Checking Data ---------------------------------------- Start
+            query = GUEST_GET_BY_ID_QUERY
+            values = (guestId,)
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 :
+                return defined_error(f"Data tamu untuk kode undangan {guestId} tidak dapat ditemukan.")
+            # Checking Data ---------------------------------------- Finish
+            
+            # Set Category ---------------------------------------- Start
+            query = CTGR_GET_ALL_QUERY
+            category = DBHelper().execute(query)
+            for ctg in category:
+                for rsl in result:
+                    if rsl['category_id'] == ctg['id']:
+                        rsl['category'] = ctg['category']
+            # Set Category ---------------------------------------- Finish
+
+            # Response Data ---------------------------------------- Start
+            rsl = result[0]
+            createdAt = split_date_time(datetime.fromtimestamp(rsl["created_at"]/1000))
+            updatedAt = split_date_time(datetime.fromtimestamp(rsl["updated_at"]/1000))
+            response = {
+                "guest_id" : rsl["id"],
+                "category_id" : rsl["category_id"],
+                "event" : rsl["category"],
+                "name" : rsl["name"],
+                "phone" : rsl["phone"],
+                "alias" : rsl["alias"],
+                "invitation_code" : rsl["code"],
+                "user_owner" : rsl["user_id"],
+                "created_at": createdAt,
+                "updated_at": updatedAt
+            }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return response
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET DETAIL GUEST ============================================================ End
 
     # # UPDATE GUEST ============================================================ Begin
     # def edit_guest(user_id, user_role,  datas):
@@ -252,48 +337,50 @@ class GuestModels():
     #         return bad_request(str(e))
     # # UPDATE GUEST ============================================================ End
 
-    # # DELETE GUEST ============================================================ Begin
-    # def delete_guest(user_id, user_role, datas):     
-    #     try:
-    #         # Checking Request Body ---------------------------------------- Start
-    #         if datas == None:
-    #             return invalid_params()
+    # DELETE GUEST ============================================================ Begin
+    # Clear
+    def delete_guest(user_id, user_role, datas):     
+        try:
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
             
-    #         requiredData = ["greeting_id"]
-    #         if requiredData not in datas:
-    #             return parameter_error(f"Missing {requiredData} in Request Body")
-    #         # Checking Request Body ---------------------------------------- Finish
+            if "guest_id" not in datas:
+                return parameter_error("Missing 'guest_id' in Request Body.")
             
-    #         grtgId = datas["greeting_id"].strip()
+            guestId = datas["guest_id"]
+            if guestId == "":
+                return defined_error("Id tamu tidak boleh kosong.", "Defined Error", 400)
+            # Checking Request Body ---------------------------------------- Finish
             
-    #         # Data Validation ---------------------------------------- Start
-    #         query = GRTG_GET_BY_ID_QUERY
-    #         values = (grtgId,)
-    #         result = DBHelper().get_data(query, values)
-    #         if len(result) == 0 :
-    #             return defined_error("Ucapan selamat tidak dapat ditemukan.", "Bad Request", 400)
-    #         # Data Validation ---------------------------------------- Finish
-            
-    #         # Delete Data ---------------------------------------- Start
-    #         timestamp = int(round(time.time()*1000))
-    #         query = GRTG_DELETE_QUERY
-    #         values = (timestamp, user_id, grtgId)
-    #         DBHelper().save_data(query, values)
-    #         # Delete Data ---------------------------------------- Finish
+            # Data Validation ---------------------------------------- Start
+            query = GUEST_GET_BY_ID_QUERY
+            values = (guestId,)
+            result = DBHelper().get_data(query, values)
+            if len(result) == 0 :
+                return defined_error("Data tamu tidak dapat ditemukan.")
+            # Data Validation ---------------------------------------- Finish
 
-    #         # Log Activity Record ---------------------------------------- Start
-    #         activity = f"Ucapan selamat dari: {result[0]['email']}, telah dihapus oleh {user_role} dengan id {user_id}"
-    #         query = LOG_ADD_QUERY
-    #         values = (user_id, activity, )
-    #         DBHelper().save_data(query, values)
-    #         # Log Activity Record ---------------------------------------- Finish
+            # Delete Data ---------------------------------------- Start
+            timestamp = int(round(time.time()*1000))
+            query = GUEST_DELETE_QUERY
+            values = (timestamp, user_id, guestId)
+            DBHelper().save_data(query, values)
+            # Delete Data ---------------------------------------- Finish
 
-    #         # Return Response ======================================== 
-    #         return success("Successed!")
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"User dengan id {user_id} menghapus data tamu {result[0]['name']}."
+            query = LOG_ADD_QUERY
+            values = (user_id, 2, activity, timestamp, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success("Deleted!")
             
-    #     except Exception as e:
-    #         return bad_request(str(e))
-    # # DELETE GUEST ============================================================ End
+        except Exception as e:
+            return bad_request(str(e))
+    # DELETE GUEST ============================================================ End
 
     # GET ROW-COUNT GUEST ============================================================ Begin
     # Clear

@@ -10,13 +10,13 @@ from .. import db
 """
 class Invitation(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_level = db.Column(db.Integer, nullable=False, comment="1 = Admin, 2 = User")
     user_id = db.Column(db.Integer, nullable=False)
+    user_level = db.Column(db.Integer, nullable=False, comment="1 = Admin, 2 = User")
     category_id = db.Column(db.Integer, nullable=False)
     template_id = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(150), nullable=False)
-    wallpaper = db.Column(db.Text(), nullable=True)
     personal_data = db.Column(db.Text(), nullable=False)
+    other_info = db.Column(db.Text(), nullable=True)
     inv_setting = db.Column(db.Text(), nullable=True)
     code = db.Column(db.String(6), nullable=False)
     link = db.Column(db.Text(), nullable=True)

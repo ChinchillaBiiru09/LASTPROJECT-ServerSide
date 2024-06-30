@@ -4,12 +4,13 @@ from sqlalchemy.sql import func
 
 class Guest(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    category_id = db.Column(db.Integer, nullable=False)
-    name = db.Column(db.String(150), nullable=False)
-    alias = db.Column(db.String(60), nullable=True)
     user_id = db.Column(db.Integer, nullable=False)
+    user_level = db.Column(db.Integer, nullable=False)
+    category_id = db.Column(db.Integer, nullable=False)
+    invitation_code = db.Column(db.String(6), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    address = db.Column(db.String(60), nullable=True)
     phone = db.Column(db.String(20), nullable=True)
-    code = db.Column(db.String(6), nullable=False)
     created_at = db.Column(db.BigInteger, nullable=False)
     created_by = db.Column(db.Integer, nullable=False)
     updated_at = db.Column(db.BigInteger, nullable=False)

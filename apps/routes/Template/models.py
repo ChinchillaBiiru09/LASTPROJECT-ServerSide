@@ -3,6 +3,7 @@ from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_template, vld_role
 from ...utilities.utils import random_number, saving_image, saving_file, split_date_time
+from ..Category.models import CategoryModels
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
@@ -13,12 +14,12 @@ import time, os, base64
 # TEMPLATE MODEL CLASS ============================================================ Begin
 class TemplateModels():
     # CREATE TEMPLATE ============================================================ Begin
+    # Clear
     def add_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
-            access = vld_role(user_role)
-            if not access: # Access = True -> Admin
-                return authorization_error()
+            access = vld_role(user_role) # Access = True -> Admin
+            accLevel = 1 if access else authorization_error()
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
@@ -65,7 +66,7 @@ class TemplateModels():
             # Wallpaper
             wallpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper.jpg")
             wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName)
-            saving_file(wallpaper, wallpPath)
+            saving_image(wallpaper, wallpPath)
             # Saving File ---------------------------------------- Finish
             
             # Insert Data ---------------------------------------- Start
@@ -78,7 +79,7 @@ class TemplateModels():
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan id {user_id} menambahkan template baru: {title}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
+            values = (user_id, accLevel, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
@@ -90,12 +91,27 @@ class TemplateModels():
     # CREATE TEMPLATE ============================================================ End
 
     # GET ALL TEMPLATE ============================================================ Begin
-    def view_template():
+    def view_template(datas):
         try:
+            # Checking Request Body ---------------------------------------- Start
+            if len(datas) != 0:
+                if "category_id" not in datas:
+                    return parameter_error("Missing 'category_id' in request body.")
+                
+                catId = datas["category_id"]
+                if catId == "":
+                    return defined_error("Id kategori tidak boleh kosong.", "Defined Error", 499)
+            # Checking Request Body ---------------------------------------- Finish
+
             # Checking Data ---------------------------------------- Start
-            query = TMPLT_GET_ALL_QUERY
-            result = DBHelper().execute(query)
-            if len(result) < 1 or result is None:
+            if len(datas) != 0:
+                query = TMPLT_GET_BY_CAT_QUERY
+                values = (catId, )
+                result = DBHelper().get_data(query, values)
+            else:
+                query = TMPLT_GET_ALL_QUERY
+                result = DBHelper().execute(query)
+            if len(result) < 1:
                 return not_found("Data template tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
@@ -283,32 +299,46 @@ class TemplateModels():
             query = TMPLT_GET_BY_ID_QUERY
             values = (tempId,)
             result = DBHelper().get_data(query, values)
-            if len(result) == 0 :
-                return not_found(f"Template dengan Id {tempId} tidak dapat ditemukan.")
+            if len(result) < 1 :
+                return not_found(f"Data template dengan Id {tempId} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
 
-            # Generate File URL ---------------------------------------- Start
+            # Get & Join Data Category ---------------------------------------- Start
             template = result[0]
+            query = CTGR_GET_BY_ID_QUERY
+            values = (template['category_id'], )
+            category = DBHelper().get_data(query, values)
+            if len(result) < 1 :
+                return not_found(f"Data kategori dengan Id {template['category_id']} tidak dapat ditemukan.")
+            template["category"] = category[0]["category"]
+            # Get & Join Data Category ---------------------------------------- Finish
+
+            # Generate File URL ---------------------------------------- Start
             if len(result) >= 1:
                 detailRequestURL = str(request.url).find('?')
                 if detailRequestURL != -1:
                     index = detailRequestURL
                     request.url = request.url[:index]
-            for item in result:
-                template["thumbnail"] = f"{request.url_root}template/media/thumbnail/{template['thumbnail']}"
-                template["css_file"] = f"{request.url_root}template/media/css/{template['css_file']}"
-                template["js_file"] = f"{request.url_root}template/media/js/{template['js_file']}"
-                template["wallpaper"] = f"{request.url_root}template/media/wallpaper/{template['wallpaper']}"
+            template["thumbnail"] = f"{request.url_root}template/media/thumbnail/{template['thumbnail']}"
+            template["css_file"] = f"{request.url_root}template/media/css/{template['css_file']}"
+            template["js_file"] = f"{request.url_root}template/media/js/{template['js_file']}"
+            template["wallpaper"] = f"{request.url_root}template/media/wallpaper/{template['wallpaper']}"
             # Generate File URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
+            template['created_at'] = split_date_time(datetime.fromtimestamp(template['created_at']/1000))
+            template['updated_at'] = split_date_time(datetime.fromtimestamp(template['updated_at']/1000))
             response = {
-                "template_id" : template["id"],
-                "thumbnail" : template["thumbnail"],
-                "css_file" : template["css_file"],
-                "js_file" : template["js_file"],
-                "wallpaper" : template["wallpaper"],
-                "updated_at": template["updated_at"]
+                    "template_id" : template["id"],
+                    "title" : template["title"].title(),
+                    "thumbnail" : template["thumbnail"],
+                    "css_file" : template["css_file"],
+                    "js_file" : template["js_file"],
+                    "wallpaper": template["wallpaper"],
+                    "category_id" : template["category_id"],
+                    "category" : template["category"],
+                    "created_at" : template['created_at'],
+                    "updated_at" : template['updated_at']
             }
             # Response Data ---------------------------------------- Finish
 
@@ -407,69 +437,4 @@ class TemplateModels():
         except Exception as e:
             return bad_request(str(e))
     # GET ROW-COUNT TEMPLATE ============================================================ End
-
-    # REQUEST TEMPLATE ============================================================ Begin
-    # Clear// input data checker belum
-    def create_request_template(user_id, user_role, datas):
-        try:
-            # Access Validation ---------------------------------------- Start
-            access = vld_role(user_role)
-            acclevel = 2
-            if access: # Access = True -> Admin
-                return authorization_error()
-            # Access Validation ---------------------------------------- Finish
-
-            # Checking Request Body ---------------------------------------- Start
-            if datas == None:
-                return invalid_params()
-            
-            requiredData = ["category_id", "template_design", "description", "deadline", "type"]
-            for req in requiredData:
-                if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body.")
-            # Checking Request Body ---------------------------------------- Finish
-            
-            # Initialize Data Input ---------------------------------------- Start
-            tempDesign = datas["template_design"]
-            descript = datas["description"]
-            deadline = datas["deadline"]
-            type = datas["type"]
-            catgId = datas["category_id"]
-            # Initialize Data Input ---------------------------------------- Finish
-
-            # Data Validation ---------------------------------------- Start
-            # tmpltCheck = vld_template(tempDesign, thumbnail, css, wallpaper)
-            # if len(tmpltCheck) != 0:
-            #     return defined_error(tmpltCheck, "Bad Request", 400)
-            # Data Validation ---------------------------------------- Finish
-
-            # Saving File ---------------------------------------- Start
-            randomNumber = str(random_number(5))
-            # Design Photos
-            designFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_design_user_"+user_id+".jpg")
-            designPath = os.path.join(app.config['TEMPLATE_REQUEST_DESIGN'], designFileName)
-            saving_image(tempDesign, designPath)
-            # Saving File ---------------------------------------- Finish
-            
-            # Insert Data ---------------------------------------- Start
-            status = 0 # 0 = waiting | 1 = checked | 2 = acc | decline
-            timestamp = int(round(time.time()*1000))
-            query = REQ_ADD_QUERY
-            values = (user_id, acclevel, catgId, designFileName, descript, deadline, type, status, timestamp, user_id, timestamp, user_id)
-            DBHelper().save_data(query, values)
-            # Insert Data ---------------------------------------- Finish
-
-            # Log Activity Record ---------------------------------------- Start
-            activity = f"User dengan id {user_id} mengirimkan request template baru."
-            query = LOG_ADD_QUERY
-            values = (user_id, acclevel, activity, timestamp, )
-            DBHelper().save_data(query, values)
-            # Log Activity Record ---------------------------------------- Finish
-
-            # Return Response ======================================== 
-            return success(statusCode=201)
-        
-        except Exception as e:
-            return bad_request(str(e))
-    # REQUEST TEMPLATE ============================================================ End
 # TEMPLATE MODEL CLASS ============================================================ End

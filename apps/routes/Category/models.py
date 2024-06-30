@@ -207,14 +207,8 @@ class CategoryModels():
 
     # GET DETAIL CATEGORY ============================================================ Begin
     # Clear
-    def view_detail_category(user_role, datas):
+    def view_detail_category(datas):
         try:
-            # Access Validation ---------------------------------------- Start
-            access = vld_role(user_role)
-            if not access: # Access = True -> Admin
-                return authorization_error()
-            # Access Validation ---------------------------------------- Finish
-
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()

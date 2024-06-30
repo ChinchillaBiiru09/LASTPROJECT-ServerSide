@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from flask import current_app as app
 from flask_jwt_extended import jwt_required, get_jwt
 
-from ...utilities.responseHelper import bad_request
+from ...utilities.responseHelper import bad_request, success, success_data
 from .models import TemplateModels
 
 
@@ -46,8 +46,11 @@ def create_data():
 @template.get('/')
 def get_data():
     try:
+        # Request Data ======================================== 
+        data = request.args
+
         # Request Process ======================================== 
-        response = TemplateModels.view_template()
+        response = TemplateModels.view_template(data)
 
         # Request Data ======================================== 
         return response
@@ -161,26 +164,3 @@ def count_data():
         return bad_request(str(e))
 # GET COUNT TEMPLATE ============================================================ End
 
-
-# GET COUNT TEMPLATE ============================================================ Begin
-# GET https://127.0.0.1:5000/template/request
-@template.post('/request')
-@jwt_required()
-def request_data():
-    try:
-        # Access User ======================================== 
-        id = str(get_jwt()["id"])
-        role = str(get_jwt()["role"])
-
-        # Request Data ======================================== 
-        data = request.json
-
-        # Request Process ======================================== 
-        response = TemplateModels.create_request_template(id, role, data)
-
-        # Request Data ======================================== 
-        return response
-
-    except Exception as e:
-        return bad_request(str(e))
-# GET COUNT TEMPLATE ============================================================ End

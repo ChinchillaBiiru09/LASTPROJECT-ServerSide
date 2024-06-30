@@ -22,6 +22,10 @@ app.config['SECRET_KEY'] = config.JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.JWT_ACCESS_TOKEN_EXPIRES
 jwt = JWTManager(app)
 
+# API Whatsapp
+app.config['ACCOUNT_SID'] = config.ACCOUNT_SID
+app.config['AUTH_TOKEN'] = config.AUTH_TOKEN
+
 # Config Database Migration
 app.config.from_object(ConnectDB)
 db = SQLAlchemy(app)
@@ -70,7 +74,7 @@ from .database import categoryDB
 from .database import templateDB
 from .database import invitationDB
 from .database import guestDB
-# from .database import testDB
+from .database import requserDB
 from .database import greetingDB
 
 # =================================== CONFIG ===================================
@@ -89,6 +93,7 @@ from .routes.Profile.controller import profile
 from .routes.Invitation.controller import invitation
 from .routes.Guest.controller import guest
 from .routes.Log.controller import log
+from .routes.Request.controller import reqtemp
 from .routes.tester.controller import test
 
 # Set Limiter Every Route
@@ -104,4 +109,5 @@ app.register_blueprint(profile)
 app.register_blueprint(invitation)
 app.register_blueprint(guest)
 app.register_blueprint(log)
+app.register_blueprint(reqtemp)
 app.register_blueprint(test)

@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from flask import current_app as app
 from flask_jwt_extended import jwt_required, get_jwt
 
-from ...utilities.responseHelper import bad_request
+from ...utilities.responseHelper import bad_request, success, success_data
 from .models import CategoryModels
 
 
@@ -109,14 +109,11 @@ def delete_data():
 @jwt_required()
 def detail_data():
     try:
-        # Access User ======================================== 
-        role = str(get_jwt()["role"])
-
         # Request Data ======================================== 
         data = request.args
 
         # Request Process ======================================== 
-        response = CategoryModels.view_detail_category(role, data)
+        response = CategoryModels.view_detail_category(data)
 
         # Request Data ======================================== 
         return response

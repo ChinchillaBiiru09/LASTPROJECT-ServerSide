@@ -156,10 +156,6 @@ CTGR_GET_WITH_FILTER_QUERY = """
 # ======================================================================== 
 # GREETING QUERY - START =================================================
 # ======================================================================== 
-INV_CODE_CHK_QUERY = """
-                    SELECT * FROM invitation 
-                    WHERE invitation_code=%s AND is_delete=0
-                """
 GRTG_ADD_QUERY = """
                     INSERT INTO greeting 
                     (name, email, message, invitation_code, user_id, created_at)
@@ -178,7 +174,7 @@ GRTG_GET_BY_USER_QUERY = """
                             WHERE user_id=%s AND is_delete=0
                         """
 GRTG_GET_BY_CODE_QUERY = """
-                            SELECT id, invitation_code, COUNT(*) as count FROM greeting 
+                            SELECT * FROM greeting 
                             WHERE invitation_code=%s AND is_delete=0
                         """
 GRTG_DELETE_QUERY = """
@@ -222,6 +218,10 @@ TMPLT_GET_BY_ID_QUERY = """
                             SELECT * FROM template 
                             WHERE id=%s AND is_delete=0
                         """
+TMPLT_GET_BY_CAT_QUERY = """
+                            SELECT * FROM template 
+                            WHERE category_id=%s AND is_delete=0
+                        """
 TMPLT_GET_WITH_FILTER_QUERY = """
                             """
 # ======================================================================== 
@@ -230,7 +230,7 @@ TMPLT_GET_WITH_FILTER_QUERY = """
 
 
 # ======================================================================== 
-# REQ TEMPLATE QUERY - START =================================================
+# REQ TEMPLATE QUERY - START =============================================
 # ======================================================================== 
 TMPLT_CHK_QUERY = """
                     SELECT * FROM template 
@@ -238,11 +238,16 @@ TMPLT_CHK_QUERY = """
                 """
 REQ_ADD_QUERY = """
                     INSERT INTO requser 
-                    (user_id, user_level, category, design_file, description, deadline, type, status, created_at, created_by, updated_at, updated_by)
+                    (user_id, user_level, category, design_file, description, 
+                    deadline, type, status, created_at, created_by, updated_at, updated_by)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
+REQ_GET_BY_USER_QUERY = """
+                            SELECT * FROM requser
+                            WHERE user_id=%s AND user_level=%s AND is_delete=0
+                        """
 # ======================================================================== 
-# REQ TEMPLATE QUERY - END ===================================================
+# REQ TEMPLATE QUERY - END ===============================================
 # ========================================================================
 
 
@@ -254,13 +259,13 @@ INV_CHK_TITLE_QUERY = """
                             WHERE title=%s AND is_delete=0
                         """
 INV_CHK_CODE_QUERY = """
-                        SELECT code FROM invitation 
+                        SELECT * FROM invitation 
                         WHERE code=%s AND is_delete=0
                     """
 INV_ADD_QUERY = """
                     INSERT INTO invitation 
-                    (user_level, user_id, category_id, template_id, title, wallpaper, personal_data, inv_setting, code, link, created_at, created_by, updated_at, updated_by)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (user_level, user_id, category_id, template_id, title, personal_data, inv_setting, code, link, created_at, created_by, updated_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 INV_UPDATE_QUERY = """
                         UPDATE invitation 
@@ -305,8 +310,8 @@ GUEST_CHK_QUERY = """
                 """
 GUEST_ADD_QUERY = """
                     INSERT INTO guest 
-                    (category, created_at, created_by, updated_at, updated_by)
-                    VALUES (%s, %s, %s, %s, %s)
+                    (user_id, user_level, category_id, invitation_code, name, address, phone, created_at, created_by, updated_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 GUEST_UPDATE_QUERY = """
                         UPDATE guest 
@@ -331,8 +336,8 @@ GUEST_GET_BY_USR_QUERY = """
                             WHERE user_id=%s AND is_delete=0
                         """
 GUEST_GET_BY_CODE_QUERY = """
-                            SELECT id, code, COUNT(*) as count FROM guest 
-                            WHERE code=%s AND is_delete=0
+                            SELECT * FROM guest 
+                            WHERE invitation_code=%s AND is_delete=0
                         """
 GUEST_GET_WITH_FILTER_QUERY = """
                             """

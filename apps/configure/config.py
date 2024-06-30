@@ -22,5 +22,9 @@ DB_HOST = os.getenv("DB_HOST")
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=1)
 
+# TWILIO WHATSAPP API
+ACCOUNT_SID = os.getenv("ACCOUNT_SID")
+AUTH_TOKEN = os.getenv("AUTH_TOKEN")
+
 # Folder Config
 STATIC_FOLDER_PATH = os.path.abspath(os.path.join(__file__, "../../static")) + "/"

@@ -302,6 +302,34 @@ def vld_category(category, format_data, is_create=True):
     return checkResult
 # CATEGORY VALIDATION ============================================================ End
 
+# GUEST VALIDATION ============================================================ Begin
+def vld_guest(name, address, phone):
+    checkResult = []
+
+    if name == "":
+        checkResult.append(f"Nama tidak boleh kosong")
+    if address == "":
+        checkResult.append(f"Alamat tidak boleh kosong")
+    if phone == "":
+        checkResult.append(f"Nomor handphone tidak boleh kosong")
+
+
+    sanitName, charName = sanitize_all_char(name)
+    if sanitName:
+        checkResult.append(f"Nama tidak boleh mengandung karakter {charName}")
+    sanitPhone, charPhone = sanitize_phone_char(phone)
+    if sanitPhone:
+        checkResult.append(f"Nomor handphone tidak boleh mengandung karakter {charPhone}")
+        
+    
+    if string_checker(name):
+        checkResult.append(f"Nama tidak valid")
+    if phone_checker(phone):
+        checkResult.append(f"Nomor handphone tidak valid")
+
+    return checkResult 
+# GUEST VALIDATION ============================================================ End
+
 # GREETING VALIDATION ============================================================ Begin
 def vld_greeting(invCode, name, email, greeting):
     checkResult = []
@@ -328,11 +356,11 @@ def vld_greeting(invCode, name, email, greeting):
         checkResult.append(f"Email tidak valid.")
     
     
-    query = INV_CODE_CHK_QUERY
+    query = INV_CHK_CODE_QUERY
     values = (invCode,)
     result = DBHelper().get_data(query, values)
-    if len(result) != 0 or result != None:
-        checkResult.append(f"Kode Undangan sudah tidak aktif.")
+    if len(result) < 1:
+        checkResult.append(f"Data Undangan tidak dapat ditemukan.")
 
     return checkResult 
 # GREETING VALIDATION ============================================================ End
@@ -433,22 +461,25 @@ def vld_invitation(categoryId, templateId, title, personalData):
     if len(personalData) < 1:
         personData = False
         checkResult.append("Personal data tidak boleh kosong.")
-    elif len(ckCategory) > 0:
-        formatData = json.loads(ckCategory[0]["format_data"])
-        for key, value in formatData.items():
-            if value == "required" and key not in personalData:
-                checkResult.append(f"Missing data {key} from personal data.")
-            elif value == "required":
-                if personalData[key] == "" or personalData[key] is None:
-                    personData = False
-                    checkResult.append(f"Data {key} tidak boleh kosong.")
+    # elif len(ckCategory) > 0:
+    #     formatData = json.loads(ckCategory[0]["format_data"])
+    #     for key, value in formatData.items():
+    #         if value == "required" and key not in personalData:
+    #             checkResult.append(f"Missing data {key} from personal data.")
+    #         elif value == "required":
+    #             if personalData[key] == "" or personalData[key] is None:
+    #                 personData = False
+    #                 checkResult.append(f"Data {key} tidak boleh kosong.")
     # Check Format Data ---------------------------------------- Finish
 
     # Check Personal Data ---------------------------------------- Start
     if personData:
-        formatDate = datetime.strptime(personalData["date"], "%A, %d %B %Y")
-        formatDate = datetime.timestamp(formatDate)
-        personalData["date"] = int(round(formatDate*1000))
+        marriageDate = datetime.strptime(personalData["marriage"], "%d %B %Y %H:%M %p")
+        receptionDate = datetime.strptime(personalData["reception"], "%d %B %Y %H:%M %p")
+        marriageDate = datetime.timestamp(marriageDate)
+        receptionDate = datetime.timestamp(receptionDate)
+        personalData["marriage"] = int(round(marriageDate*1000))
+        personalData["reception"] = int(round(receptionDate*1000))
     # Check Personal Data ---------------------------------------- Finish
 
     # Create Invitation Code ========================================
