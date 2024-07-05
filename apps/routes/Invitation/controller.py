@@ -100,7 +100,7 @@ def delete_data():
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Process ======================================== 
         response = InvitationModels.delete_invitation(id, role, data)

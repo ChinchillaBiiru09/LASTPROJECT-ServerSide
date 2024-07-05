@@ -21,5 +21,5 @@ def authorization_error(statusCode=403):
 def invalid_params(statusCode=400):
     return make_response(jsonify({"statusCode":statusCode, "error":"Invalid Parameters"}), 400)
 
-def bad_request(description="", error="Bad Request", statusCode=400):
-    return make_response(jsonify({"statusCode":statusCode, "error":error, "description":f"{description}"}), 400)
+def bad_request(message="", error="Bad Request", statusCode=400):
+    return make_response(jsonify({"statusCode":statusCode, "error":error, "message":f"{message}"}), 400)

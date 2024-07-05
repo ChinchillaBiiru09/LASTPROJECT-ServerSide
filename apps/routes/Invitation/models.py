@@ -2,16 +2,14 @@ from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_role, vld_invitation
-from ...utilities.utils import random_number, saving_image, split_date_time,random_string_number
-from ..Template.models import TemplateModels
-from ..Category.models import CategoryModels
+from ...utilities.utils import random_number, saving_image, split_date_time, random_string_number
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from twilio.rest import Client
 
-import time, json
+import time, json,os
 
 
 # INVITATION MODEL CLASS ============================================================ Begin
@@ -53,22 +51,29 @@ class InvitationModels():
             
             # Saving File ---------------------------------------- Start
             # wallpaper
-            # wallpaperFileName = ""
-            # if wallpaper != "":
-            #     wallpaperFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_wallpaper.jpg")
-            #     wallpaperPath = os.path.join(app.config['USER_INVITATION_FILE'], wallpaperFileName)
-            #     saving_image(wallpaper, wallpaperPath)
+            wpFileName = ""
+            # if len(personalData) > 0
+            if personalData['womans_photo'] != "":
+                wpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_woman_photo_"+user_id+".jpg")
+                wpPath = os.path.join(app.config['USER_INVITATION_FILE'], wpFileName)
+                saving_image(personalData['womans_photo'], wpPath)
+                personalData['womans_photo'] = wpFileName
+            if personalData['mans_photo'] != "":
+                mpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_man_photo_"+user_id+".jpg")
+                mpPath = os.path.join(app.config['USER_INVITATION_FILE'], mpFileName)
+                saving_image(personalData['mans_photo'], mpPath)
+                personalData['mans_photo'] = mpFileName
             # Saving File ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             titlelink = title.replace(' ', '-')
-            invLink =  app.config['FE_URL']+"/"+invCode+"/"+titlelink
+            invLink =  titlelink
             personalData = json.dumps(personalData)
             invSett = json.dumps(invSett)
             query = INV_ADD_QUERY
             values = (accLevel, user_id, categoryId, templateId, title, personalData, invSett, invCode, invLink, timestamp, user_id, timestamp, user_id)
-            DBHelper().save_data(query, values)
+            resReturn = DBHelper().save_return(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
@@ -77,9 +82,16 @@ class InvitationModels():
             values = (user_id, accLevel, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            response = {
+                "inv_id": resReturn,
+                "inv_code": invCode
+            }
+            # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success(statusCode=201)
+            return success_data(response, statusCode=201)
         
         except Exception as e:
             return bad_request(str(e))
@@ -106,22 +118,17 @@ class InvitationModels():
             # Checking Request Body ---------------------------------------- Finish
             
             # Checking Data ---------------------------------------- Start
-            if access:
-                query = INV_GET_ALL_QUERY
-                result = DBHelper().execute(query)
-            else:
-                query = INV_GET_USER_ID_QUERY
-                values = (user_id, accLevel, )
-                result = DBHelper().get_data(query, values)
-            
-            if len(result) < 1 or result is None:
+            query = INV_GET_BY_USR_QUERY
+            values = (user_id, accLevel, )
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1:
                 return not_found("Data undangan tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Get Data Category ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             resultCtgr = DBHelper().execute(query)
-            if len(resultCtgr) < 1 or resultCtgr is None:
+            if len(resultCtgr) < 1:
                 return not_found("Data kategori tidak dapat ditemukan.")
             # Get Data Category ---------------------------------------- Finish
             
@@ -195,12 +202,12 @@ class InvitationModels():
     # GET ALL INVITATION ============================================================ End
 
     # UPDATE INVITATION ============================================================ Begin
-    def edit_invitation(user_id, user_role,  datas):
+    # Clear
+    def edit_invitation(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
             access = vld_role(user_role)
-            if not access:
-                return authorization_error()
+            accLevel = 1 if access else 2
             # Access Validation ---------------------------------------- Finish
             
             # Checking Request Body ---------------------------------------- Start
@@ -225,85 +232,112 @@ class InvitationModels():
             values = (invId,)
             result = DBHelper().get_data(query, values)
             if len(result) < 1 :
-                return not_found("Data undangan tidak dapat ditemukan.")
+                return not_found(f"Data undangan dengan id {invId} tidak dapat ditemukan.")
             
-            # ctgrCheck = vld_invitation(ctgr)
-            # if len(ctgrCheck) != 0:
-                return defined_error(ctgrCheck, "Bad Request", 400)
+            # Data Validation ---------------------------------------- Finish
+            
+            # Data Validation ---------------------------------------- Start
+            invCheck, personalData, invCode = vld_invitation(result[0]["category_id"], result[0]["template_id"], title, personalData, False)
+            if len(invCheck) != 0:
+                return defined_error(invCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
             
             # Update Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
-            # query = CTGR_UPDATE_QUERY
-            # values = (ctgr, timestamp, user_id, ctgrId)
-            # DBHelper().save_data(query, values)
+            personalData = json.dumps(personalData)
+            invSett = json.dumps(invSett)
+            query = INV_UPDATE_QUERY
+            values = (title, personalData, invSett, timestamp, user_id, invId)
+            DBHelper().save_data(query, values)
             # Update Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {ctgr}"
+            activity = f"{user_role.title()} dengan id {user_id} mengubah data undangan {result[0]['title']}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
-            # DBHelper().save_data(query, values)
+            values = (user_id, accLevel, activity, timestamp, )
+            DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Succeed!")
+            return success(message="Updated!")
             
         except Exception as e:
             return bad_request(str(e))
     # UPDATE INVITATION ============================================================ End
 
     # DELETE INVITATION ============================================================ Begin
+    # Clear
     def delete_invitation(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
-            access, message = vld_role(user_role)
-            if not access:
-                return defined_error(message, "Forbidden", 403)
+            access = vld_role(user_role)
+            accLevel = 1 if access else 2
             # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
-            if "category_id" not in datas:
-                return parameter_error(f"Missing 'category_id' in Request Body")
+            if "invitation_id" not in datas:
+                return parameter_error(f"Missing 'invitation_id' in Request Body.")
             
-            ctgrId = datas["category_id"].strip()
-            if ctgrId == "":
-                return defined_error("ID kategori tidak boleh kosong", "Defined Error", 400)
+            invId = datas["invitation_id"]
+            if invId == "":
+                return defined_error("Id undangan tidak boleh kosong", "Defined Error", 400)
             # Checking Request Body ---------------------------------------- Finish
             
             # Checking Data ---------------------------------------- Finish
             query = INV_GET_BY_ID_QUERY
-            values = (ctgrId,)
+            values = (invId,)
             result = DBHelper().get_data(query, values)
-            if len(result) == 0 :
-                return defined_error("Kategori tidak dapat ditemukan.", "Bad Request", 400)
+            if len(result) < 1 :
+                return not_found(f"Data undangan dengan id {invId} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Delete Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = INV_DELETE_QUERY
-            values = (timestamp, user_id, ctgrId)
+            values = (timestamp, user_id, invId, )
             DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
 
+            # Delete Join Data ---------------------------------------- Start
+            invCode = result[0]['code']
+            # Guest
+            query = GUEST_GET_BY_CODE_QUERY
+            values = (invCode, )
+            guest = DBHelper().get_count_filter_data(query, values)
+            if guest > 0:
+                query = GUEST_DELETE_INV_QUERY
+                values = (timestamp, user_id, invCode, )
+                DBHelper().save_data(query, values)
+
+            # Greeting
+            query = GRTG_GET_BY_CODE_QUERY
+            values = (invCode, )
+            greeting = DBHelper().get_count_filter_data(query, values)
+            if greeting > 0:
+                query = GRTG_DELETE_INV_QUERY
+                values = (timestamp, user_id, invCode, )
+                DBHelper().save_data(query, values)
+            # Delete Join Data ---------------------------------------- Finish
+
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menghapus kategori {ctgrId}"
+            activity = f"{user_role.title()} dengan id {user_id} menghapus data undangan {invId}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
+            values = (user_id, accLevel, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Deleted Successfully!", result)
+            return success(message="Deleted!")
             
         except Exception as e:
             return bad_request(str(e))
     # DELETE INVITATION ============================================================ End
 
     # GET DETAIL INVITATION ============================================================ Begin
+    # Clear // sesuaikan kategori
     def view_detail_invitation(user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -362,13 +396,27 @@ class InvitationModels():
             invitation["temp_css"] = f"{request.url_root}template/media/css/{templates[0]['css_file']}"
             invitation["temp_js"] = f"{request.url_root}template/media/js/{templates[0]['js_file']}"
             invitation["temp_wall"] = f"{request.url_root}template/media/wallpaper/{templates[0]['wallpaper']}"
+            invitation["temp_wall2"] = f"{request.url_root}template/media/wallpaper/{templates[0]['wallpaper_2']}"
             # Generate Invitation File URL ---------------------------------------- Finish
             
-            # Response Data ---------------------------------------- Start
+            # Set Data ---------------------------------------- Start
             invitation["personal_data"] = json.loads(invitation["personal_data"])
             invitation["inv_setting"] = json.loads(invitation["inv_setting"])
             invitation["created_at"] = split_date_time(datetime.fromtimestamp(invitation["created_at"]/1000))
             invitation["updated_at"] = split_date_time(datetime.fromtimestamp(invitation["updated_at"]/1000))
+            if invitation["category"].upper() == "PERNIKAHAN":
+                for data in invitation["personal_data"]:
+                    if data.upper() == "MARRIAGE":
+                        invitation["personal_data"][data] = split_date_time(datetime.fromtimestamp(invitation["personal_data"][data]/1000))
+                    if data.upper() == "RECEPTION":
+                        invitation["personal_data"][data] = split_date_time(datetime.fromtimestamp(invitation["personal_data"][data]/1000))
+                    if data.upper() == "WOMANS_PHOTO":
+                        invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+                    if data.upper() == "MANS_PHOTO":
+                        invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+            # Set Data ---------------------------------------- Finish
+
+            # Response Data ---------------------------------------- Start
             response = {
                     "invitation_id" : invitation["id"],
                     "user_id" : invitation["user_id"],
@@ -385,6 +433,7 @@ class InvitationModels():
                     "template_css" : invitation["temp_css"],
                     "template_js" : invitation["temp_js"],
                     "template_wall" : invitation["temp_wall"],
+                    "template_wall2" : invitation["temp_wall2"],
                     "template_title" : invitation["template_title"]
             }
             # Response Data ---------------------------------------- Finish
@@ -466,7 +515,6 @@ class InvitationModels():
             to=f'whatsapp:{to}'
             )
 
-            print(message.sid)
             # Data Validation ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start

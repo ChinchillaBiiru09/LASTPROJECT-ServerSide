@@ -46,11 +46,11 @@ def create_data():
 @template.get('/')
 def get_data():
     try:
-        # Request Data ======================================== 
-        data = request.args
+        # # Request Data ======================================== 
+        # data = request.args
 
         # Request Process ======================================== 
-        response = TemplateModels.view_template(data)
+        response = TemplateModels.view_template()
 
         # Request Data ======================================== 
         return response
@@ -95,7 +95,7 @@ def delete_data():
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Process ======================================== 
         response = TemplateModels.delete_template(id, role, data)

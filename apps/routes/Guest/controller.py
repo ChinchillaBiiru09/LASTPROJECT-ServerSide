@@ -63,6 +63,30 @@ def get_data():
 # GET GUEST ============================================================ End
 
 
+# UPDATE GUEST ============================================================ Begin
+# PUT https://127.0.0.1:5000/guest/
+@guest.put('/')
+@jwt_required()
+def update_data():
+    try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = GuestModels.edit_guest(id, role,  data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# UPDATE GUEST ============================================================ End
+
+
 # DELETE GUEST ============================================================ Begin
 # DELETE https://127.0.0.1:5000/guest/
 @guest.delete('/')
@@ -104,7 +128,7 @@ def detail_data():
         response = GuestModels.view_detail_guest(role, data)
 
         # Request Data ======================================== 
-        return success_data(response)
+        return response
 
     except Exception as e:
         return bad_request(str(e))
@@ -124,7 +148,7 @@ def detail_by_id():
         response = GuestModels.view_guest_by_id(data)
 
         # Request Data ======================================== 
-        return success_data(response)
+        return response
 
     except Exception as e:
         return bad_request(str(e))

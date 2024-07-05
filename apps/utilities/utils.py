@@ -20,6 +20,7 @@ def saving_image(encodedData, fileName):
     return cv2.imwrite(fileName, img)
 
 def saving_file(encodedData, fileName):
+    encodedData = encodedData.split(',')[1]
     arr = np.fromstring(base64.b64decode(encodedData), np.uint8)
     with open(fileName, "wb") as file:
         file.write(arr)
@@ -158,17 +159,22 @@ def split_date_time(datetimes):
     monthFormat = ""
     
     # List Hari dan Bulan Dalam Bahasa Inggris dan Indonesia
-    # bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
-    bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+    bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    bln = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
     months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     hari = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     
     # Ambil Hari dan Bulan dari Data yang datetime yang Akan di Format
     dayData = datetimes.strftime("%A")
+    dateData = datetimes.strftime("%d")
     monthData = datetimes.strftime("%B")
+    nummonthData = datetimes.strftime("%m")
     yearData = datetimes.strftime("%Y")
-    timeData = datetimes.strftime("%H:%M:%S")
+    timeData = datetimes.strftime("%H:%M")
+    hourData = datetimes.strftime("%H")
+    minuteData = datetimes.strftime("%M")
+    partTime = datetimes.strftime("%p")
     
     # Ubah Hari dan Bulan ke Bahasa Indonesia
     for day in days:
@@ -176,18 +182,26 @@ def split_date_time(datetimes):
             dayFormat = hari[days.index(day)]
     for month in months:
         if month == monthData:
-            monthFormat = bulan[months.index(month)]
+            monthFormat = bln[months.index(month)]
+            fullmonthFormat = bulan[months.index(month)]
     
     # Format datetime
     datetimes = {
+        "minute" : minuteData,
+        "hour" : hourData,
         "day" : dayFormat,
+        "dates" : dateData,
         "month" : monthFormat,
+        "fullmonth" : fullmonthFormat,
+        "no_month" : nummonthData,
         "year" : yearData,
         "time" : timeData,
         "day_month" : datetimes.strftime(f"%d {monthFormat}"),
         "month_year" : datetimes.strftime(f"{monthFormat} %Y"),
         "date" : datetimes.strftime(f"%d {monthFormat} %Y"),
-        "full" : datetimes.strftime(f"{dayFormat}, %d {monthFormat} %Y, %H:%M:%S")
+        "date_time" : datetimes.strftime(f"%d {monthFormat} %Y %H:%M %p"),
+        "edate_time" : datetimes.strftime(f"%d %B %Y %H:%M %p"),
+        "full" : datetimes.strftime(f"{dayFormat}, %d {monthFormat} %Y, %H:%M:%S %p")
     }
     
     return datetimes

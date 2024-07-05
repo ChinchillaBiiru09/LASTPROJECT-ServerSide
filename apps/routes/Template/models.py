@@ -9,7 +9,7 @@ from flask import request, current_app as app
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
-import time, os, base64
+import time, os
 
 # TEMPLATE MODEL CLASS ============================================================ Begin
 class TemplateModels():
@@ -26,29 +26,29 @@ class TemplateModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["tmplt_title", "tmplt_thumbnail", "css_file", "js_file", "tmplt_wallpaper", "category_id"]
+            requiredData = ["title", "thumbnail", "css_file", "js_file", "wallpaper_1", "wallpaper_2", "category_id"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
             # Checking Request Body ---------------------------------------- Finish
             
             # Initialize Data Input ---------------------------------------- Start
-            title = datas["tmplt_title"].strip()
-            thumbnail = datas["tmplt_thumbnail"]
+            title = datas["title"].strip()
+            thumbnail = datas["thumbnail"]
             css = datas["css_file"]
             js = datas["js_file"]
-            wallpaper = datas["tmplt_wallpaper"]
+            wallpaper1 = datas["wallpaper_1"]
+            wallpaper2 = datas["wallpaper_2"]
             ctgr_id = datas["category_id"]
             # Initialize Data Input ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            tmpltCheck = vld_template(title, thumbnail, css, wallpaper)
+            tmpltCheck, randomNumber = vld_template(title, thumbnail, css, wallpaper1)
             if len(tmpltCheck) != 0:
                 return defined_error(tmpltCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
 
             # Saving File ---------------------------------------- Start
-            randomNumber = str(random_number(5))
             # Thumbnail
             thumbFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_thumbnail.jpg")
             thumbPath = os.path.join(app.config['TEMPLATE_THUMBNAIL_PHOTOS'], thumbFileName)
@@ -63,16 +63,22 @@ class TemplateModels():
                 jsFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_script.js")
                 jsPath = os.path.join(app.config['TEMPLATE_JS_FILE'], jsFileName)
                 saving_file(js, jsPath)
-            # Wallpaper
-            wallpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper.jpg")
-            wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName)
-            saving_image(wallpaper, wallpPath)
+            # Wallpaper 1
+            wallpFileName1 = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper_1.jpg")
+            wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName1)
+            saving_image(wallpaper1, wallpPath)
+            # wallpaper 2
+            wallpFileName2 = ""
+            if wallpaper2 != "":
+                wallpFileName2 = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper_2.jpg")
+                wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName2)
+                saving_image(wallpaper2, wallpPath)
             # Saving File ---------------------------------------- Finish
             
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = TMPLT_ADD_QUERY
-            values = (title, thumbFileName, cssFileName, jsFileName, wallpFileName, ctgr_id, timestamp, user_id, timestamp, user_id)
+            values = (title, thumbFileName, cssFileName, jsFileName, wallpFileName1, wallpFileName2, ctgr_id, timestamp, user_id, timestamp, user_id)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
@@ -91,26 +97,21 @@ class TemplateModels():
     # CREATE TEMPLATE ============================================================ End
 
     # GET ALL TEMPLATE ============================================================ Begin
-    def view_template(datas):
+    def view_template():
         try:
-            # Checking Request Body ---------------------------------------- Start
-            if len(datas) != 0:
-                if "category_id" not in datas:
-                    return parameter_error("Missing 'category_id' in request body.")
+            # # Checking Request Body ---------------------------------------- Start
+            # if len(datas) != 0:
+            #     if "category_id" not in datas:
+            #         return parameter_error("Missing 'category_id' in request body.")
                 
-                catId = datas["category_id"]
-                if catId == "":
-                    return defined_error("Id kategori tidak boleh kosong.", "Defined Error", 499)
-            # Checking Request Body ---------------------------------------- Finish
+            #     catId = datas["category_id"]
+            #     if catId == "":
+            #         return defined_error("Id kategori tidak boleh kosong.", "Defined Error", 499)
+            # # Checking Request Body ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
-            if len(datas) != 0:
-                query = TMPLT_GET_BY_CAT_QUERY
-                values = (catId, )
-                result = DBHelper().get_data(query, values)
-            else:
-                query = TMPLT_GET_ALL_QUERY
-                result = DBHelper().execute(query)
+            query = TMPLT_GET_ALL_QUERY
+            result = DBHelper().execute(query)
             if len(result) < 1:
                 return not_found("Data template tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
@@ -118,7 +119,7 @@ class TemplateModels():
             # Get Data Category ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             resultCtgr = DBHelper().execute(query)
-            if len(resultCtgr) < 1 or resultCtgr is None:
+            if len(resultCtgr) < 1:
                 return not_found("Data kategori tidak dapat ditemukan.")
             # Get Data Category ---------------------------------------- Finish
 
@@ -140,6 +141,7 @@ class TemplateModels():
                 item["css_file"] = f"{request.url_root}template/media/css/{item['css_file']}"
                 item["js_file"] = f"{request.url_root}template/media/js/{item['js_file']}"
                 item["wallpaper"] = f"{request.url_root}template/media/wallpaper/{item['wallpaper']}"
+                item["wallpaper_2"] = f"{request.url_root}template/media/wallpaper/{item['wallpaper_2']}"
             # Generate File URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -154,6 +156,8 @@ class TemplateModels():
                     "css_file" : rsl["css_file"],
                     "js_file" : rsl["js_file"],
                     "wallpaper": rsl["wallpaper"],
+                    "wallpaper_2": rsl["wallpaper_2"],
+                    "category_id" : rsl["category_id"],
                     "category" : rsl["category"],
                     "created_at" : createdAt,
                     "updated_at" : updatedAt
@@ -254,8 +258,8 @@ class TemplateModels():
             # Data Validation ---------------------------------------- Start
             query = TMPLT_GET_BY_ID_QUERY
             values = (tempId,)
-            result = DBHelper().get_count_filter_data(query, values)
-            if result == 0 :
+            result = DBHelper().get_data(query, values)
+            if len(result) == 0 :
                 return not_found(f"Template dengan Id {tempId} tidak dapat ditemukan.")
             # Data Validation ---------------------------------------- Finish
             
@@ -265,11 +269,50 @@ class TemplateModels():
             values = (timestamp, user_id, tempId)
             DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
+            print("bisa")
+
+            # Delete Join Data ---------------------------------------- Start
+            # Invitation
+            query = INV_GET_BY_TEMP_QUERY
+            values = (tempId, )
+            invitation = DBHelper().get_data(query, values)
+            print("bisa")
+            if len(invitation) > 0:
+                query = INV_DELETE_TEMP_QUERY
+                values = (timestamp, user_id, tempId, )
+                DBHelper().save_data(query, values)
+                print("bisa")
+            
+                # Guest
+                for inv in invitation:
+                    invCode = inv['code']
+                    query = GUEST_GET_BY_CODE_QUERY
+                    values = (invCode, )
+                    guest = DBHelper().get_count_filter_data(query, values)
+                    print(guest)
+                    if guest > 0:
+                        print(invCode)
+                        query = GUEST_DELETE_INV_QUERY
+                        values = (timestamp, user_id, invCode, )
+                        DBHelper().save_data(query, values)
+                    print("bisa")
+
+                    # Greeting
+                    query = GRTG_GET_BY_CODE_QUERY
+                    values = (invCode, )
+                    greeting = DBHelper().get_count_filter_data(query, values)
+                    print(greeting)
+                    if greeting > 0:
+                        query = GRTG_DELETE_INV_QUERY
+                        values = (timestamp, user_id, invCode, )
+                        DBHelper().save_data(query, values)
+                    print("bisa")
+            # Delete Join Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan id {user_id} menghapus template {tempId}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
+            values = (user_id, 1, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
@@ -323,6 +366,7 @@ class TemplateModels():
             template["css_file"] = f"{request.url_root}template/media/css/{template['css_file']}"
             template["js_file"] = f"{request.url_root}template/media/js/{template['js_file']}"
             template["wallpaper"] = f"{request.url_root}template/media/wallpaper/{template['wallpaper']}"
+            template["wallpaper_2"] = f"{request.url_root}template/media/wallpaper/{template['wallpaper_2']}"
             # Generate File URL ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
@@ -335,6 +379,7 @@ class TemplateModels():
                     "css_file" : template["css_file"],
                     "js_file" : template["js_file"],
                     "wallpaper": template["wallpaper"],
+                    "wallpaper_2": template["wallpaper_2"],
                     "category_id" : template["category_id"],
                     "category" : template["category"],
                     "created_at" : template['created_at'],

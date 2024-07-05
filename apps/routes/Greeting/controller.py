@@ -89,8 +89,11 @@ def detail_data():
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
 
+        # Request Data ======================================== 
+        data = request.args
+
         # Request Process ======================================== 
-        response = GreetingModels.view_detail_greeting(id, role)
+        response = GreetingModels.view_detail_greeting(id, role, data)
 
         # Request Data ======================================== 
         return response

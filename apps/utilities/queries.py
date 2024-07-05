@@ -97,6 +97,10 @@ PROF_GET_BY_ID_QUERY = """
                         SELECT * FROM profile 
                         WHERE user_id=%s AND user_level=%s AND is_delete=0
                     """
+PROF_USER_GET_QUERY = """
+                        SELECT * FROM profile 
+                        WHERE user_level=%s AND is_delete=0
+                    """
 PROF_UPDATE_QUERY = """
                         UPDATE profile
                         SET first_name=%s, middle_name=%s, last_name=%s, 
@@ -158,7 +162,7 @@ CTGR_GET_WITH_FILTER_QUERY = """
 # ======================================================================== 
 GRTG_ADD_QUERY = """
                     INSERT INTO greeting 
-                    (name, email, message, invitation_code, user_id, created_at)
+                    (name, status, message, invitation_code, user_id, created_at)
                     VALUES (%s, %s, %s, %s, %s, %s)
                 """
 GRTG_GET_ALL_QUERY = """
@@ -182,6 +186,11 @@ GRTG_DELETE_QUERY = """
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
+GRTG_DELETE_INV_QUERY = """
+                        UPDATE greeting 
+                        SET is_delete=1, deleted_at=%s, deleted_by=%s
+                        WHERE invitation_code=%s AND is_delete=0
+                    """
 # ======================================================================== 
 # GREETING QUERY - END ===================================================
 # ======================================================================== 
@@ -196,8 +205,8 @@ TMPLT_CHK_QUERY = """
                 """
 TMPLT_ADD_QUERY = """
                     INSERT INTO template 
-                    (title, thumbnail, css_file, js_file, wallpaper, category_id, created_at, created_by, updated_at, updated_by)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (title, thumbnail, css_file, js_file, wallpaper, wallpaper_2, category_id, created_at, created_by, updated_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 TMPLT_UPDATE_QUERY = """
                         UPDATE template 
@@ -213,6 +222,7 @@ TMPLT_DELETE_QUERY = """
 TMPLT_GET_ALL_QUERY = """
                     SELECT * FROM template 
                     WHERE is_delete=0
+                    ORDER BY created_at DESC
                 """
 TMPLT_GET_BY_ID_QUERY = """
                             SELECT * FROM template 
@@ -245,7 +255,21 @@ REQ_ADD_QUERY = """
 REQ_GET_BY_USER_QUERY = """
                             SELECT * FROM requser
                             WHERE user_id=%s AND user_level=%s AND is_delete=0
+                            ORDER BY created_at DESC
                         """
+REQ_GET_ALL_QUERY = """
+                        SELECT * FROM requser
+                        WHERE user_level=%s AND is_delete=0
+                    """
+REQ_GET_BY_ID_QUERY = """
+                        SELECT * FROM requser
+                        WHERE id=%s AND is_delete=0
+                    """
+REQ_DELETE_QUERY = """
+                    UPDATE requser 
+                    SET is_delete=1, deleted_at=%s, deleted_by=%s
+                    WHERE id=%s AND is_delete=0
+                """
 # ======================================================================== 
 # REQ TEMPLATE QUERY - END ===============================================
 # ========================================================================
@@ -269,7 +293,7 @@ INV_ADD_QUERY = """
                 """
 INV_UPDATE_QUERY = """
                         UPDATE invitation 
-                        SET category=%s, updated_at=%s, updated_by=%s
+                        SET title=%s, personal_data=%s, inv_setting=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 INV_DELETE_QUERY = """
@@ -277,14 +301,21 @@ INV_DELETE_QUERY = """
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
+INV_DELETE_TEMP_QUERY = """
+                            UPDATE invitation 
+                            SET is_delete=1, deleted_at=%s, deleted_by=%s
+                            WHERE template_id=%s AND is_delete=0
+                        """
 INV_GET_ALL_QUERY = """
                         SELECT * FROM invitation 
                         WHERE is_delete=0
+                        ORDER BY created_at DESC
                     """
-INV_GET_USER_ID_QUERY = """
-                        SELECT * FROM invitation 
-                        WHERE user_id=%s AND user_level=%s AND is_delete=0
-                    """
+INV_GET_BY_TEMP_QUERY = """
+                            SELECT * FROM invitation 
+                            WHERE template_id=%s AND is_delete=0
+                            ORDER BY created_at DESC
+                        """
 INV_GET_BY_ID_QUERY = """
                         SELECT * FROM invitation 
                         WHERE id=%s AND is_delete=0
@@ -293,6 +324,7 @@ INV_GET_BY_USR_QUERY = """
                             SELECT * FROM invitation 
                             WHERE user_id=%s AND user_level=%s 
                             AND is_delete=0
+                            ORDER BY created_at DESC
                         """
 INV_GET_WITH_FILTER_QUERY = """
                             """
@@ -306,7 +338,7 @@ INV_GET_WITH_FILTER_QUERY = """
 # ======================================================================== 
 GUEST_CHK_QUERY = """
                     SELECT * FROM guest 
-                    WHERE category=%s AND is_delete=0
+                    WHERE invitation_code=%s AND phone=%s AND is_delete=0
                 """
 GUEST_ADD_QUERY = """
                     INSERT INTO guest 
@@ -315,7 +347,7 @@ GUEST_ADD_QUERY = """
                 """
 GUEST_UPDATE_QUERY = """
                         UPDATE guest 
-                        SET category=%s, updated_at=%s, updated_by=%s
+                        SET name=%s, address=%s, phone=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 GUEST_DELETE_QUERY = """
@@ -323,6 +355,11 @@ GUEST_DELETE_QUERY = """
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
+GUEST_DELETE_INV_QUERY = """
+                            UPDATE guest 
+                            SET is_delete=1, deleted_at=%s, deleted_by=%s
+                            WHERE invitation_code=%s AND is_delete=0
+                        """
 GUEST_GET_ALL_QUERY = """
                         SELECT * FROM guest 
                         WHERE is_delete=0
@@ -342,10 +379,11 @@ GUEST_GET_BY_CODE_QUERY = """
 GUEST_GET_WITH_FILTER_QUERY = """
                             """
 GUEST_GET_GROUP_COUNT_QUERY = """
-                            SELECT category_id, code, user_id, 
+                            SELECT id, category_id, invitation_code, user_id, 
                             COUNT(*) as count FROM guest
                             WHERE user_id=%s AND is_delete=0
-                            GROUP BY code
+                            GROUP BY invitation_code
+                            ORDER BY created_at DESC
                         """
 # ======================================================================== 
 # GUEST QUERY - END ======================================================

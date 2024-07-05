@@ -3,7 +3,7 @@ from .dbHelper import DBHelper
 from .utils import *
 from .templateData import *
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import json
 
@@ -265,29 +265,29 @@ def vld_category(category, format_data, is_create=True):
 
     # Check Null Value ---------------------------------------- Start
     if category == "":
-        checkResult.append("Kategori tidak boleh kosong.")
+        checkResult.append("Kategori tidak boleh kosong")
     if type(format_data) != dict:
-        checkResult.append("Format data tidak valid.")
+        checkResult.append("Format data tidak valid")
     if format_data is None or len(format_data) < 1:
-        checkResult.append("Format data undangan tidak boleh kosong.")
+        checkResult.append("Format data undangan tidak boleh kosong")
     # Check Null Value ---------------------------------------- Finish
 
     # Sanitize Category ---------------------------------------- Start
     sanitCtgr, charCtgr = sanitize_all_char(category)
     if sanitCtgr:
-        checkResult.append(f"Kategori tidak boleh mengandung karakter {charCtgr}.")
+        checkResult.append(f"Kategori tidak boleh mengandung karakter {charCtgr}")
     # Sanitize Category ---------------------------------------- Finish
     
     # Check String Value ---------------------------------------- Start
     if string_checker(category):
-        checkResult.append("Kategori tidak valid.")
+        checkResult.append("Kategori tidak valid")
     # Check String Value ---------------------------------------- Finish
 
     # Check Duplicate Category ---------------------------------------- Start
-    mandatory = ["name_a", "date", "time", "address"]
-    for default in mandatory:
-        if default not in format_data:
-            checkResult.append(f"Minimal tambahkan format {default}.")
+    # mandatory = ["name", "date", "time", "location"]
+    # for default in mandatory:
+    #     if default not in format_data:
+    #         checkResult.append(f"Minimal tambahkan format {default}")
     # Check Duplicate Category ---------------------------------------- Finish
 
     # Check Duplicate Category ---------------------------------------- Start
@@ -296,104 +296,148 @@ def vld_category(category, format_data, is_create=True):
         values = (category,)
         result = DBHelper().get_count_filter_data(query, values)
         if result > 0:
-            checkResult.append("Kategori sudah terdaftar.")
+            checkResult.append("Kategori sudah terdaftar")
     # Check Duplicate Category ---------------------------------------- Finish
 
     return checkResult
 # CATEGORY VALIDATION ============================================================ End
 
 # GUEST VALIDATION ============================================================ Begin
-def vld_guest(name, address, phone):
+def vld_guest(name, address, phone, invCode, is_create=True):
     checkResult = []
 
     if name == "":
-        checkResult.append(f"Nama tidak boleh kosong")
+        checkResult.append(f"Nama tidak boleh kosong.")
     if address == "":
-        checkResult.append(f"Alamat tidak boleh kosong")
+        checkResult.append(f"Alamat tidak boleh kosong.")
     if phone == "":
-        checkResult.append(f"Nomor handphone tidak boleh kosong")
+        checkResult.append(f"Nomor handphone tidak boleh kosong.")
 
 
     sanitName, charName = sanitize_all_char(name)
     if sanitName:
-        checkResult.append(f"Nama tidak boleh mengandung karakter {charName}")
+        checkResult.append(f"Nama tidak boleh mengandung karakter {charName}.")
     sanitPhone, charPhone = sanitize_phone_char(phone)
     if sanitPhone:
-        checkResult.append(f"Nomor handphone tidak boleh mengandung karakter {charPhone}")
+        checkResult.append(f"Nomor handphone tidak boleh mengandung karakter {charPhone}.")
         
     
     if string_checker(name):
         checkResult.append(f"Nama tidak valid")
     if phone_checker(phone):
         checkResult.append(f"Nomor handphone tidak valid")
+    
+    if phone != "":
+        if phone[0] == "0":
+            phone = "62"+phone[1:]
 
-    return checkResult 
+    if is_create:
+        query = GUEST_CHK_QUERY
+        values = (invCode, phone, )
+        result = DBHelper().get_count_filter_data(query, values)
+        if result > 0 :
+            checkResult.append(f"Data tamu dengan nomor telepon '{phone}' telah terdaftar.")
+
+    return checkResult, phone
 # GUEST VALIDATION ============================================================ End
 
 # GREETING VALIDATION ============================================================ Begin
-def vld_greeting(invCode, name, email, greeting):
+def vld_greeting(invCode, name, status, greeting):
     checkResult = []
 
     if name == "":
-        checkResult.append(f"Nama tidak boleh kosong")
-    if email == "":
-        checkResult.append(f"Email tidak boleh kosong")
+        checkResult.append("Nama tidak boleh kosong.")
+    if status == "":
+        checkResult.append("Konfirmasi kehadiran tidak boleh kosong")
     if greeting == "":
-        checkResult.append(f"Pesan tidak boleh kosong")
+        checkResult.append("Pesan tidak boleh kosong.")
 
 
     sanitName, charName = sanitize_all_char(name)
     if sanitName:
         checkResult.append(f"Nama tidak boleh mengandung karakter {charName}")
-    sanitMail, charMail = sanitize_email_char(email)
-    if sanitMail:
-        checkResult.append(f"Email tidak boleh mengandung karakter {charMail}")
         
     
     if string_checker(name):
-        checkResult.append(f"Nama tidak valid.")
-    if email_checker(email):
-        checkResult.append(f"Email tidak valid.")
+        checkResult.append("Nama tidak valid.")
     
     
     query = INV_CHK_CODE_QUERY
     values = (invCode,)
     result = DBHelper().get_data(query, values)
     if len(result) < 1:
-        checkResult.append(f"Data Undangan tidak dapat ditemukan.")
+        checkResult.append("Data Undangan tidak dapat ditemukan.")
 
     return checkResult 
 # GREETING VALIDATION ============================================================ End
 
 # TEMPLATE VALIDATION ============================================================ Begin
-def vld_template(title, thumbnail, css, wallpaper):
+def vld_template(title, thumbnail, css, wallpaper, is_create=True):
     checkResult = []
 
     if title == "":
-        checkResult.append(f"Judul template tidak boleh kosong")
+        checkResult.append(f"Judul template tidak boleh kosong.")
     if thumbnail == "":
-        checkResult.append(f"Thumbnail tidak boleh kosong")
+        checkResult.append(f"Thumbnail tidak boleh kosong.")
     if css == "":
-        checkResult.append(f"Css tidak boleh kosong")
+        checkResult.append(f"Css tidak boleh kosong.")
     if wallpaper == "":
-        checkResult.append(f"Wallpaper tidak boleh kosong")
+        checkResult.append(f"Wallpaper 1 tidak boleh kosong.")
     
     # Sanitize Title ---------------------------------------- Start
     sanitTitle, charTitle = sanitize_all_char(title)
     if sanitTitle:
-        checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}")
+        checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}.")
     # Sanitize Title ---------------------------------------- Finish
     
-    # if string_checker(title):
-    #     checkResult.append(f"Judul tidak valid.")
+    randomNumber = ""
+    if is_create:
+        query = TMPLT_CHK_QUERY
+        values = (title,)
+        result = DBHelper().get_count_filter_data(query, values)
+        if result != 0:
+            checkResult.append("Judul sudah terdaftar.")
+        
+        randomNumber = str(random_number(5))
 
-    query = TMPLT_CHK_QUERY
-    values = (title,)
-    result = DBHelper().get_count_filter_data(query, values)
-    if result != 0:
-        checkResult.append("Judul sudah terdaftar.")
+        
 
+    return checkResult, randomNumber
+
+def vld_request_template(design, deadline, categoryId):
+    checkResult = []
+
+    # Input Check ---------------------------------------- Start
+    if int(categoryId) == 0:
+        checkResult.append("Kategori tidak boleh kosong.")
+    if design == "":
+        checkResult.append("Desain tidak boleh kosong.")
+    if deadline == "":
+        checkResult.append("Batas waktu tidak boleh kosong.")
+    # Input Check ---------------------------------------- Finish
+
+    # Datetime Check ---------------------------------------- Start
+    if deadline != "":
+        deadline = datetime.strptime(deadline, "%d %B %Y")
+        now = datetime.now()
+        oneweek = now + timedelta(days=7)
+        if deadline < now:
+            checkResult.append("Batas waktu yang diinputkan sudah terlewat.")
+        elif deadline < oneweek:
+            checkResult.append("Batas waktu minimal 1 minggu dari hari ini.")
+    # Datetime Check ---------------------------------------- Finish
+
+    # Datetime Check ---------------------------------------- Start
+    # Memisahkan bagian 'data:' dari base64 string
+    header, encoded = design.split(',', 1)
+    # Memisahkan 'data:' dan mengambil MIME type
+    mime_type = header.split(':')[1].split(';')[0]
+    if mime_type != "image/png":
+        checkResult.append("Data desain yang diinputkan harus berupa gambar.")
+    # Datetime Check ---------------------------------------- Finish
+    
     return checkResult
+
 # TEMPLATE VALIDATION ============================================================ End
 
 # INVITATION VALIDATION ============================================================ Begin
@@ -411,7 +455,7 @@ def vld_invitation_code():
     # Return Value ========================================
     return invCode
 
-def vld_invitation(categoryId, templateId, title, personalData):
+def vld_invitation(categoryId, templateId, title, personalData, is_create=True):
     checkResult = []
 
     # Validation Null Data ---------------------------------------- Start
@@ -422,19 +466,20 @@ def vld_invitation(categoryId, templateId, title, personalData):
     # Validation Null Data ---------------------------------------- Finish
     
     # Check Data Title & Template ---------------------------------------- Start
+    if is_create:
     # Template
-    query = TMPLT_GET_BY_ID_QUERY
-    values = (templateId,)
-    ckTemplate = DBHelper().get_count_filter_data(query, values)
-    if ckTemplate < 1:
-        checkResult.append(f"Data template tidak dapat ditemukan.")
+        query = TMPLT_GET_BY_ID_QUERY
+        values = (templateId,)
+        ckTemplate = DBHelper().get_count_filter_data(query, values)
+        if ckTemplate < 1:
+            checkResult.append(f"Data template tidak dapat ditemukan.")
     
     # Title
-    query = INV_CHK_TITLE_QUERY
-    values = (title, )
-    ckInvit = DBHelper().get_count_filter_data(query, values)
-    if ckInvit > 0:
-        checkResult.append(f"Judul sudah terpakai.")
+        query = INV_CHK_TITLE_QUERY
+        values = (title, )
+        ckInvit = DBHelper().get_count_filter_data(query, values)
+        if ckInvit > 0:
+            checkResult.append(f"Judul sudah terpakai.")
     # Check Data Title & Template ---------------------------------------- Finish
     
     # Sanitize Title ---------------------------------------- Start
@@ -474,16 +519,22 @@ def vld_invitation(categoryId, templateId, title, personalData):
 
     # Check Personal Data ---------------------------------------- Start
     if personData:
-        marriageDate = datetime.strptime(personalData["marriage"], "%d %B %Y %H:%M %p")
-        receptionDate = datetime.strptime(personalData["reception"], "%d %B %Y %H:%M %p")
-        marriageDate = datetime.timestamp(marriageDate)
-        receptionDate = datetime.timestamp(receptionDate)
-        personalData["marriage"] = int(round(marriageDate*1000))
-        personalData["reception"] = int(round(receptionDate*1000))
+        marriageDate = personalData["marriage"]
+        receptionDate = personalData["reception"]
+        if marriageDate != "":
+            marriageDate = datetime.strptime(marriageDate, "%d %B %Y %H:%M %p")
+            marriageDate = datetime.timestamp(marriageDate)
+            personalData["marriage"] = int(round(marriageDate*1000))
+        if receptionDate != "":
+            receptionDate = datetime.strptime(receptionDate, "%d %B %Y %H:%M %p")
+            receptionDate = datetime.timestamp(receptionDate)
+            personalData["reception"] = int(round(receptionDate*1000))
     # Check Personal Data ---------------------------------------- Finish
 
     # Create Invitation Code ========================================
-    invCode = vld_invitation_code()
+    invCode = ""
+    if is_create:
+        invCode = vld_invitation_code()
 
     # Return Value ========================================
     return checkResult, personalData, invCode

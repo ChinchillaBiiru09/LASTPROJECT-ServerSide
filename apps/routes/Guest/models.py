@@ -37,7 +37,7 @@ class GuestModels():
             # Intialize ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            checkResult = vld_guest(name,address,phone)
+            checkResult, phone = vld_guest(name, address, phone, invCode)
             if len(checkResult) != 0:
                 return defined_error(checkResult, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -97,21 +97,34 @@ class GuestModels():
                 return not_found(f"Data tamu untuk user {user_id} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
 
-            # Set Category ---------------------------------------- Start
+            # Get Join Data ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             category = DBHelper().execute(query)
-            for ctg in category:
-                for rsl in result:
+            query = INV_CHK_CODE_QUERY
+            # Get Join Data ---------------------------------------- Finish
+
+            # Set Join Data ---------------------------------------- Start
+            print(result)
+            for rsl in result:
+                values = (rsl['invitation_code'], )
+                invitation = DBHelper().get_data(query, values)
+                for inv in invitation:
+                    if rsl['invitation_code'] == inv['code']:
+                        rsl['invitation_id'] = inv['id']
+                for ctg in category:
                     if rsl['category_id'] == ctg['id']:
-                        rsl['category_id'] = ctg['category']
-            # Set Category ---------------------------------------- Finish
-            
+                        rsl['category'] = ctg['category']
+            # Set Join Data ---------------------------------------- Finish
+
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
                 data = {
-                    "event" : rsl['category_id'],
-                    "invitation_code" : rsl["code"],
+                    "guest_id" : rsl["id"],
+                    "category_id" : rsl['category_id'],
+                    "invitation_id" : rsl['invitation_id'],
+                    "event" : rsl['category'],
+                    "invitation_code" : rsl["invitation_code"],
                     "user_owner" : rsl["user_id"],
                     "count" : rsl['count']
                 }
@@ -185,17 +198,26 @@ class GuestModels():
             values = (invCode,)
             result = DBHelper().get_data(query, values)
             if len(result) < 1 :
-                return defined_error(f"Data tamu untuk kode undangan {invCode} tidak dapat ditemukan.")
+                return not_found(f"Data tamu untuk kode undangan {invCode} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
-            
-            # Set Category ---------------------------------------- Start
+
+            # Get Join Data ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             category = DBHelper().execute(query)
-            for ctg in category:
-                for rsl in result:
+            query = INV_CHK_CODE_QUERY
+            # Get Join Data ---------------------------------------- Finish
+
+            # Set Join Data ---------------------------------------- Start
+            for rsl in result:
+                values = (rsl['invitation_code'], )
+                invitation = DBHelper().get_data(query, values)
+                for inv in invitation:
+                    if rsl['invitation_code'] == inv['code']:
+                        rsl['invitation_id'] = inv['id']
+                for ctg in category:
                     if rsl['category_id'] == ctg['id']:
                         rsl['category'] = ctg['category']
-            # Set Category ---------------------------------------- Finish
+            # Set Join Data ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
             response = []
@@ -205,11 +227,12 @@ class GuestModels():
                 data = {
                     "guest_id" : rsl["id"],
                     "category_id" : rsl["category_id"],
+                    "invitation_id" : rsl["invitation_id"],
                     "event" : rsl["category"],
                     "name" : rsl["name"],
                     "phone" : rsl["phone"],
-                    "alias" : rsl["alias"],
-                    "invitation_code" : rsl["code"],
+                    "address" : rsl["address"],
+                    "invitation_code" : rsl["invitation_code"],
                     "user_owner" : rsl["user_id"],
                     "created_at": createdAt,
                     "updated_at": updatedAt
@@ -218,7 +241,7 @@ class GuestModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return response
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
@@ -267,8 +290,8 @@ class GuestModels():
                 "event" : rsl["category"],
                 "name" : rsl["name"],
                 "phone" : rsl["phone"],
-                "alias" : rsl["alias"],
-                "invitation_code" : rsl["code"],
+                "address" : rsl["address"],
+                "invitation_code" : rsl["invitation_code"],
                 "user_owner" : rsl["user_id"],
                 "created_at": createdAt,
                 "updated_at": updatedAt
@@ -276,71 +299,77 @@ class GuestModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return response
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
     # GET DETAIL GUEST ============================================================ End
 
-    # # UPDATE GUEST ============================================================ Begin
-    # def edit_guest(user_id, user_role,  datas):
-    #     try:
-    #         # Access Validation ---------------------------------------- Start
-    #         access, message = vld_role(user_role)
-    #         if not access:
-    #             return defined_error(message, "Forbidden", 403)
-    #         # Access Validation ---------------------------------------- Finish
+    # UPDATE GUEST ============================================================ Begin
+    # Clear
+    def edit_guest(user_id, user_role, datas):
+        try:
+            # Access Validation ---------------------------------------- Start
+            access = vld_role(user_role)
+            accLevel = 2
+            # Access Validation ---------------------------------------- Finish
 
-    #         # Checking Request Body ---------------------------------------- Start
-    #         if datas == None:
-    #             return invalid_params()
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
             
-    #         requiredData = ["category_id", "category"]
-    #         for req in requiredData:
-    #             if req not in datas:
-    #                 return parameter_error(f"Missing {req} in Request Body")
-    #         # Checking Request Body ---------------------------------------- Finish
+            requiredData = ["guest_id", "invitation_code", "name", "address", "phone"]
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body")
+            # Checking Request Body ---------------------------------------- Finish
             
-    #         ctgrId = datas["category_id"].strip()
-    #         ctgr = datas["category"].strip()
+            # Inisialize Data Input ---------------------------------------- Start
+            gueId = datas["guest_id"]
+            invCode = datas["invitation_code"]
+            name = datas["name"]
+            address = datas["address"]
+            phone = datas["phone"]
+            # Inisialize Data Input ---------------------------------------- Finish
             
-    #         # Data Validation ---------------------------------------- Start
-    #         query = CTGR_GET_BY_ID_QUERY
-    #         values = (ctgrId,)
-    #         result = DBHelper.get_data(query, values)
-    #         if len(result) == 0 :
-    #             return defined_error("Kategori tidak dapat ditemukan.")
+            # Data Validation ---------------------------------------- Start
+            query = GUEST_GET_BY_ID_QUERY
+            values = (gueId, )
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 :
+                return not_found("Data tamu tidak dapat ditemukan.")
             
-    #         ctgrCheck, result = vld_category(ctgr)
-    #         if len(ctgrCheck) != 0:
-    #             return defined_error(ctgrCheck, "Bad Request", 400)
-    #         # Data Validation ---------------------------------------- Finish
+            guestCheck, phone = vld_guest(name, address, phone, invCode, False)
+            if len(guestCheck) != 0:
+                return defined_error(guestCheck, "Bad Request", 400)
+            # Data Validation ---------------------------------------- Finish
             
-    #         # Update Data ---------------------------------------- Start
-    #         timestamp = int(round(time.time()*1000))
-    #         query = CTGR_UPDATE_QUERY
-    #         values = (ctgr, timestamp, timestamp, ctgrId)
-    #         DBHelper().save_data(query, values)
-    #         # Update Data ---------------------------------------- Finish
+            # Update Data ---------------------------------------- Start
+            timestamp = int(round(time.time()*1000))
+            query = GUEST_UPDATE_QUERY
+            values = (name, address, phone, timestamp, user_id, gueId, )
+            DBHelper().save_data(query, values)
+            # Update Data ---------------------------------------- Finish
 
-    #         # Log Activity Record ---------------------------------------- Start
-    #         activity = f"Admin dengan id {user_id} mengubah kategori {result[0]['category']} menjadi {ctgr}"
-    #         query = LOG_ADD_QUERY
-    #         values = (user_id, activity, )
-    #         DBHelper().save_data(query, values)
-    #         # Log Activity Record ---------------------------------------- Finish
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"{user_role.title()} dengan id {user_id} mengubah data tamu {result[0]['name']}."
+            query = LOG_ADD_QUERY
+            values = (user_id, accLevel, activity, timestamp, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
 
-    #         # Return Response ======================================== 
-    #         return success("Successed!")
+            # Return Response ======================================== 
+            return success(message="Updated!")
             
-    #     except Exception as e:
-    #         return bad_request(str(e))
-    # # UPDATE GUEST ============================================================ End
+        except Exception as e:
+            return bad_request(str(e))
+    # UPDATE GUEST ============================================================ End
 
     # DELETE GUEST ============================================================ Begin
     # Clear
     def delete_guest(user_id, user_role, datas):     
         try:
+            print(datas)
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
@@ -357,8 +386,8 @@ class GuestModels():
             query = GUEST_GET_BY_ID_QUERY
             values = (guestId,)
             result = DBHelper().get_data(query, values)
-            if len(result) == 0 :
-                return defined_error("Data tamu tidak dapat ditemukan.")
+            if len(result) < 1 :
+                return not_found("Data tamu tidak dapat ditemukan.")
             # Data Validation ---------------------------------------- Finish
 
             # Delete Data ---------------------------------------- Start

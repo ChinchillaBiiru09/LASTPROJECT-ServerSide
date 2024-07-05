@@ -2,7 +2,9 @@ from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_greeting, vld_role
+from ...utilities.utils import *
 
+from datetime import datetime
 import time
 
 # GREETING MODEL CLASS ============================================================ Begin
@@ -14,27 +16,27 @@ class GreetingModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["invitationCode", "name", "email", "greeting"]
+            requiredData = ["invitation_code", "name", "status", "greeting"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
             
             # Intialize ---------------------------------------- Start
-            invCode = datas["invitationCode"].strip()
-            name = datas["name"].strip().title()
-            email = datas["email"].strip()
+            invCode = datas["invitation_code"]
+            name = datas["name"]
+            status = datas["status"]
             greeting = datas["greeting"]
             # Intialize ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            checkResult = vld_greeting(invCode,name,email,greeting)
-            if len(checkResult) != 0:
+            checkResult = vld_greeting(invCode,name,status,greeting)
+            if len(checkResult) > 0:
                 return defined_error(checkResult, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
 
             # Get User ID ---------------------------------------- Start
-            query = INV_CODE_CHK_QUERY
+            query = INV_CHK_CODE_QUERY
             values = (invCode,)
             result = DBHelper().get_data(query, values)
             user_owner_id = result[0]["id"]
@@ -43,19 +45,19 @@ class GreetingModels():
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = GRTG_ADD_QUERY
-            values = (name, email, greeting, invCode, user_owner_id, timestamp)
+            values = (name, status, greeting, invCode, user_owner_id, timestamp)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"User dengan id {user_owner_id} mendapatkan ucapan selamat dari: {email}"
+            activity = f"User dengan id {user_owner_id} mendapatkan ucapan selamat dari: {name}."
             query = LOG_ADD_QUERY
-            values = (user_owner_id, activity, )
+            values = (user_owner_id, 2, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success("Succeed!")
+            return success(statusCode=201)
         
         except Exception as e:
             return bad_request(str(e))
@@ -148,41 +150,44 @@ class GreetingModels():
     # # GET ALL GREETING ============================================================ End
 
     # GET DETAIL GREETING ============================================================ Begin
-    def view_detail_greeting(user_role, datas):
+    def view_detail_greeting(user_id, user_role, datas):
         try:
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["greeting_id"]
-            if requiredData not in datas:
-                return parameter_error(f"Missing {requiredData} in Request Body")
+            invCode = datas["invitation_code"]
+            if user_id == "":
+                return defined_error("Kode undangan tidak boleh kosong.", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
             
-            grtgId = datas["greeting_id"].strip()
-            
             # Checking Data ---------------------------------------- Start
-            query = GRTG_GET_BY_ID_QUERY
-            values = (grtgId,)
-            result = DBHelper.get_data(query, values)
-            if len(result) == 0 :
+            query = GRTG_GET_BY_CODE_QUERY
+            values = (invCode,)
+            result = DBHelper().get_data(query, values)
+            print("clear")
+            if len(result) < 1 :
                 return defined_error("Ucapan selamat tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
-            response = {
-                "greeting_id" : result[0]["id"],
-                "name" : result[0]["name"],
-                "email" : result[0]["email"],
-                "greeting" : result[0]["greeting"],
-                "invitation_code" : result[0]["invitation_code"],
-                "user_owner" : result[0]["user_id"],
-                "created_at": result[0]["created_at"]
-            }
+            response = []
+            for rsl in result:
+                createdAt = split_date_time(datetime.fromtimestamp(rsl['created_at']/1000))
+                data = {
+                    "greeting_id" : rsl["id"],
+                    "name" : rsl["name"],
+                    "email" : rsl["status"],
+                    "greeting" : rsl["message"],
+                    "invitation_code" : rsl["invitation_code"],
+                    "user_owner" : rsl["user_id"],
+                    "created_at": createdAt
+                }
+                response.append(data)
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))
