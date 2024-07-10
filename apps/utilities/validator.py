@@ -390,7 +390,6 @@ def vld_template(title, thumbnail, css, wallpaper, is_create=True):
         checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}.")
     # Sanitize Title ---------------------------------------- Finish
     
-    randomNumber = ""
     if is_create:
         query = TMPLT_CHK_QUERY
         values = (title,)
@@ -398,9 +397,7 @@ def vld_template(title, thumbnail, css, wallpaper, is_create=True):
         if result != 0:
             checkResult.append("Judul sudah terdaftar.")
         
-        randomNumber = str(random_number(5))
-
-        
+    randomNumber = str(random_number(5))
 
     return checkResult, randomNumber
 

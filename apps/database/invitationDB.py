@@ -16,7 +16,7 @@ class Invitation(db.Model):
     template_id = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(150), nullable=False)
     personal_data = db.Column(db.Text(), nullable=False)
-    other_info = db.Column(db.Text(), nullable=True)
+    detail_info = db.Column(db.Text(), nullable=True)
     inv_setting = db.Column(db.Text(), nullable=True)
     code = db.Column(db.String(6), nullable=False)
     link = db.Column(db.Text(), nullable=True)

@@ -21,7 +21,10 @@ class UserModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["first_name", "middle_name", "last_name", "phone_number", "email", "password", "retype_password"]
+            requiredData = [
+                "first_name", "middle_name", "last_name", "phone_number", 
+                "email", "password", "retype_password"
+                ]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
@@ -38,7 +41,8 @@ class UserModels():
             # Initialize Data Input ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            checkResult = vld_user_regis(firstName, middleName, lastName, phone, email, password, retypePassword)
+            checkResult = vld_user_regis(firstName, middleName, lastName, 
+                                         phone, email, password, retypePassword)
             if len(checkResult) != 0:
                 return defined_error(checkResult, "Bad Request", statusCode=400)
             # Data Validation ---------------------------------------- Finish
@@ -54,6 +58,7 @@ class UserModels():
             # Insert Data ---------------------------------------- Finish
 
             # Insert Profile ---------------------------------------- Start
+            print("bisa")
             try:
                 data = {
                     "user_id": resReturn,
@@ -64,15 +69,17 @@ class UserModels():
                     "phone": phone
                 }
                 profile = ProfileModels.create_profile(data)
+                print("bisa")
             except Exception as e:
                 return bad_request(str(e))
             # Insert Profile ---------------------------------------- Finish
+            print("bisa")
 
             # Log Activity Record ---------------------------------------- Start
             if profile.status_code == 200:
                 activity = f"User baru dengan id {resReturn} telah berhasil mendaftar."
                 query = LOG_ADD_QUERY
-                values = (resReturn, 2, activity, )
+                values = (resReturn, 2, activity, timestamp, )
                 DBHelper().save_data(query, values)
             else:
                 query = USR_DELETE_QUERY

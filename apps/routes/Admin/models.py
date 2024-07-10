@@ -8,7 +8,7 @@ from ...utilities.queries import *
 from ...utilities.validator import vld_admin_regis, vld_signin
 from ...utilities.utils import hashPassword
 
-import time, jwt
+import time
 
 # BLOCK FIRST/BASE ============================================================ Begin
 class AdminModels():

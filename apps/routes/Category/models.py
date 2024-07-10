@@ -91,6 +91,7 @@ class CategoryModels():
     # GET ALL CATEGORY ============================================================ End
 
     # UPDATE CATEGORY ============================================================ Begin
+    # Clear
     def edit_category(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -122,10 +123,7 @@ class CategoryModels():
             if len(result) < 1 :
                 return not_found(f"Data kategori dengan id {catgId} tidak dapat ditemukan.")
             
-            print(datas)
             ctgrCheck = vld_category(category, formatData, False)
-            print("koko ka?")
-            print(ctgrCheck)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -144,7 +142,6 @@ class CategoryModels():
             values = (user_id, 1, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
-            print("oke")
 
             # Return Response ======================================== 
             return success(message="Updated!")
@@ -189,12 +186,68 @@ class CategoryModels():
             values = (timestamp, user_id, catgId)
             DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
+            
+            # Delete Join Data ---------------------------------------- Start
+            # Template
+            query = TMPLT_GET_BY_CAT_QUERY
+            values = (catgId,)
+            template = DBHelper().get_data(query, values)
+            invitation = []
+            if len(template) > 0 :
+                query = TMPLT_DELETE_CAT_QUERY
+                values = (timestamp, user_id, catgId, )
+                DBHelper().save_data(query, values)
+                print("masuk")
+                for temp in template:
+                    # Invitation
+                    print(temp)
+                    query = INV_GET_BY_TEMP_QUERY
+                    values = (temp['id'],)
+                    invitation = DBHelper().get_data(query, values)
+                    print(invitation)
+                    if len(invitation) > 0:
+                        query = INV_DELETE_TEMP_QUERY
+                        values = (timestamp, user_id, temp['id'],)
+                        DBHelper().save_data(query, values)
+
+            if len(invitation) > 0:
+                print("masuk 2")
+                for inv in invitation:
+                    # Guest
+                    query = GUEST_GET_BY_CODE_QUERY
+                    values = (inv['code'], )
+                    guest = DBHelper().get_count_filter_data(query, values)
+                    print(guest)
+                    if guest > 0:
+                        query = GUEST_DELETE_INV_QUERY
+                        values = (timestamp, user_id, inv['code'], )
+                        DBHelper().save_data(query, values)
+
+                    # Greeting
+                    query = GRTG_GET_BY_CODE_QUERY
+                    values = (inv['code'], )
+                    greeting = DBHelper().get_count_filter_data(query, values)
+                    print(greeting)
+                    if greeting > 0:
+                        query = GRTG_DELETE_INV_QUERY
+                        values = (timestamp, user_id, inv['code'], )
+                        DBHelper().save_data(query, values)
+            
+            # Request
+            query = REQ_GET_BY_CAT_QUERY
+            values = (catgId, )
+            reqtem = DBHelper().get_count_filter_data(query, values)
+            if reqtem > 0:
+                query = REQ_DELETE_CAT_QUERY
+                values = (timestamp, user_id, catgId, )
+                DBHelper().save_data(query, values)
+            # Delete Join Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan id {user_id} menghapus kategori {catgId}."
             query = LOG_ADD_QUERY
             values = (user_id, 1, activity, timestamp, )
-            DBHelper().save_data(query, values)
+            # DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 

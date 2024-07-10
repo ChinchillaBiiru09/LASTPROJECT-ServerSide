@@ -219,6 +219,11 @@ TMPLT_DELETE_QUERY = """
                         SET is_delete=1, deleted_at=%s, deleted_by=%s
                         WHERE id=%s AND is_delete=0
                     """
+TMPLT_DELETE_CAT_QUERY = """
+                            UPDATE template 
+                            SET is_delete=1, deleted_at=%s, deleted_by=%s
+                            WHERE category_id=%s AND is_delete=0
+                        """
 TMPLT_GET_ALL_QUERY = """
                     SELECT * FROM template 
                     WHERE is_delete=0
@@ -257,6 +262,11 @@ REQ_GET_BY_USER_QUERY = """
                             WHERE user_id=%s AND user_level=%s AND is_delete=0
                             ORDER BY created_at DESC
                         """
+REQ_GET_BY_CAT_QUERY = """
+                            SELECT * FROM requser
+                            WHERE category=%s AND is_delete=0
+                            ORDER BY created_at DESC
+                        """
 REQ_GET_ALL_QUERY = """
                         SELECT * FROM requser
                         WHERE user_level=%s AND is_delete=0
@@ -270,6 +280,11 @@ REQ_DELETE_QUERY = """
                     SET is_delete=1, deleted_at=%s, deleted_by=%s
                     WHERE id=%s AND is_delete=0
                 """
+REQ_DELETE_CAT_QUERY = """
+                            UPDATE requser 
+                            SET is_delete=1, deleted_at=%s, deleted_by=%s
+                            WHERE category=%s AND is_delete=0
+                        """
 # ======================================================================== 
 # REQ TEMPLATE QUERY - END ===============================================
 # ========================================================================

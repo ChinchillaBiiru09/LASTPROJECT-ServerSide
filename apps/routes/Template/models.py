@@ -26,7 +26,8 @@ class TemplateModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["title", "thumbnail", "css_file", "js_file", "wallpaper_1", "wallpaper_2", "category_id"]
+            requiredData = ["title", "thumbnail", "css_file", "js_file",
+                             "wallpaper_1", "wallpaper_2", "category_id"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
@@ -185,7 +186,8 @@ class TemplateModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["template_id", "template_title", "template_thumbnail", "css_file", "js_file", "template_wallpaper", "category_id"]
+            requiredData = ["template_id", "title", "thumbnail", "css_file", "js_file", 
+                            "wallpaper_1", "wallpaper_2", "category_id"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
@@ -195,9 +197,10 @@ class TemplateModels():
             tempId = datas["template_id"]
             title = datas["title"].strip()
             thumbnail = datas["thumbnail"]
-            wallpaper = datas["wallpaper"]
-            cssFile = datas["css_file"]
-            jsFile = datas["title"]
+            wallpaper1 = datas["wallpaper_1"]
+            wallpaper2 = datas["wallpaper_2"]
+            css = datas["css_file"]
+            js = datas["title"]
             catgId = datas["category_id"]
             # Initialize Data Input ---------------------------------------- Finish
             
@@ -208,23 +211,60 @@ class TemplateModels():
             if result == 0 :
                 return not_found(f"Template dengan Id {tempId} tidak dapat ditemukan.")
             
-            ctgrCheck, result = vld_template(title, thumbnail, cssFile, wallpaper)
+            ctgrCheck, randomNumber = vld_template(title, thumbnail, css, wallpaper1, False)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
+
+            # Saving File ---------------------------------------- Start
+            result = result[0]
+            if thumbnail != result['thumbnail']:
+                # Thumbnail
+                thumbFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_thumbnail.jpg")
+                thumbPath = os.path.join(app.config['TEMPLATE_THUMBNAIL_PHOTOS'], thumbFileName)
+                saving_image(thumbnail, thumbPath)
+
+            if css != result['css_file']:
+                # CSS
+                cssFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_style.css")
+                cssPath = os.path.join(app.config['TEMPLATE_CSS_FILE'], cssFileName)
+                saving_file(css, cssPath)
+                
+            if js != result['js_file']:
+                # JS
+                jsFileName = ""
+                if js != "":
+                    jsFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_script.js")
+                    jsPath = os.path.join(app.config['TEMPLATE_JS_FILE'], jsFileName)
+                    saving_file(js, jsPath)
+                    
+            if wallpaper1 != result['wallpaper']:
+                # Wallpaper 1
+                wallpFileName1 = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper_1.jpg")
+                wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName1)
+                saving_image(wallpaper1, wallpPath)
+                
+            if wallpaper2 != result['wallpaper_2']:
+                # wallpaper 2
+                wallpFileName2 = ""
+                if wallpaper2 != "":
+                    wallpFileName2 = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper_2.jpg")
+                    wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName2)
+                    saving_image(wallpaper2, wallpPath)
+            # Saving File ---------------------------------------- Finish
             
             # Update Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = TMPLT_UPDATE_QUERY
-            values = (title, thumbnail, cssFile, jsFile, wallpaper, catgId, timestamp, user_id, tempId)
-            # DBHelper().save_data(query, values)
+            values = (title, thumbnail, cssFileName, jsFileName, wallpFileName1, wallpFileName2, catgId, timestamp, user_id, tempId)
+            DBHelper().save_data(query, values)
             # Update Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan Id {user_id} mengubah template {tempId}: {result[0]['title']}."
             query = LOG_ADD_QUERY
             values = (user_id, activity, )
-            # DBHelper().save_data(query, values)
+            DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
@@ -269,19 +309,16 @@ class TemplateModels():
             values = (timestamp, user_id, tempId)
             DBHelper().save_data(query, values)
             # Delete Data ---------------------------------------- Finish
-            print("bisa")
 
             # Delete Join Data ---------------------------------------- Start
             # Invitation
             query = INV_GET_BY_TEMP_QUERY
             values = (tempId, )
             invitation = DBHelper().get_data(query, values)
-            print("bisa")
             if len(invitation) > 0:
                 query = INV_DELETE_TEMP_QUERY
                 values = (timestamp, user_id, tempId, )
                 DBHelper().save_data(query, values)
-                print("bisa")
             
                 # Guest
                 for inv in invitation:
@@ -289,24 +326,19 @@ class TemplateModels():
                     query = GUEST_GET_BY_CODE_QUERY
                     values = (invCode, )
                     guest = DBHelper().get_count_filter_data(query, values)
-                    print(guest)
                     if guest > 0:
-                        print(invCode)
                         query = GUEST_DELETE_INV_QUERY
                         values = (timestamp, user_id, invCode, )
                         DBHelper().save_data(query, values)
-                    print("bisa")
 
                     # Greeting
                     query = GRTG_GET_BY_CODE_QUERY
                     values = (invCode, )
                     greeting = DBHelper().get_count_filter_data(query, values)
-                    print(greeting)
                     if greeting > 0:
                         query = GRTG_DELETE_INV_QUERY
                         values = (timestamp, user_id, invCode, )
                         DBHelper().save_data(query, values)
-                    print("bisa")
             # Delete Join Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
