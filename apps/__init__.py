@@ -47,6 +47,7 @@ app.config['TEMPLATE_WALLPAPER_PHOTOS'] = config.STATIC_FOLDER_PATH + "templates
 app.config['TEMPLATE_CSS_FILE'] = config.STATIC_FOLDER_PATH + "templates/css/"
 app.config['TEMPLATE_JS_FILE'] = config.STATIC_FOLDER_PATH + "templates/js/"
 app.config['USER_INVITATION_FILE'] = config.STATIC_FOLDER_PATH + "invitation/user/"
+app.config['GALLERY_INVITATION_FILE'] = config.STATIC_FOLDER_PATH + "invitation/gallery/"
 app.config['TEMPLATE_REQUEST_DESIGN'] = config.STATIC_FOLDER_PATH + "request_template/"
 
 # Create Folder (if doesn't exist)
@@ -58,7 +59,8 @@ list_folder_to_create = [
     app.config['TEMPLATE_CSS_FILE'],
     app.config['TEMPLATE_JS_FILE'],
     app.config['USER_INVITATION_FILE'],
-    app.config['TEMPLATE_REQUEST_DESIGN']
+    app.config['TEMPLATE_REQUEST_DESIGN'],
+    app.config['GALLERY_INVITATION_FILE']
 ]
 
 for x in list_folder_to_create:

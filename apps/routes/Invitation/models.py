@@ -48,6 +48,7 @@ class InvitationModels():
             if len(invCheck) != 0:
                 return defined_error(invCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
+            print(personalData['galeri_photo'])
             
             # Saving File ---------------------------------------- Start
             # wallpaper
@@ -63,6 +64,11 @@ class InvitationModels():
                 mpPath = os.path.join(app.config['USER_INVITATION_FILE'], mpFileName)
                 saving_image(personalData['mans_photo'], mpPath)
                 personalData['mans_photo'] = mpFileName
+            if personalData['galeri_photo'] != "":
+                gpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_gallery_"+user_id+".jpg")
+                gpPath = os.path.join(app.config['GALLERY_INVITATION_FILE'], gpFileName)
+                saving_image(personalData['galeri_photo'], gpPath)
+                personalData['galeri_photo'] = gpFileName
             # Saving File ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start
@@ -80,7 +86,7 @@ class InvitationModels():
             activity = f"User dengan id {user_id} telah membuat undangan baru: {title}."
             query = LOG_ADD_QUERY
             values = (user_id, accLevel, activity, timestamp, )
-            DBHelper().save_data(query, values)
+            # DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start

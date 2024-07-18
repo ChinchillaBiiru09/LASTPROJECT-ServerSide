@@ -10,6 +10,7 @@ import time
 # GREETING MODEL CLASS ============================================================ Begin
 class GreetingModels():
     # CREATE GREETING ============================================================ Begin
+    # Clear
     def add_greeting(datas):   
         try:
             # Checking Request Body ---------------------------------------- Start
@@ -39,22 +40,17 @@ class GreetingModels():
             query = INV_CHK_CODE_QUERY
             values = (invCode,)
             result = DBHelper().get_data(query, values)
-            user_owner_id = result[0]["id"]
+            if len(result) < 0:
+                return not_found("Data undangan tidak dapat ditemukan.")
+            owner_id = result[0]["user_id"]
             # Get User ID ---------------------------------------- End
             
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = GRTG_ADD_QUERY
-            values = (name, status, greeting, invCode, user_owner_id, timestamp)
+            values = (name, status, greeting, invCode, owner_id, timestamp, )
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
-
-            # Log Activity Record ---------------------------------------- Start
-            activity = f"User dengan id {user_owner_id} mendapatkan ucapan selamat dari: {name}."
-            query = LOG_ADD_QUERY
-            values = (user_owner_id, 2, activity, timestamp, )
-            DBHelper().save_data(query, values)
-            # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
             return success(statusCode=201)
@@ -94,8 +90,8 @@ class GreetingModels():
                 data = {
                     "greeting_id" : rsl["id"],
                     "name" : rsl["name"],
-                    "email" : rsl["email"],
-                    "greeting" : rsl["greeting"],
+                    "status" : rsl["status"],
+                    "message" : rsl["message"],
                     "invitation_code" : rsl["invitation_code"],
                     "user_owner" : rsl["user_id"],
                     "created_at": rsl["created_at"]
@@ -177,8 +173,8 @@ class GreetingModels():
                 data = {
                     "greeting_id" : rsl["id"],
                     "name" : rsl["name"],
-                    "email" : rsl["status"],
-                    "greeting" : rsl["message"],
+                    "status" : "Hadir" if rsl["status"] == 1 else "Tidak Hadir",
+                    "message" : rsl["message"],
                     "invitation_code" : rsl["invitation_code"],
                     "user_owner" : rsl["user_id"],
                     "created_at": createdAt
@@ -299,6 +295,7 @@ class GreetingModels():
             values = (user_id, )
             result = DBHelper().get_count_filter_data(query, values)
             # Get Data By User Id ---------------------------------------- Finish
+            print(result)
 
             # Checking Data ---------------------------------------- Start
             if result == 0 or result == None :
@@ -312,7 +309,7 @@ class GreetingModels():
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 
-            return success_data("Successed!", response)
+            return success_data(response)
         
         except Exception as e:
             return bad_request(str(e))

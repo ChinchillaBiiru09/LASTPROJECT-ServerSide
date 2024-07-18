@@ -424,14 +424,14 @@ def vld_request_template(design, deadline, categoryId):
             checkResult.append("Batas waktu minimal 1 minggu dari hari ini.")
     # Datetime Check ---------------------------------------- Finish
 
-    # Datetime Check ---------------------------------------- Start
+    # Photo Check ---------------------------------------- Start
     # Memisahkan bagian 'data:' dari base64 string
     header, encoded = design.split(',', 1)
     # Memisahkan 'data:' dan mengambil MIME type
     mime_type = header.split(':')[1].split(';')[0]
     if mime_type != "image/png":
         checkResult.append("Data desain yang diinputkan harus berupa gambar.")
-    # Datetime Check ---------------------------------------- Finish
+    # Photo Check ---------------------------------------- Finish
     
     return checkResult
 
@@ -462,22 +462,22 @@ def vld_invitation(categoryId, templateId, title, personalData, is_create=True):
         checkResult.append(f"Data pribadi tidak boleh kosong tidak boleh kosong.")
     # Validation Null Data ---------------------------------------- Finish
     
-    # Check Data Title & Template ---------------------------------------- Start
-    if is_create:
-    # Template
-        query = TMPLT_GET_BY_ID_QUERY
-        values = (templateId,)
-        ckTemplate = DBHelper().get_count_filter_data(query, values)
-        if ckTemplate < 1:
-            checkResult.append(f"Data template tidak dapat ditemukan.")
+    # # Check Data Title & Template ---------------------------------------- Start
+    # if is_create:
+    # # Template
+    #     query = TMPLT_GET_BY_ID_QUERY
+    #     values = (templateId,)
+    #     ckTemplate = DBHelper().get_count_filter_data(query, values)
+    #     if ckTemplate < 1:
+    #         checkResult.append(f"Data template tidak dapat ditemukan.")
     
-    # Title
-        query = INV_CHK_TITLE_QUERY
-        values = (title, )
-        ckInvit = DBHelper().get_count_filter_data(query, values)
-        if ckInvit > 0:
-            checkResult.append(f"Judul sudah terpakai.")
-    # Check Data Title & Template ---------------------------------------- Finish
+    # # Title
+    #     query = INV_CHK_TITLE_QUERY
+    #     values = (title, )
+    #     ckInvit = DBHelper().get_count_filter_data(query, values)
+    #     if ckInvit > 0:
+    #         checkResult.append(f"Judul sudah terpakai.")
+    # # Check Data Title & Template ---------------------------------------- Finish
     
     # Sanitize Title ---------------------------------------- Start
     sanitTitle, charTitle = sanitize_all_char(title)
@@ -520,13 +520,34 @@ def vld_invitation(categoryId, templateId, title, personalData, is_create=True):
         receptionDate = personalData["reception"]
         if marriageDate != "":
             marriageDate = datetime.strptime(marriageDate, "%d %B %Y %H:%M %p")
+            now = datetime.now()
+            if marriageDate < now:
+                checkResult.append("Tanggal yang diinputkan sudah terlewat.")
             marriageDate = datetime.timestamp(marriageDate)
             personalData["marriage"] = int(round(marriageDate*1000))
         if receptionDate != "":
             receptionDate = datetime.strptime(receptionDate, "%d %B %Y %H:%M %p")
+            now = datetime.now()
+            if receptionDate < now:
+                checkResult.append("Tanggal yang diinputkan sudah terlewat.")
             receptionDate = datetime.timestamp(receptionDate)
             personalData["reception"] = int(round(receptionDate*1000))
     # Check Personal Data ---------------------------------------- Finish
+
+        mansPhotos = personalData["mans_photo"]
+        womansPhotos = personalData["womans_photo"]
+        # Datetime Check ---------------------------------------- Start
+        # Memisahkan bagian 'data:' dari base64 string
+        mheader, mencoded = mansPhotos.split(',', 1)
+        wheader, wencoded = womansPhotos.split(',', 1)
+        # Memisahkan 'data:' dan mengambil MIME type
+        mime_type = mheader.split(':')[1].split(';')[0].split('/')[0]
+        if mime_type != "image":
+            checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+        mime_type = wheader.split(':')[1].split(';')[0].split('/')[0]
+        if mime_type != "image":
+            checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+        # Datetime Check ---------------------------------------- Finish
 
     # Create Invitation Code ========================================
     invCode = ""

@@ -91,6 +91,7 @@ def detail_data():
 
         # Request Data ======================================== 
         data = request.args
+        
 
         # Request Process ======================================== 
         response = GreetingModels.view_detail_greeting(id, role, data)
