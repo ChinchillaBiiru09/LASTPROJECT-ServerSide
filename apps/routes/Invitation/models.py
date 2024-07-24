@@ -1,7 +1,7 @@
 from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.validator import vld_role, vld_invitation
+from ...utilities.validator import vld_role, vld_invitation, vld_edit_invitation
 from ...utilities.utils import random_number, saving_image, split_date_time, random_string_number
 
 from flask import request, current_app as app
@@ -29,7 +29,7 @@ class InvitationModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["category_id", "template_id", "title", "personal_data", "inv_setting"]
+            requiredData = ["category_id", "template_id", "title", "personal_data", "detail_info", "inv_setting"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
@@ -40,45 +40,50 @@ class InvitationModels():
             templateId = datas["template_id"]
             title = datas["title"].strip()
             personalData = datas["personal_data"]
+            detailInfo = datas["detail_info"]
             invSett = datas["inv_setting"]
             # Initialize Request Data ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
-            invCheck, personalData, invCode = vld_invitation(categoryId, templateId, title, personalData)
+            print("bisa")
+            invCheck, personalData, detailInfo, invCode = vld_invitation(user_id, categoryId, templateId, title, personalData, detailInfo)
             if len(invCheck) != 0:
                 return defined_error(invCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
-            print(personalData['galeri_photo'])
             
-            # Saving File ---------------------------------------- Start
-            # wallpaper
-            wpFileName = ""
-            # if len(personalData) > 0
-            if personalData['womans_photo'] != "":
-                wpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_woman_photo_"+user_id+".jpg")
-                wpPath = os.path.join(app.config['USER_INVITATION_FILE'], wpFileName)
-                saving_image(personalData['womans_photo'], wpPath)
-                personalData['womans_photo'] = wpFileName
-            if personalData['mans_photo'] != "":
-                mpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_man_photo_"+user_id+".jpg")
-                mpPath = os.path.join(app.config['USER_INVITATION_FILE'], mpFileName)
-                saving_image(personalData['mans_photo'], mpPath)
-                personalData['mans_photo'] = mpFileName
-            if personalData['galeri_photo'] != "":
-                gpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_gallery_"+user_id+".jpg")
-                gpPath = os.path.join(app.config['GALLERY_INVITATION_FILE'], gpFileName)
-                saving_image(personalData['galeri_photo'], gpPath)
-                personalData['galeri_photo'] = gpFileName
-            # Saving File ---------------------------------------- Finish
+            print("bismillah")
+            # # Saving File ---------------------------------------- Start
+            # # wallpaper
+            # wpFileName = ""
+            # # if len(personalData) > 0
+            # if personalData['womans_photo'] != "":
+            #     wpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_woman_photo_"+user_id+".jpg")
+            #     wpPath = os.path.join(app.config['USER_INVITATION_FILE'], wpFileName)
+            #     saving_image(personalData['womans_photo'], wpPath)
+            #     personalData['womans_photo'] = wpFileName
+            # if personalData['mans_photo'] != "":
+            #     mpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_man_photo_"+user_id+".jpg")
+            #     mpPath = os.path.join(app.config['USER_INVITATION_FILE'], mpFileName)
+            #     saving_image(personalData['mans_photo'], mpPath)
+            #     personalData['mans_photo'] = mpFileName
+            # # if personalData['galeri_photo'] != "":
+            # #     gpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_gallery_"+user_id+".jpg")
+            # #     gpPath = os.path.join(app.config['GALLERY_INVITATION_FILE'], gpFileName)
+            # #     saving_image(personalData['galeri_photo'], gpPath)
+            # #     personalData['galeri_photo'] = gpFileName
+            # # Saving File ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             titlelink = title.replace(' ', '-')
             invLink =  titlelink
             personalData = json.dumps(personalData)
+            print(detailInfo)
+            detailInfo = json.dumps(detailInfo)
             invSett = json.dumps(invSett)
+            
             query = INV_ADD_QUERY
-            values = (accLevel, user_id, categoryId, templateId, title, personalData, invSett, invCode, invLink, timestamp, user_id, timestamp, user_id)
+            values = (accLevel, user_id, categoryId, templateId, title, personalData, detailInfo, invSett, invCode, invLink, timestamp, user_id, timestamp, user_id)
             resReturn = DBHelper().save_return(query, values)
             # Insert Data ---------------------------------------- Finish
 
@@ -86,12 +91,13 @@ class InvitationModels():
             activity = f"User dengan id {user_id} telah membuat undangan baru: {title}."
             query = LOG_ADD_QUERY
             values = (user_id, accLevel, activity, timestamp, )
-            # DBHelper().save_data(query, values)
+            DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = {
                 "inv_id": resReturn,
+                # "inv_id": 1,
                 "inv_code": invCode
             }
             # Response Data ---------------------------------------- Finish
@@ -220,7 +226,7 @@ class InvitationModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["invitation_id", "title", "personal_data", "inv_setting"]
+            requiredData = ["invitation_id", "title", "personal_data", "detail_info", "inv_setting"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
@@ -230,6 +236,7 @@ class InvitationModels():
             invId = datas["invitation_id"]
             title = datas["title"]
             personalData = datas["personal_data"]
+            detailInfo = datas["detail_info"]
             invSett = datas["inv_setting"]
             # Initialize Request Data ---------------------------------------- Finish
             
@@ -239,11 +246,10 @@ class InvitationModels():
             result = DBHelper().get_data(query, values)
             if len(result) < 1 :
                 return not_found(f"Data undangan dengan id {invId} tidak dapat ditemukan.")
-            
             # Data Validation ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
-            invCheck, personalData, invCode = vld_invitation(result[0]["category_id"], result[0]["template_id"], title, personalData, False)
+            invCheck, personalData, detailInfo  = vld_edit_invitation(result, title, personalData, detailInfo)
             if len(invCheck) != 0:
                 return defined_error(invCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -251,9 +257,10 @@ class InvitationModels():
             # Update Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             personalData = json.dumps(personalData)
+            detailInfo = json.dumps(detailInfo)
             invSett = json.dumps(invSett)
             query = INV_UPDATE_QUERY
-            values = (title, personalData, invSett, timestamp, user_id, invId)
+            values = (title, personalData, detailInfo, invSett, timestamp, user_id, invId)
             DBHelper().save_data(query, values)
             # Update Data ---------------------------------------- Finish
 
@@ -407,18 +414,47 @@ class InvitationModels():
             
             # Set Data ---------------------------------------- Start
             invitation["personal_data"] = json.loads(invitation["personal_data"])
+            invitation["detail_info"] = json.loads(invitation["detail_info"])
             invitation["inv_setting"] = json.loads(invitation["inv_setting"])
             invitation["created_at"] = split_date_time(datetime.fromtimestamp(invitation["created_at"]/1000))
             invitation["updated_at"] = split_date_time(datetime.fromtimestamp(invitation["updated_at"]/1000))
             if invitation["category"].upper() == "PERNIKAHAN":
+                for data in invitation["detail_info"]:
+                    if data.upper() == "MARRIAGE_START":
+                        print(invitation["detail_info"][data])
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "MARRIAGE_END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    
+                    if data.upper() == "RECEPTION_START":
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "RECEPTION_END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+
+                invitation["personal_data"]["wp_filename"] = invitation["personal_data"]["womans_photo"]
+                invitation["personal_data"]["mp_filename"] = invitation["personal_data"]["mans_photo"]
+                print("oke")
                 for data in invitation["personal_data"]:
-                    if data.upper() == "MARRIAGE":
-                        invitation["personal_data"][data] = split_date_time(datetime.fromtimestamp(invitation["personal_data"][data]/1000))
-                    if data.upper() == "RECEPTION":
-                        invitation["personal_data"][data] = split_date_time(datetime.fromtimestamp(invitation["personal_data"][data]/1000))
                     if data.upper() == "WOMANS_PHOTO":
                         invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+                        # invitation["personal_data"]["wp_filename"] = invitation['personal_data'][data]
                     if data.upper() == "MANS_PHOTO":
+                        invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+                        # invitation["personal_data"]["mp_filename"] = invitation['personal_data'][data]
+            
+            elif invitation["category"].upper() == "ULANG TAHUN":
+                for data in invitation["detail_info"]:
+                    if data.upper() == "START":
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    
+                invitation["personal_data"]["pFName"] = invitation["personal_data"]["myphoto"]
+                for data in invitation["personal_data"]:
+                    if data.upper() == "MYPHOTO":
                         invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
             # Set Data ---------------------------------------- Finish
 
@@ -430,6 +466,140 @@ class InvitationModels():
                     "category" : invitation["category"],
                     "invitation_title" : invitation["title"].title(),
                     "personal_data" : invitation["personal_data"],
+                    "detail_info" : invitation["detail_info"],
+                    "invitation_code" : invitation["code"],
+                    "invitation_link" : invitation["link"],
+                    "created_at": invitation["created_at"],
+                    "updated_at" : invitation["updated_at"],
+                    "template_id" : invitation["template_id"],
+                    "template_thumb" : invitation["temp_thumb"],
+                    "template_css" : invitation["temp_css"],
+                    "template_js" : invitation["temp_js"],
+                    "template_wall" : invitation["temp_wall"],
+                    "template_wall2" : invitation["temp_wall2"],
+                    "template_title" : invitation["template_title"]
+            }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data(response)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET DETAIL INVITATION ============================================================ End
+
+    # GET DETAIL INVITATION ============================================================ Begin
+    # Clear // sesuaikan kategori
+    def view_detail_code_invitation(user_role, datas):
+        try:
+            # Access Validation ---------------------------------------- Start
+            access = vld_role(user_role)
+            if access: # Access = True -> Admin
+                return authorization_error()
+            # Access Validation ---------------------------------------- Finish
+
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
+            
+            if "invitation_code" not in datas:
+                return parameter_error(f"Missing 'category_id' in Request Body")
+            
+            invCode = datas["invitation_code"]
+            if invCode == "":
+                return defined_error("Id undangan tidak boleh kosong", "Defined Error", 400)
+            # Checking Request Body ---------------------------------------- Finish
+            
+            # Checking Data Invitation ---------------------------------------- Start
+            query = INV_GET_BY_CODE_QUERY
+            values = (invCode,)
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 :
+                return not_found(f"Data undangan dengan Id {invId} tidak dapat ditemukan.")
+            # Checking Data Invitation ---------------------------------------- Finish
+
+            # Get Data Category ---------------------------------------- Start
+            invitation = result[0]
+            query = CTGR_GET_BY_ID_QUERY
+            values = (invitation['category_id'], )
+            category = DBHelper().get_data(query, values)
+            if len(category) < 1 :
+                return not_found(f"Data kategori dengan Id {invitation['category_id']} tidak dapat ditemukan.")
+            # Get Data Category ---------------------------------------- Finish
+
+            # Get Data Template ---------------------------------------- Start
+            query = TMPLT_GET_BY_ID_QUERY
+            values = (invitation['template_id'], )
+            templates = DBHelper().get_data(query, values)
+            if len(templates) < 1 :
+                return not_found(f"Data template dengan Id {invitation['template_id']} tidak dapat ditemukan.")
+            # Get Data Template ---------------------------------------- Finish
+            
+            # Generate Invitation File URL ---------------------------------------- Start
+            if len(result) >= 1:
+                detailRequestURL = str(request.url).find('?')
+                if detailRequestURL != -1:
+                    index = detailRequestURL
+                    request.url = request.url[:index]
+            
+            invitation["category"] = category[0]["category"]
+            invitation["template_title"] = templates[0]["title"]
+            invitation["temp_thumb"] = f"{request.url_root}template/media/thumbnail/{templates[0]['thumbnail']}"
+            invitation["temp_css"] = f"{request.url_root}template/media/css/{templates[0]['css_file']}"
+            invitation["temp_js"] = f"{request.url_root}template/media/js/{templates[0]['js_file']}"
+            invitation["temp_wall"] = f"{request.url_root}template/media/wallpaper/{templates[0]['wallpaper']}"
+            invitation["temp_wall2"] = f"{request.url_root}template/media/wallpaper/{templates[0]['wallpaper_2']}"
+            # Generate Invitation File URL ---------------------------------------- Finish
+            
+            # Set Data ---------------------------------------- Start
+            invitation["personal_data"] = json.loads(invitation["personal_data"])
+            invitation["detail_info"] = json.loads(invitation["detail_info"])
+            invitation["inv_setting"] = json.loads(invitation["inv_setting"])
+            invitation["created_at"] = split_date_time(datetime.fromtimestamp(invitation["created_at"]/1000))
+            invitation["updated_at"] = split_date_time(datetime.fromtimestamp(invitation["updated_at"]/1000))
+            if invitation["category"].upper() == "PERNIKAHAN":
+                for data in invitation["detail_info"]:
+                    if data.upper() == "MARRIAGE_START":
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "MARRIAGE_END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    
+                    if data.upper() == "RECEPTION_START":
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "RECEPTION_END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+
+                for data in invitation["personal_data"]:
+                    if data.upper() == "WOMANS_PHOTO":
+                        invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+                    if data.upper() == "MANS_PHOTO":
+                        invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+             
+            elif invitation["category"].upper() == "ULANG TAHUN":
+                for data in invitation["detail_info"]:
+                    if data.upper() == "START":
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    
+                invitation["personal_data"]["pFName"] = invitation["personal_data"]["myphoto"]
+                for data in invitation["personal_data"]:
+                    if data.upper() == "MYPHOTO":
+                        invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+            # Set Data ---------------------------------------- Finish
+
+            # Response Data ---------------------------------------- Start
+            response = {
+                    "invitation_id" : invitation["id"],
+                    "user_id" : invitation["user_id"],
+                    "category_id" : invitation["category_id"],
+                    "category" : invitation["category"],
+                    "invitation_title" : invitation["title"].title(),
+                    "personal_data" : invitation["personal_data"],
+                    "detail_info" : invitation["detail_info"],
                     "invitation_code" : invitation["code"],
                     "invitation_link" : invitation["link"],
                     "created_at": invitation["created_at"],

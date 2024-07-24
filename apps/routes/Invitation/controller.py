@@ -136,6 +136,29 @@ def detail_data():
 # VIEW DETAIL INVITATION ============================================================ End
 
 
+# VIEW DETAIL BY CODE INVITATION ============================================================ Begin
+# GET https://127.0.0.1:5000/invitation/detail
+@invitation.get('/detail/code')
+@jwt_required()
+def detail_code_data():
+    try:
+        # Access User ======================================== 
+        role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        data = request.args
+
+        # Request Process ======================================== 
+        response = InvitationModels.view_detail_code_invitation(role, data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# VIEW DETAIL BY CODE INVITATION ============================================================ End
+
+
 # VIEW ROW-COUNT INVITATION ============================================================ Begin
 # GET https://127.0.0.1:5000/invitation/count
 @invitation.get('/count')

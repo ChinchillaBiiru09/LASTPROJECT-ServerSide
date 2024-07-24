@@ -61,6 +61,18 @@ def sanitize_all_char(string):
             return True, i
     return False, ""
 
+def sanitize_title_char(string):
+    special_char = [
+        "(", ")", "{", "}", "[", "]", "<", ">", 
+        "--", "*", "%", "+", "/", "'", 
+        "$", "`", "#", ",", '"', ";", ":",
+        "!", "?", "@", "^", "=", "~"
+        ]
+    for i in string:
+        if i in special_char:
+            return True, i
+    return False, ""
+
 def sanitize_passwd_char(string):
     special_char = [
         "(", ")", "{", "}", "[", "]", "<", ">", 
@@ -172,6 +184,7 @@ def split_date_time(datetimes):
     nummonthData = datetimes.strftime("%m")
     yearData = datetimes.strftime("%Y")
     timeData = datetimes.strftime("%H:%M")
+    timeData2 = datetimes.strftime("%I:%M")
     hourData = datetimes.strftime("%H")
     minuteData = datetimes.strftime("%M")
     partTime = datetimes.strftime("%p")
@@ -196,12 +209,13 @@ def split_date_time(datetimes):
         "no_month" : nummonthData,
         "year" : yearData,
         "time" : timeData,
+        "etime" : datetimes.strftime(f"{timeData2} {partTime}"),
         "day_month" : datetimes.strftime(f"%d {monthFormat}"),
         "month_year" : datetimes.strftime(f"{monthFormat} %Y"),
         "date" : datetimes.strftime(f"%d {monthFormat} %Y"),
-        "date_time" : datetimes.strftime(f"%d {monthFormat} %Y %H:%M %p"),
-        "edate_time" : datetimes.strftime(f"%d %B %Y %H:%M %p"),
-        "full" : datetimes.strftime(f"{dayFormat}, %d {monthFormat} %Y, %H:%M:%S %p")
+        "date_time" : datetimes.strftime(f"%d {monthFormat} %Y %I:%M %p"),
+        "edate_time" : datetimes.strftime(f"%d %B %Y %I:%M %p"),
+        "full" : datetimes.strftime(f"{dayFormat}, %d {monthFormat} %Y, %H:%M:%S")
     }
     
     return datetimes

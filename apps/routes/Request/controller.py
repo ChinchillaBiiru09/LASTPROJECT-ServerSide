@@ -86,6 +86,30 @@ def get_data():
 # # UPDATE GUEST ============================================================ End
 
 
+# UPDATE GUEST ============================================================ Begin
+# PUT https://127.0.0.1:5000/guest/
+@reqtemp.put('/status')
+@jwt_required()
+def update_data():
+    try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = ReqTemplateModels.edit_status_request(id, role, data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# UPDATE GUEST ============================================================ End
+
+
 # DELETE REQUEST ============================================================ Begin
 # DELETE https://127.0.0.1:5000/guest/
 @reqtemp.delete('/')

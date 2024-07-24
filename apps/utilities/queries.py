@@ -211,7 +211,7 @@ TMPLT_ADD_QUERY = """
 TMPLT_UPDATE_QUERY = """
                         UPDATE template 
                         SET title=%s, thumbnail=%s, css_file=%s, js_file=%s, 
-                        wallpaper=%s, category_id=%s, updated_at=%s, updated_by=%s
+                        wallpaper=%s, wallpaper_2=%s, category_id=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 TMPLT_DELETE_QUERY = """
@@ -275,6 +275,11 @@ REQ_GET_BY_ID_QUERY = """
                         SELECT * FROM requser
                         WHERE id=%s AND is_delete=0
                     """
+REQ_UPDATE_STATUS_QUERY = """
+                            UPDATE requser 
+                            SET status=%s, updated_by=%s, updated_at=%s
+                            WHERE id=%s AND is_delete=0
+                        """
 REQ_DELETE_QUERY = """
                     UPDATE requser 
                     SET is_delete=1, deleted_at=%s, deleted_by=%s
@@ -303,12 +308,12 @@ INV_CHK_CODE_QUERY = """
                     """
 INV_ADD_QUERY = """
                     INSERT INTO invitation 
-                    (user_level, user_id, category_id, template_id, title, personal_data, inv_setting, code, link, created_at, created_by, updated_at, updated_by)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (user_level, user_id, category_id, template_id, title, personal_data, detail_info, inv_setting, code, link, created_at, created_by, updated_at, updated_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 INV_UPDATE_QUERY = """
                         UPDATE invitation 
-                        SET title=%s, personal_data=%s, inv_setting=%s, updated_at=%s, updated_by=%s
+                        SET title=%s, personal_data=%s, detail_info=%s, inv_setting=%s, updated_at=%s, updated_by=%s
                         WHERE id=%s AND is_delete=0
                     """
 INV_DELETE_QUERY = """
@@ -334,6 +339,10 @@ INV_GET_BY_TEMP_QUERY = """
 INV_GET_BY_ID_QUERY = """
                         SELECT * FROM invitation 
                         WHERE id=%s AND is_delete=0
+                    """
+INV_GET_BY_CODE_QUERY = """
+                        SELECT * FROM invitation 
+                        WHERE code=%s AND is_delete=0
                     """
 INV_GET_BY_USR_QUERY = """
                             SELECT * FROM invitation 

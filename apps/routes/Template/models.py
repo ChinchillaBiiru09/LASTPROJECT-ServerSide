@@ -44,7 +44,7 @@ class TemplateModels():
             # Initialize Data Input ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            tmpltCheck, randomNumber = vld_template(title, thumbnail, css, wallpaper1)
+            tmpltCheck, randomNumber = vld_template(title, thumbnail, css, js, wallpaper1, wallpaper2, ctgr_id)
             if len(tmpltCheck) != 0:
                 return defined_error(tmpltCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -100,16 +100,6 @@ class TemplateModels():
     # GET ALL TEMPLATE ============================================================ Begin
     def view_template():
         try:
-            # # Checking Request Body ---------------------------------------- Start
-            # if len(datas) != 0:
-            #     if "category_id" not in datas:
-            #         return parameter_error("Missing 'category_id' in request body.")
-                
-            #     catId = datas["category_id"]
-            #     if catId == "":
-            #         return defined_error("Id kategori tidak boleh kosong.", "Defined Error", 499)
-            # # Checking Request Body ---------------------------------------- Finish
-
             # Checking Data ---------------------------------------- Start
             query = TMPLT_GET_ALL_QUERY
             result = DBHelper().execute(query)
@@ -138,10 +128,15 @@ class TemplateModels():
                     index = detailRequestURL
                     request.url = request.url[:index]
             for item in result:
+                item["thumb_fname"] = item['thumbnail']
                 item["thumbnail"] = f"{request.url_root}template/media/thumbnail/{item['thumbnail']}"
+                item["css_fname"] = item['css_file']
                 item["css_file"] = f"{request.url_root}template/media/css/{item['css_file']}"
+                item["js_fname"] = item['js_file']
                 item["js_file"] = f"{request.url_root}template/media/js/{item['js_file']}"
+                item["wp_fname"] = item['wallpaper']
                 item["wallpaper"] = f"{request.url_root}template/media/wallpaper/{item['wallpaper']}"
+                item["wp2_fname"] = item['wallpaper_2']
                 item["wallpaper_2"] = f"{request.url_root}template/media/wallpaper/{item['wallpaper_2']}"
             # Generate File URL ---------------------------------------- Finish
             
@@ -154,10 +149,15 @@ class TemplateModels():
                     "template_id" : rsl["id"],
                     "title" : rsl["title"],
                     "thumbnail" : rsl["thumbnail"],
+                    "thumb_fname" : rsl["thumb_fname"],
                     "css_file" : rsl["css_file"],
+                    "css_fname" : rsl["css_fname"],
                     "js_file" : rsl["js_file"],
+                    "js_fname" : rsl["js_fname"],
                     "wallpaper": rsl["wallpaper"],
+                    "wp_fname": rsl["wp_fname"],
                     "wallpaper_2": rsl["wallpaper_2"],
+                    "wp2_fname": rsl["wp2_fname"],
                     "category_id" : rsl["category_id"],
                     "category" : rsl["category"],
                     "created_at" : createdAt,
@@ -196,39 +196,45 @@ class TemplateModels():
             # Initialize Data Input ---------------------------------------- Start
             tempId = datas["template_id"]
             title = datas["title"].strip()
+            css = datas["css_file"]
+            js = datas["js_file"]
             thumbnail = datas["thumbnail"]
             wallpaper1 = datas["wallpaper_1"]
             wallpaper2 = datas["wallpaper_2"]
-            css = datas["css_file"]
-            js = datas["title"]
             catgId = datas["category_id"]
             # Initialize Data Input ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
             query = TMPLT_GET_BY_ID_QUERY
             values = (tempId,)
-            result = DBHelper.get_count_filter_data(query, values)
-            if result == 0 :
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 :
                 return not_found(f"Template dengan Id {tempId} tidak dapat ditemukan.")
             
-            ctgrCheck, randomNumber = vld_template(title, thumbnail, css, wallpaper1, False)
+            ctgrCheck, randomNumber = vld_template(title, thumbnail, css, js, wallpaper1, wallpaper2, catgId, False)
             if len(ctgrCheck) != 0:
                 return defined_error(ctgrCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
 
             # Saving File ---------------------------------------- Start
             result = result[0]
+            print(datas)
             if thumbnail != result['thumbnail']:
+                print("Masuk?")
                 # Thumbnail
                 thumbFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_thumbnail.jpg")
                 thumbPath = os.path.join(app.config['TEMPLATE_THUMBNAIL_PHOTOS'], thumbFileName)
                 saving_image(thumbnail, thumbPath)
+            else:
+                thumbFileName = thumbnail
 
             if css != result['css_file']:
                 # CSS
                 cssFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_style.css")
                 cssPath = os.path.join(app.config['TEMPLATE_CSS_FILE'], cssFileName)
                 saving_file(css, cssPath)
+            else:
+                cssFileName = css
                 
             if js != result['js_file']:
                 # JS
@@ -237,33 +243,37 @@ class TemplateModels():
                     jsFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_script.js")
                     jsPath = os.path.join(app.config['TEMPLATE_JS_FILE'], jsFileName)
                     saving_file(js, jsPath)
+            else:
+                jsFileName = js
                     
             if wallpaper1 != result['wallpaper']:
                 # Wallpaper 1
                 wallpFileName1 = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper_1.jpg")
                 wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName1)
                 saving_image(wallpaper1, wallpPath)
+            else:
+                wallpFileName1 = wallpaper1
                 
             if wallpaper2 != result['wallpaper_2']:
                 # wallpaper 2
-                wallpFileName2 = ""
-                if wallpaper2 != "":
-                    wallpFileName2 = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper_2.jpg")
-                    wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName2)
-                    saving_image(wallpaper2, wallpPath)
+                wallpFileName2 = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+randomNumber+"_wallpaper_2.jpg")
+                wallpPath = os.path.join(app.config['TEMPLATE_WALLPAPER_PHOTOS'], wallpFileName2)
+                saving_image(wallpaper2, wallpPath)
+            else:
+                wallpFileName2 = wallpaper2
             # Saving File ---------------------------------------- Finish
             
             # Update Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = TMPLT_UPDATE_QUERY
-            values = (title, thumbnail, cssFileName, jsFileName, wallpFileName1, wallpFileName2, catgId, timestamp, user_id, tempId)
+            values = (title, thumbFileName, cssFileName, jsFileName, wallpFileName1, wallpFileName2, catgId, timestamp, user_id, tempId)
             DBHelper().save_data(query, values)
             # Update Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan Id {user_id} mengubah template {tempId}: {result[0]['title']}."
+            activity = f"Admin dengan Id {user_id} mengubah template {tempId}: {result['title']}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
+            values = (user_id, 1, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
@@ -394,10 +404,16 @@ class TemplateModels():
                 if detailRequestURL != -1:
                     index = detailRequestURL
                     request.url = request.url[:index]
+            
+            template["thumb_fname"] = template['thumbnail']
             template["thumbnail"] = f"{request.url_root}template/media/thumbnail/{template['thumbnail']}"
+            template["css_fname"] = template['css_file']
             template["css_file"] = f"{request.url_root}template/media/css/{template['css_file']}"
+            template["js_fname"] = template['js_file']
             template["js_file"] = f"{request.url_root}template/media/js/{template['js_file']}"
+            template["wp_fname"] = template['wallpaper']
             template["wallpaper"] = f"{request.url_root}template/media/wallpaper/{template['wallpaper']}"
+            template["wp2_fname"] = template['wallpaper_2']
             template["wallpaper_2"] = f"{request.url_root}template/media/wallpaper/{template['wallpaper_2']}"
             # Generate File URL ---------------------------------------- Finish
             
@@ -408,10 +424,15 @@ class TemplateModels():
                     "template_id" : template["id"],
                     "title" : template["title"].title(),
                     "thumbnail" : template["thumbnail"],
+                    "thumb_fname" : template["thumb_fname"],
                     "css_file" : template["css_file"],
+                    "css_fname" : template["css_fname"],
                     "js_file" : template["js_file"],
+                    "js_fname" : template["js_fname"],
                     "wallpaper": template["wallpaper"],
+                    "wp_fname": template["wp_fname"],
                     "wallpaper_2": template["wallpaper_2"],
+                    "wp2_fname": template["wp2_fname"],
                     "category_id" : template["category_id"],
                     "category" : template["category"],
                     "created_at" : template['created_at'],

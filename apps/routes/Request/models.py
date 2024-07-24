@@ -141,14 +141,15 @@ class ReqTemplateModels():
                     rsl["type_txt"] = "Public"
                 
                 if rsl['status'] == 0:
+                    print("dakn")
                     rsl['status_txt'] = "Menunggu"
+                # elif rsl['status'] == 1:
+                #     rsl['status_txt'] = "Disetujui"
                 elif rsl['status'] == 1:
-                    rsl['status_txt'] = "Disetujui"
-                elif rsl['status'] == 2:
                     rsl['status_txt'] = "Dalam Proses"
-                elif rsl['status'] == 3:
+                elif rsl['status'] == 2:
                     rsl['status_txt'] = "Ditolak"
-                elif rsl['status'] == 4:
+                elif rsl['status'] == 3:
                     rsl['status_txt'] = "Selesai"
                 # 0 = waiting | 1 = acc | 2 = proccess | 3 = decline | 4 = clear
 
@@ -250,6 +251,62 @@ class ReqTemplateModels():
     #         return bad_request(str(e))
     # # UPDATE GUEST ============================================================ End
 
+    # UPDATE STATUS REQUEST ============================================================ Begin
+    # 
+    def edit_status_request(user_id, user_role, datas):
+        try:
+            # Access Validation ---------------------------------------- Start
+            access = vld_role(user_role)
+            accLevel = 1
+            if not access:
+                return authorization_error()
+            # Access Validation ---------------------------------------- Finish
+
+            print(datas)
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
+            
+            requiredData = ["req_id", "status"]
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body")
+            # Checking Request Body ---------------------------------------- Finish
+            
+            # Inisialize Data Input ---------------------------------------- Start
+            reqId = datas["req_id"]
+            status = datas["status"]
+            # Inisialize Data Input ---------------------------------------- Finish
+            
+            # Data Validation ---------------------------------------- Start
+            query = REQ_GET_BY_ID_QUERY
+            values = (reqId, )
+            result = DBHelper().get_data(query, values)
+            if len(result) < 1 :
+                return not_found("Data permintaan tidak dapat ditemukan.")
+            # Data Validation ---------------------------------------- Finish
+            
+            # Update Data ---------------------------------------- Start
+            timestamp = int(round(time.time()*1000))
+            query = REQ_UPDATE_STATUS_QUERY
+            values = (status, user_id, timestamp, reqId )
+            DBHelper().save_data(query, values)
+            # Update Data ---------------------------------------- Finish
+
+            # Log Activity Record ---------------------------------------- Start
+            activity = f"{user_role.title()} dengan id {user_id} mengonfirmasi data request."
+            query = LOG_ADD_QUERY
+            values = (user_id, accLevel, activity, timestamp, )
+            DBHelper().save_data(query, values)
+            # Log Activity Record ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success(message="Updated!")
+            
+        except Exception as e:
+            return bad_request(str(e))
+    # UPDATE STATUS REQUEST ============================================================ End
+
     # DELETE GUEST ============================================================ Begin
     # 
     def delete_guest(user_id, user_role, datas):     
@@ -326,7 +383,6 @@ class ReqTemplateModels():
             if len(result) < 1:
                 return not_found("Data request tidak dapat ditemukan.")
             # Get & Check Data ---------------------------------------- Finish
-            print(result)
             
             # Get & Check Data ---------------------------------------- Start
             query = PROF_GET_BY_ID_QUERY
@@ -370,13 +426,13 @@ class ReqTemplateModels():
                 
                 if rsl['status'] == 0:
                     rsl['status_txt'] = "Menunggu"
+                # elif rsl['status'] == 1:
+                #     rsl['status_txt'] = "Disetujui"
                 elif rsl['status'] == 1:
-                    rsl['status_txt'] = "Disetujui"
-                elif rsl['status'] == 2:
                     rsl['status_txt'] = "Dalam Proses"
-                elif rsl['status'] == 3:
+                elif rsl['status'] == 2:
                     rsl['status_txt'] = "Ditolak"
-                elif rsl['status'] == 4:
+                elif rsl['status'] == 3:
                     rsl['status_txt'] = "Selesai"
                 # 0 = waiting | 1 = acc | 2 = proccess | 3 = decline | 4 = clear
 

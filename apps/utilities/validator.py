@@ -71,7 +71,7 @@ def vld_user_regis(fname, mname, lname, phone, email, password, repassword):
     if password == "":
         checkResult.append(f"Password tidak boleh kosong")
     if repassword == "":
-        checkResult.append(f"Password tidak boleh kosong")
+        checkResult.append(f"Confirm password tidak boleh kosong.")
     # Check Null String ---------------------------------------- Finish
 
     # Sanitize String Input ---------------------------------------- Start
@@ -86,7 +86,7 @@ def vld_user_regis(fname, mname, lname, phone, email, password, repassword):
         checkResult.append(f"Password tidak boleh mengandung simbol '{charPass}'. Gunakan selain simbol '( ) [ ] < > ' ` \" ; . ,'.")
     sanitRepass, charRepass = sanitize_passwd_char(repassword)
     if sanitRepass:
-        checkResult.append(f"Password tidak boleh mengandung simbol '{charRepass}'. Gunakan selain simbol '( ) [ ] < > ' ` \" ; . ,'.")
+        checkResult.append(f"Confirm password tidak boleh mengandung simbol '{charRepass}'. Gunakan selain simbol '( ) [ ] < > ' ` \" ; . ,'.")
     # Sanitize String Input ---------------------------------------- Finish
 
     # Comparing Password ======================================== 
@@ -372,7 +372,7 @@ def vld_greeting(invCode, name, status, greeting):
 # GREETING VALIDATION ============================================================ End
 
 # TEMPLATE VALIDATION ============================================================ Begin
-def vld_template(title, thumbnail, css, wallpaper, is_create=True):
+def vld_template(title, thumbnail, css, js, wallpaper1, wallpaper2, category, is_create=True):
     checkResult = []
 
     if title == "":
@@ -381,11 +381,15 @@ def vld_template(title, thumbnail, css, wallpaper, is_create=True):
         checkResult.append(f"Thumbnail tidak boleh kosong.")
     if css == "":
         checkResult.append(f"Css tidak boleh kosong.")
-    if wallpaper == "":
+    if wallpaper1 == "":
         checkResult.append(f"Wallpaper 1 tidak boleh kosong.")
+    if wallpaper2 == "":
+        checkResult.append("Wallpaper 2 tidak boleh kosong.")
+    if category == "0":
+        checkResult.append("Kategori tidak boleh kosong.")
     
     # Sanitize Title ---------------------------------------- Start
-    sanitTitle, charTitle = sanitize_all_char(title)
+    sanitTitle, charTitle = sanitize_title_char(title)
     if sanitTitle:
         checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}.")
     # Sanitize Title ---------------------------------------- Finish
@@ -396,6 +400,54 @@ def vld_template(title, thumbnail, css, wallpaper, is_create=True):
         result = DBHelper().get_count_filter_data(query, values)
         if result != 0:
             checkResult.append("Judul sudah terdaftar.")
+
+        # Photo Check ---------------------------------------- Start
+        if thumbnail != "":
+            # Memisahkan bagian 'data:' dari base64 string
+            header, encoded = thumbnail.split(',', 1)
+            # Memisahkan 'data:' dan mengambil MIME type
+            mime_type = header.split(':')[1].split(';')[0].split('/')[0]
+            if mime_type != "image":
+                checkResult.append("File thumbnail yang diinputkan harus berupa gambar.")
+
+        
+        if css != "":
+            # Memisahkan bagian 'data:' dari base64 string
+            header, encoded = css.split(',', 1)
+            # Memisahkan 'data:' dan mengambil MIME type
+            mime_type = header.split(':')[1].split(';')[0]
+
+            if mime_type != "text/css":
+                checkResult.append("File css yang diinputkan harus berupa gambar.")
+        
+        
+        if js != "":
+            # Memisahkan bagian 'data:' dari base64 string
+            header, encoded = js.split(',', 1)
+            # Memisahkan 'data:' dan mengambil MIME type
+            mime_type = header.split(':')[1].split(';')[0]
+ 
+            if mime_type != "text/javascript":
+                checkResult.append("File javascript yang diinputkan harus berupa gambar.")
+
+        
+        if wallpaper1 != "":
+            # Memisahkan bagian 'data:' dari base64 string
+            header, encoded = wallpaper1.split(',', 1)
+            # Memisahkan 'data:' dan mengambil MIME type
+            mime_type = header.split(':')[1].split(';')[0].split('/')[0]
+            if mime_type != "image":
+                checkResult.append("File wallpaper yang diinputkan harus berupa gambar.")
+
+        
+        if wallpaper2 != "":
+            # Memisahkan bagian 'data:' dari base64 string
+            header, encoded = wallpaper2.split(',', 1)
+            # Memisahkan 'data:' dan mengambil MIME type
+            mime_type = header.split(':')[1].split(';')[0].split('/')[0]
+            if mime_type != "image":
+                checkResult.append("File wallpaper yang diinputkan harus berupa gambar.")
+        # Photo Check ---------------------------------------- Finish
         
     randomNumber = str(random_number(5))
 
@@ -417,20 +469,21 @@ def vld_request_template(design, deadline, categoryId):
     if deadline != "":
         deadline = datetime.strptime(deadline, "%d %B %Y")
         now = datetime.now()
-        oneweek = now + timedelta(days=7)
+        oneweek = now + timedelta(days=6)
         if deadline < now:
             checkResult.append("Batas waktu yang diinputkan sudah terlewat.")
         elif deadline < oneweek:
-            checkResult.append("Batas waktu minimal 1 minggu dari hari ini.")
+            checkResult.append("Batas waktu minimal 7 hari dari sekarang.")
     # Datetime Check ---------------------------------------- Finish
 
     # Photo Check ---------------------------------------- Start
-    # Memisahkan bagian 'data:' dari base64 string
-    header, encoded = design.split(',', 1)
-    # Memisahkan 'data:' dan mengambil MIME type
-    mime_type = header.split(':')[1].split(';')[0]
-    if mime_type != "image/png":
-        checkResult.append("Data desain yang diinputkan harus berupa gambar.")
+    if design != "":
+        # Memisahkan bagian 'data:' dari base64 string
+        header, encoded = design.split(',', 1)
+        # Memisahkan 'data:' dan mengambil MIME type
+        mime_type = header.split(':')[1].split(';')[0].split('/')[0]
+        if mime_type != "image":
+            checkResult.append("Data desain yang diinputkan harus berupa gambar.")
     # Photo Check ---------------------------------------- Finish
     
     return checkResult
@@ -452,7 +505,7 @@ def vld_invitation_code():
     # Return Value ========================================
     return invCode
 
-def vld_invitation(categoryId, templateId, title, personalData, is_create=True):
+def vld_invitation(userId, categoryId, templateId, title, personalData, detailInfo):
     checkResult = []
 
     # Validation Null Data ---------------------------------------- Start
@@ -460,27 +513,27 @@ def vld_invitation(categoryId, templateId, title, personalData, is_create=True):
         checkResult.append(f"Judul template tidak boleh kosong.")
     if personalData == None:
         checkResult.append(f"Data pribadi tidak boleh kosong tidak boleh kosong.")
+    if detailInfo == None:
+        checkResult.append(f"Data acara tidak boleh kosong tidak boleh kosong.")
     # Validation Null Data ---------------------------------------- Finish
     
-    # # Check Data Title & Template ---------------------------------------- Start
-    # if is_create:
-    # # Template
-    #     query = TMPLT_GET_BY_ID_QUERY
-    #     values = (templateId,)
-    #     ckTemplate = DBHelper().get_count_filter_data(query, values)
-    #     if ckTemplate < 1:
-    #         checkResult.append(f"Data template tidak dapat ditemukan.")
-    
-    # # Title
-    #     query = INV_CHK_TITLE_QUERY
-    #     values = (title, )
-    #     ckInvit = DBHelper().get_count_filter_data(query, values)
-    #     if ckInvit > 0:
-    #         checkResult.append(f"Judul sudah terpakai.")
-    # # Check Data Title & Template ---------------------------------------- Finish
+    # Check Data Title & Template ---------------------------------------- Start
+    # Template
+    query = TMPLT_GET_BY_ID_QUERY
+    values = (templateId,)
+    ckTemplate = DBHelper().get_count_filter_data(query, values)
+    if ckTemplate < 1:
+        checkResult.append(f"Data template tidak dapat ditemukan.")
+    # Title
+    query = INV_CHK_TITLE_QUERY
+    values = (title, )
+    ckInvit = DBHelper().get_count_filter_data(query, values)
+    if ckInvit > 0:
+        checkResult.append(f"Judul sudah terpakai.")
+    # Check Data Title & Template ---------------------------------------- Finish
     
     # Sanitize Title ---------------------------------------- Start
-    sanitTitle, charTitle = sanitize_all_char(title)
+    sanitTitle, charTitle = sanitize_title_char(title)
     if sanitTitle:
         checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}.")
     # Sanitize Title ---------------------------------------- Finish
@@ -498,62 +551,349 @@ def vld_invitation(categoryId, templateId, title, personalData, is_create=True):
         checkResult.append(f"Data kategori tidak dapat ditemukan.")
     # Check Data Category ---------------------------------------- Finish
 
-    # Check Format Data ---------------------------------------- Start
+    # Check Detail Data ---------------------------------------- Start
+    detail = True
+    if len(detailInfo) < 1:
+        detail = False
+        checkResult.append("Info acara tidak boleh kosong.")
     personData = True
     if len(personalData) < 1:
         personData = False
-        checkResult.append("Personal data tidak boleh kosong.")
-    # elif len(ckCategory) > 0:
-    #     formatData = json.loads(ckCategory[0]["format_data"])
-    #     for key, value in formatData.items():
-    #         if value == "required" and key not in personalData:
-    #             checkResult.append(f"Missing data {key} from personal data.")
-    #         elif value == "required":
-    #             if personalData[key] == "" or personalData[key] is None:
-    #                 personData = False
-    #                 checkResult.append(f"Data {key} tidak boleh kosong.")
-    # Check Format Data ---------------------------------------- Finish
-
-    # Check Personal Data ---------------------------------------- Start
-    if personData:
-        marriageDate = personalData["marriage"]
-        receptionDate = personalData["reception"]
-        if marriageDate != "":
-            marriageDate = datetime.strptime(marriageDate, "%d %B %Y %H:%M %p")
-            now = datetime.now()
-            if marriageDate < now:
-                checkResult.append("Tanggal yang diinputkan sudah terlewat.")
-            marriageDate = datetime.timestamp(marriageDate)
-            personalData["marriage"] = int(round(marriageDate*1000))
-        if receptionDate != "":
-            receptionDate = datetime.strptime(receptionDate, "%d %B %Y %H:%M %p")
-            now = datetime.now()
-            if receptionDate < now:
-                checkResult.append("Tanggal yang diinputkan sudah terlewat.")
-            receptionDate = datetime.timestamp(receptionDate)
-            personalData["reception"] = int(round(receptionDate*1000))
-    # Check Personal Data ---------------------------------------- Finish
-
-        mansPhotos = personalData["mans_photo"]
-        womansPhotos = personalData["womans_photo"]
-        # Datetime Check ---------------------------------------- Start
-        # Memisahkan bagian 'data:' dari base64 string
-        mheader, mencoded = mansPhotos.split(',', 1)
-        wheader, wencoded = womansPhotos.split(',', 1)
-        # Memisahkan 'data:' dan mengambil MIME type
-        mime_type = mheader.split(':')[1].split(';')[0].split('/')[0]
-        if mime_type != "image":
-            checkResult.append("Data foto yang diinputkan harus berupa gambar.")
-        mime_type = wheader.split(':')[1].split(';')[0].split('/')[0]
-        if mime_type != "image":
-            checkResult.append("Data foto yang diinputkan harus berupa gambar.")
-        # Datetime Check ---------------------------------------- Finish
+        checkResult.append("Data diri tidak boleh kosong.")
+    # Check Detail Data ---------------------------------------- Finish
 
     # Create Invitation Code ========================================
-    invCode = ""
-    if is_create:
-        invCode = vld_invitation_code()
+    invCode = vld_invitation_code()
+
+    # Check By Category ---------------------------------------- Start
+    # Wedding
+    if ckCategory[0]['category'].upper() == "PERNIKAHAN":
+        print("kategori => ", ckCategory[0]['category'].upper())
+        # Check Detail Info ---------------------------------------- Start
+        if detail:
+            marriageDate = detailInfo["marriage_date"]
+            marriageStart = detailInfo["marriage_start"]
+            marriageEnd = detailInfo["marriage_end"]
+            receptionDate = detailInfo["reception_date"]
+            receptionStart = detailInfo["reception_start"]
+            receptionEnd = detailInfo["reception_end"]
+            now = datetime.now()
+
+            # Akad
+            if marriageDate != "":
+                marriageDate = datetime.strptime(marriageDate, "%d %B %Y")
+                marriageStart = datetime.strptime(marriageStart, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(marriageDate), datetime.time(marriageStart))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if marriageEnd != "1":
+                    marriageEnd = datetime.strptime(marriageEnd, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(marriageDate), datetime.time(marriageEnd))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                    detailInfo['marriage_end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["marriage_date"] = datetime.strftime(marriageDate, "%d %B %Y")
+                detailInfo["marriage_start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+
+            # Resepsi
+            if receptionDate != "":
+                receptionDate = datetime.strptime(receptionDate, "%d %B %Y")
+                receptionStart = datetime.strptime(receptionStart, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(receptionDate), datetime.time(receptionStart))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if receptionEnd != "1":
+                    receptionEnd = datetime.strptime(receptionEnd, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(receptionDate), datetime.time(receptionEnd))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu resepsi yang anda masukkan tidak valid.")
+                    detailInfo['reception_end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["reception_date"] = datetime.strftime(receptionDate, "%d %B %Y")
+                detailInfo["reception_start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+        # Check Detail Info ---------------------------------------- Finish
+
+        # Check Personal Data ---------------------------------------- Start
+        if personData:
+            mansPhotos = personalData["mans_photo"]
+            womansPhotos = personalData["womans_photo"]
+            if mansPhotos != "":
+                # Memisahkan bagian 'data:' dari base64 string
+                mheader, mencoded = mansPhotos.split(',', 1)
+                # Memisahkan 'data:' dan mengambil MIME type
+                mime_type = mheader.split(':')[1].split(';')[0].split('/')[0]
+                if mime_type != "image":
+                    checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+                else:
+                    # Saving File ---------------------------------------- Start
+                    mpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_man_photo_"+userId+".jpg")
+                    mpPath = os.path.join(app.config['USER_INVITATION_FILE'], mpFileName)
+                    saving_image(mansPhotos, mpPath)
+                    personalData['mans_photo'] = mpFileName
+                    # Saving File ---------------------------------------- Finish
+            else:
+                checkResult.append("Foto mempelai pria tidak boleh kosong.")
+            
+            if womansPhotos != "":
+                wheader, wencoded = womansPhotos.split(',', 1)
+                mime_type = wheader.split(':')[1].split(';')[0].split('/')[0]
+                if mime_type != "image":
+                    checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+                else:
+                    # Saving File ---------------------------------------- Start
+                    wpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_woman_photo_"+userId+".jpg")
+                    wpPath = os.path.join(app.config['USER_INVITATION_FILE'], wpFileName)
+                    saving_image(womansPhotos, wpPath)
+                    personalData['womans_photo'] = wpFileName
+                    # Saving File ---------------------------------------- Finish
+            else:
+                checkResult.append("Foto mempelai wanita tidak boleh kosong.")
+        # Check Personal Data ---------------------------------------- Finish
+
+    # Birthday
+    elif ckCategory[0]['category'].upper() == "ULANG TAHUN":
+        print("kategori => ", ckCategory[0]['category'].upper())
+        # Check Detail Info ---------------------------------------- Start
+        if detail:
+            dates = detailInfo["date"]
+            starts = detailInfo["start"]
+            ends = detailInfo["end"]
+            now = datetime.now()
+
+            # Akad
+            if dates != "":
+                dates = datetime.strptime(dates, "%d %B %Y")
+                starts = datetime.strptime(starts, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(dates), datetime.time(starts))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if ends != "1":
+                    ends = datetime.strptime(ends, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(dates), datetime.time(ends))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                    detailInfo['end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["date"] = datetime.strftime(dates, "%d %B %Y")
+                detailInfo["start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+        # Check Detail Info ---------------------------------------- Finish
+
+        # Check Personal Data ---------------------------------------- Start
+        if personData:
+            myphoto = personalData["myphoto"]
+            if myphoto != "":
+                # Memisahkan bagian 'data:' dari base64 string
+                mheader, mencoded = myphoto.split(',', 1)
+                # Memisahkan 'data:' dan mengambil MIME type
+                mime_type = mheader.split(':')[1].split(';')[0].split('/')[0]
+                if mime_type != "image":
+                    checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+                else:
+                    # Saving File ---------------------------------------- Start
+                    pFName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_mybd_photo_"+userId+".jpg")
+                    photoPath = os.path.join(app.config['USER_INVITATION_FILE'], pFName)
+                    saving_image(myphoto, photoPath)
+                    personalData['myphoto'] = pFName
+                    # Saving File ---------------------------------------- Finish
+            else:
+                checkResult.append("Foto anda tidak boleh kosong.")
+        # Check Personal Data ---------------------------------------- Finish
+    # Check By Category ---------------------------------------- Finish
 
     # Return Value ========================================
-    return checkResult, personalData, invCode
+    return checkResult, personalData, detailInfo, invCode
+
+def vld_edit_invitation(result, title, personalData, detailInfo):
+    checkResult = []
+
+    oldData = result[0]
+    oldData['personal_data'] = json.loads(oldData['personal_data'])
+    oldData['detail_info'] = json.loads(oldData['detail_info'])
+    # Validation Null Data ---------------------------------------- Start
+    if title == "":
+        checkResult.append(f"Judul template tidak boleh kosong.")
+    if personalData == None:
+        checkResult.append(f"Data pribadi tidak boleh kosong tidak boleh kosong.")
+    if detailInfo == None:
+        checkResult.append(f"Data acara tidak boleh kosong tidak boleh kosong.")
+    # # Validation Null Data ---------------------------------------- Finish
+    
+    # Check Data Title & Template ---------------------------------------- Start
+    # Template
+    query = TMPLT_GET_BY_ID_QUERY
+    values = (oldData['template_id'],)
+    ckTemplate = DBHelper().get_count_filter_data(query, values)
+    if ckTemplate < 1:
+        checkResult.append(f"Data template tidak dapat ditemukan.")
+    # Check Data Title & Template ---------------------------------------- Finish
+    
+    # Sanitize Title ---------------------------------------- Start
+    sanitTitle, charTitle = sanitize_title_char(title)
+    if sanitTitle:
+        checkResult.append(f"Judul tidak boleh mengandung karakter {charTitle}.")
+    # Sanitize Title ---------------------------------------- Finish
+    
+    # String Filter ---------------------------------------- Start
+    if string_checker(title):
+        checkResult.append(f"Judul tidak valid.")
+    # String Filter ---------------------------------------- Finish
+    
+    # Check Data Category ---------------------------------------- Start
+    query = CTGR_GET_BY_ID_QUERY
+    values = (oldData['category_id'],)
+    ckCategory = DBHelper().get_data(query, values)
+    if len(ckCategory) < 1:
+        checkResult.append(f"Data kategori tidak dapat ditemukan.")
+    # Check Data Category ---------------------------------------- Finish
+
+    # Check Detail Data ---------------------------------------- Start
+    detail = True
+    if len(detailInfo) < 1:
+        detail = False
+        checkResult.append("Info acara tidak boleh kosong.")
+    personData = True
+    if len(personalData) < 1:
+        personData = False
+        checkResult.append("Info acara tidak boleh kosong.")
+    # Check Detail Data ---------------------------------------- Finish
+
+    # Check By Category ---------------------------------------- Start
+    # Wedding
+    if ckCategory[0]['category'].upper() == "PERNIKAHAN":
+        print("kategori => ", ckCategory[0]['category'].upper())
+        # Check Detail Info ---------------------------------------- Start
+        if detail:
+            marriageDate = detailInfo["marriage_date"]
+            marriageStart = detailInfo["marriage_start"]
+            marriageEnd = detailInfo["marriage_end"]
+            receptionDate = detailInfo["reception_date"]
+            receptionStart = detailInfo["reception_start"]
+            receptionEnd = detailInfo["reception_end"]
+            now = datetime.now()
+
+            # Akad
+            if marriageDate != "":
+                marriageDate = datetime.strptime(marriageDate, "%d %B %Y")
+                marriageStart = datetime.strptime(marriageStart, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(marriageDate), datetime.time(marriageStart))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if marriageEnd != "1":
+                    marriageEnd = datetime.strptime(marriageEnd, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(marriageDate), datetime.time(marriageEnd))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                    detailInfo['marriage_end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["marriage_date"] = datetime.strftime(marriageDate, "%d %B %Y")
+                detailInfo["marriage_start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+            else:
+                checkResult.append("Data tanggal tidak boleh kosong")
+
+            # Resepsi
+            if receptionDate != "":
+                receptionDate = datetime.strptime(receptionDate, "%d %B %Y")
+                receptionStart = datetime.strptime(receptionStart, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(receptionDate), datetime.time(receptionStart))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if receptionEnd != "1":
+                    receptionEnd = datetime.strptime(receptionEnd, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(receptionDate), datetime.time(receptionEnd))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu resepsi yang anda masukkan tidak valid.")
+                    detailInfo['reception_end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["reception_date"] = datetime.strftime(receptionDate, "%d %B %Y")
+                detailInfo["reception_start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+            else:
+                checkResult.append("Data tanggal tidak boleh kosong")
+        # Check Detail Info ---------------------------------------- Finish
+
+        # Check Personal Data ---------------------------------------- Start
+        if personData:
+            mansPhotos = personalData["mans_photo"]
+            womansPhotos = personalData["womans_photo"]
+            if mansPhotos != oldData['personal_data']['mans_photo']:
+                # Memisahkan bagian 'data:' dari base64 string
+                mheader, mencoded = mansPhotos.split(',', 1)
+                # Memisahkan 'data:' dan mengambil MIME type
+                mime_type = mheader.split(':')[1].split(';')[0].split('/')[0]
+                if mime_type != "image":
+                    checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+                else:
+                    mpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+oldData['code']+"_man_photo_"+str(oldData['user_id'])+".jpg")
+                    mpPath = os.path.join(app.config['USER_INVITATION_FILE'], mpFileName)
+                    saving_image(personalData['mans_photo'], mpPath)
+                    personalData['mans_photo'] = mpFileName
+                
+            if womansPhotos != oldData['personal_data']['womans_photo']:
+                wheader, wencoded = womansPhotos.split(',', 1)
+                mime_type = wheader.split(':')[1].split(';')[0].split('/')[0]
+                if mime_type != "image":
+                    checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+                else:
+                    wpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+oldData['code']+"_woman_photo_"+str(oldData['user_id'])+".jpg")
+                    wpPath = os.path.join(app.config['USER_INVITATION_FILE'], wpFileName)
+                    saving_image(personalData['womans_photo'], wpPath)
+                    personalData['womans_photo'] = wpFileName
+        # Check Personal Data ---------------------------------------- Finish
+    
+    # Birthday
+    elif ckCategory[0]['category'].upper() == "ULANG TAHUN":
+        print("kategori => ", ckCategory[0]['category'].upper())
+        # Check Detail Info ---------------------------------------- Start
+        if detail:
+            dates = detailInfo["date"]
+            starts = detailInfo["start"]
+            ends = detailInfo["end"]
+            now = datetime.now()
+
+            # Akad
+            if dates != "":
+                dates = datetime.strptime(dates, "%d %B %Y")
+                starts = datetime.strptime(starts, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(dates), datetime.time(starts))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if ends != "1":
+                    ends = datetime.strptime(ends, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(dates), datetime.time(ends))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                    detailInfo['end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["date"] = datetime.strftime(dates, "%d %B %Y")
+                detailInfo["start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+        # Check Detail Info ---------------------------------------- Finish
+
+        # Check Personal Data ---------------------------------------- Start
+        if personData:
+            myphoto = personalData["myphoto"]
+            if myphoto != oldData['personal_data']['myphoto']:
+                # Memisahkan bagian 'data:' dari base64 string
+                mheader, mencoded = myphoto.split(',', 1)
+                # Memisahkan 'data:' dan mengambil MIME type
+                mime_type = mheader.split(':')[1].split(';')[0].split('/')[0]
+                if mime_type != "image":
+                    checkResult.append("Data foto yang diinputkan harus berupa gambar.")
+                else:
+                    # Saving File ---------------------------------------- Start
+                    pFName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+oldData['code']+"_photo_"+str(oldData['user_id'])+".jpg")
+                    photoPath = os.path.join(app.config['USER_INVITATION_FILE'], pFName)
+                    saving_image(myphoto, photoPath)
+                    personalData['myphoto'] = pFName
+                    # Saving File ---------------------------------------- Finish
+        # Check Personal Data ---------------------------------------- Finish
+    # Check By Category ---------------------------------------- Finish
+
+    # Return Value ========================================
+    return checkResult, personalData, detailInfo
 # INVITATION VALIDATION ============================================================ End
