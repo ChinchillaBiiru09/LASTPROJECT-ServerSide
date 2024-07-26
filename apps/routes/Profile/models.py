@@ -171,6 +171,7 @@ class ProfileModels():
             updatedAt = split_date_time(datetime.fromtimestamp(result1[0]['updated_at']/1000))
             response = {
                 "id" : result1[0]["id"],
+                "user_id" : result1[0]["user_id"],
                 "username" : result2[0]["username"],
                 "first_name" : result1[0]["first_name"],
                 "middle_name" : result1[0]["middle_name"],

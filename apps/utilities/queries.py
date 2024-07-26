@@ -107,6 +107,11 @@ PROF_UPDATE_QUERY = """
                         phone=%s, photos=%s, updated_at=%s
                         WHERE user_id=%s AND user_level=%s AND is_delete=0
                     """
+PROF_DELETE_QUERY = """
+                        UPDATE profile 
+                        SET is_delete=1, deleted_at=%s
+                        WHERE user_id=%s AND is_delete=0
+                    """
 PROF_CHECK_QUERY = """
                        SELECT * FROM profile 
                        WHERE user_id=%s AND user_level=%s AND is_delete=0
@@ -180,6 +185,15 @@ GRTG_GET_BY_USER_QUERY = """
 GRTG_GET_BY_CODE_QUERY = """
                             SELECT * FROM greeting 
                             WHERE invitation_code=%s AND is_delete=0
+                        """
+GRTG_GET_GROUP_COUNT_QUERY = """
+                            SELECT id, invitation_code, user_id, 
+                            SUM(CASE WHEN status=0 THEN 1 ELSE 0 END) as absent,
+                            SUM(CASE WHEN status=1 THEN 1 ELSE 0 END) as present,
+                            COUNT(*) as count FROM greeting
+                            WHERE user_id=%s AND is_delete=0
+                            GROUP BY invitation_code
+                            ORDER BY MAX(created_at) DESC
                         """
 GRTG_DELETE_QUERY = """
                         UPDATE greeting 
@@ -407,7 +421,7 @@ GUEST_GET_GROUP_COUNT_QUERY = """
                             COUNT(*) as count FROM guest
                             WHERE user_id=%s AND is_delete=0
                             GROUP BY invitation_code
-                            ORDER BY created_at DESC
+                            ORDER BY MAX(created_at) DESC
                         """
 # ======================================================================== 
 # GUEST QUERY - END ======================================================

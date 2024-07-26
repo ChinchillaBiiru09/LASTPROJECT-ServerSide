@@ -104,11 +104,9 @@ class GuestModels():
             # Get Join Data ---------------------------------------- Finish
 
             # Set Join Data ---------------------------------------- Start
-            print(result)
             for rsl in result:
                 values = (rsl['invitation_code'], )
                 invitation = DBHelper().get_data(query, values)
-                print(invitation)
                 for inv in invitation:
                     if rsl['invitation_code'] == inv['code']:
                         rsl['invitation_id'] = inv['id']

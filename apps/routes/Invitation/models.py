@@ -7,9 +7,8 @@ from ...utilities.utils import random_number, saving_image, split_date_time, ran
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from twilio.rest import Client
 
-import time, json,os
+import time, json, os
 
 
 # INVITATION MODEL CLASS ============================================================ Begin
@@ -45,40 +44,18 @@ class InvitationModels():
             # Initialize Request Data ---------------------------------------- Finish
             
             # Data Validation ---------------------------------------- Start
-            print("bisa")
+            # print("bisa")
             invCheck, personalData, detailInfo, invCode = vld_invitation(user_id, categoryId, templateId, title, personalData, detailInfo)
             if len(invCheck) != 0:
                 return defined_error(invCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
-            
-            print("bismillah")
-            # # Saving File ---------------------------------------- Start
-            # # wallpaper
-            # wpFileName = ""
-            # # if len(personalData) > 0
-            # if personalData['womans_photo'] != "":
-            #     wpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_woman_photo_"+user_id+".jpg")
-            #     wpPath = os.path.join(app.config['USER_INVITATION_FILE'], wpFileName)
-            #     saving_image(personalData['womans_photo'], wpPath)
-            #     personalData['womans_photo'] = wpFileName
-            # if personalData['mans_photo'] != "":
-            #     mpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_man_photo_"+user_id+".jpg")
-            #     mpPath = os.path.join(app.config['USER_INVITATION_FILE'], mpFileName)
-            #     saving_image(personalData['mans_photo'], mpPath)
-            #     personalData['mans_photo'] = mpFileName
-            # # if personalData['galeri_photo'] != "":
-            # #     gpFileName = secure_filename(time.strftime("%Y-%m-%d %H:%M:%S")+"_"+invCode+"_gallery_"+user_id+".jpg")
-            # #     gpPath = os.path.join(app.config['GALLERY_INVITATION_FILE'], gpFileName)
-            # #     saving_image(personalData['galeri_photo'], gpPath)
-            # #     personalData['galeri_photo'] = gpFileName
-            # # Saving File ---------------------------------------- Finish
 
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             titlelink = title.replace(' ', '-')
             invLink =  titlelink
             personalData = json.dumps(personalData)
-            print(detailInfo)
+            # print(detailInfo)
             detailInfo = json.dumps(detailInfo)
             invSett = json.dumps(invSett)
             
@@ -456,6 +433,14 @@ class InvitationModels():
                 for data in invitation["personal_data"]:
                     if data.upper() == "MYPHOTO":
                         invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+            
+            elif invitation["category"].upper() == "GRADUATION PARTY":
+                for data in invitation["detail_info"]:
+                    if data.upper() == "START":
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
             # Set Data ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
@@ -515,7 +500,7 @@ class InvitationModels():
             values = (invCode,)
             result = DBHelper().get_data(query, values)
             if len(result) < 1 :
-                return not_found(f"Data undangan dengan Id {invId} tidak dapat ditemukan.")
+                return not_found(f"Data undangan dengan Id {invCode} tidak dapat ditemukan.")
             # Checking Data Invitation ---------------------------------------- Finish
 
             # Get Data Category ---------------------------------------- Start
@@ -589,6 +574,14 @@ class InvitationModels():
                 for data in invitation["personal_data"]:
                     if data.upper() == "MYPHOTO":
                         invitation["personal_data"][data] = f"{request.url_root}invitation/media/{invitation['personal_data'][data]}"
+            
+            elif invitation["category"].upper() == "GRADUATION PARTY":
+                for data in invitation["detail_info"]:
+                    if data.upper() == "START":
+                        invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
+                    if data.upper() == "END":
+                        if invitation["detail_info"][data] != "1":
+                            invitation["detail_info"][data] = split_date_time(datetime.fromtimestamp(invitation["detail_info"][data]/1000))
             # Set Data ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
@@ -653,56 +646,4 @@ class InvitationModels():
         except Exception as e:
             return bad_request(str(e))
     # GET ROW-COUNT INVITATION ============================================================ End
-
-    # SHARE INVITATION ============================================================ Begin
-    # 
-    def share_invitation(datas):
-        try:
-            # Access Validation ---------------------------------------- Start
-            # accLevel = 2  # 1 = Admin | 2 = User
-            # access = vld_role(user_role)
-            # if access: # Access = True -> Admin
-            #     return authorization_error()
-            # Access Validation ---------------------------------------- Finish
-
-            # Checking Request Body ---------------------------------------- Start
-            if datas == None:
-                return invalid_params()
-            
-            requiredData = ["to", "message"]
-            for req in requiredData:
-                if req not in datas:
-                    return parameter_error(f"Missing {req} in Request Body.")
-            # Checking Request Body ---------------------------------------- Finish
-
-            # Initialize Request Data ---------------------------------------- Start
-            to = datas["to"]
-            message = datas["message"]
-            # Initialize Request Data ---------------------------------------- Finish
-            
-            # Data Validation ---------------------------------------- Start
-            account_sid = app.config['ACCOUNT_SID']
-            auth_token = app.config['AUTH_TOKEN']
-            client = Client(account_sid, auth_token)
-
-            message = client.messages.create(
-            from_='whatsapp:+6283861367245',
-            body=f'{message}',
-            to=f'whatsapp:{to}'
-            )
-
-            # Data Validation ---------------------------------------- Finish
-
-            # Insert Data ---------------------------------------- Start
-            # Insert Data ---------------------------------------- Finish
-
-            # Log Activity Record ---------------------------------------- Start
-            # Log Activity Record ---------------------------------------- Finish
-
-            # Return Response ======================================== 
-            return success_data(message.sid)
-        
-        except Exception as e:
-            return bad_request(str(e))
-    # SHARE INVITATION ============================================================ End
 # CATEGORY MODEL CLASS ============================================================ End

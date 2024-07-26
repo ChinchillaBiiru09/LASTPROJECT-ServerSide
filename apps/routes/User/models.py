@@ -218,6 +218,7 @@ class UserModels():
             if not access: # Access = True -> Admin
                 return authorization_error()
             # Access Validation ---------------------------------------- Finish
+            print(datas)
 
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
@@ -230,27 +231,35 @@ class UserModels():
             if usrId == "":
                 return defined_error("Id user tidak boleh kosong.", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
+            print(usrId)
 
             # Checking Data ---------------------------------------- Start
             query = USR_GET_BY_ID_QUERY
             values = (usrId,)
             result = DBHelper().get_count_filter_data(query, values)
-            if result == 0 or result is None:
+            if result < 1:
                 return not_found(f"Data user dengan id {usrId} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
 
-            # Delete Data ---------------------------------------- Start
+            # Delete Account ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = USR_DELETE_QUERY
             values = (timestamp, user_id, usrId)
-            # DBHelper().save_data(query, values)
-            # Delete Data ---------------------------------------- Finish
+            DBHelper().save_data(query, values)
+            # Delete Account ---------------------------------------- Finish
+
+            # Delete Profile ---------------------------------------- Start
+            timestamp = int(round(time.time()*1000))
+            query = PROF_DELETE_QUERY
+            values = (timestamp, usrId)
+            DBHelper().save_data(query, values)
+            # Delete Profile ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             activity = f"Admin dengan id {user_id} menghapus user {usrId}."
             query = LOG_ADD_QUERY
-            values = (user_id, activity, )
-            # DBHelper().save_data(query, values)
+            values = (user_id, 1, activity, timestamp )
+            DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
             
             # Return Response ======================================== 

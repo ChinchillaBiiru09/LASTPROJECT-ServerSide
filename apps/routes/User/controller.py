@@ -80,12 +80,13 @@ def get_data():
 @jwt_required()
 def delete_data():
     try:
+        print("MASUK SINI?")
         # Request Data ======================================== 
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
 
         # Request Data ======================================== 
-        data = request.json
+        data = request.args
 
         # Request Data ======================================== 
         response = UserModels.delete_user(id, role, data)

@@ -618,6 +618,86 @@ def vld_invitation(userId, categoryId, templateId, title, personalData, detailIn
 
         # Check Personal Data ---------------------------------------- Start
         if personData:
+            mFName = personalData["man_fullname"]
+            wFName = personalData["man_fullname"]
+            mCName = personalData["woman_callname"]
+            wCName = personalData["woman_callname"]
+            dNo = personalData["daughter_no"]
+            sNo = personalData["son_no"]
+            mDad = personalData["man_dad"]
+            mMom = personalData["man_mom"]
+            wDad = personalData["woman_dad"]
+            wMom = personalData["woman_mom"]
+
+            # Check Unnullable Input ---------------------------------------- Start
+            if mFName == "":
+                checkResult.append("Nama lengkap mempelai pria tidak boleh kosong.")
+            if wFName == "":
+                checkResult.append("Nama lengkap mempelai wanita tidak boleh kosong.")
+            if mCName == "":
+                checkResult.append("Nama panggilan mempelai pria tidak boleh kosong.")
+            if wCName == "":
+                checkResult.append("Nama panggilan mempelai wanita tidak boleh kosong.")
+            if mDad == "":
+                checkResult.append("Nama ayah mempelai pria tidak boleh kosong.")
+            if wDad == "":
+                checkResult.append("Nama ayah mempelai wanita tidak boleh kosong.")
+            if mMom == "":
+                checkResult.append("Nama ibu mempelai pria tidak boleh kosong.")
+            if wMom == "":
+                checkResult.append("Nama ibu mempelai wanita tidak boleh kosong.")
+            if sNo == "":
+                checkResult.append("Urutan mempelai pria sebagai anak dalam keluarga tidak boleh kosong.")
+            if dNo == "":
+                checkResult.append("Urutan mempelai wanita sebagai anak dalam keluarga tidak boleh kosong.")
+            # SCheck Unnullable Input---------------------------------------- Finish
+
+            # Sanitize String ---------------------------------------- Start
+            sanit, char = sanitize_all_char(mFName)
+            if sanit:
+                checkResult.append(f"Nama mempelai pria tidak boleh mengandung karakter {char}.")
+            sanit, char = sanitize_all_char(wFName)
+            if sanit:
+                checkResult.append(f"Nama mempelai wanita tidak boleh mengandung karakter {char}.")
+            sanit, char = sanitize_all_char(mCName)
+            if sanit:
+                checkResult.append(f"Nama mempelai pria tidak boleh mengandung karakter {char}.")
+            sanit, char = sanitize_all_char(wCName)
+            if sanit:
+                checkResult.append(f"Nama mempelai wanita tidak boleh mengandung karakter {char}.")
+            sanit, char = sanitize_all_char(mDad)
+            if sanit:
+                checkResult.append(f"Nama ayah mempelai pria tidak boleh mengandung karakter {char}.")
+            sanit, char = sanitize_all_char(wDad)
+            if sanit:
+                checkResult.append(f"Nama ayah mempelai wanita tidak boleh mengandung karakter {char}.")
+            sanit, char = sanitize_all_char(mMom)
+            if sanit:
+                checkResult.append(f"Nama ibu mempelai pria tidak boleh mengandung karakter {char}.")
+            sanit, char = sanitize_all_char(wMom)
+            if sanit:
+                checkResult.append(f"Nama ibu mempelai wanita tidak boleh mengandung karakter {char}.")
+            # Sanitize String ---------------------------------------- Finish
+            
+            # String Filter ---------------------------------------- Start
+            if string_checker(mFName):
+                checkResult.append("Nama mempelai pria tidak valid.")
+            if string_checker(wFName):
+                checkResult.append("Nama mempelai wanita tidak valid.")
+            if string_checker(mCName):
+                checkResult.append("Nama mempelai pria tidak valid.")
+            if string_checker(wCName):
+                checkResult.append("Nama mempelai wanita  tidak valid.")
+            if string_checker(mDad):
+                checkResult.append("Nama ayah mempelai pria tidak valid.")
+            if string_checker(wDad):
+                checkResult.append("Nama ayah mempelai wanita tidak valid.")
+            if string_checker(mMom):
+                checkResult.append("Nama ibu mempelai pria tidak valid.")
+            if string_checker(wMom):
+                checkResult.append("Nama ibu mempelai wanita tidak valid.")
+            # String Filter ---------------------------------------- Finish
+
             mansPhotos = personalData["mans_photo"]
             womansPhotos = personalData["womans_photo"]
             if mansPhotos != "":
@@ -684,6 +764,32 @@ def vld_invitation(userId, categoryId, templateId, title, personalData, detailIn
 
         # Check Personal Data ---------------------------------------- Start
         if personData:
+            fullname = personalData["fullname"]
+            callname = personalData["callname"]
+            birthday = personalData["birthday"]
+
+            if fullname == "":
+                checkResult.append("Nama lengkap tidak boleh kosong.")
+            if callname == "":
+                checkResult.append("Nama panggilan tidak boleh kosong.")
+            if birthday == "":
+                checkResult.append("Usia tidak boleh kosong.")
+
+            # Sanitize String ---------------------------------------- Start
+            sanitTitle, charTitle = sanitize_all_char(fullname)
+            if sanitTitle:
+                checkResult.append(f"Nama lengkap tidak boleh mengandung karakter {charTitle}.")
+            
+            sanitTitle, charTitle = sanitize_all_char(callname)
+            if sanitTitle:
+                checkResult.append(f"Nama panggilan tidak boleh mengandung karakter {charTitle}.")
+            # Sanitize String ---------------------------------------- Finish
+            
+            # String Filter ---------------------------------------- Start
+            if string_checker(fullname):
+                checkResult.append(f"Nama tidak valid.")
+            # String Filter ---------------------------------------- Finish
+
             myphoto = personalData["myphoto"]
             if myphoto != "":
                 # Memisahkan bagian 'data:' dari base64 string
@@ -701,6 +807,60 @@ def vld_invitation(userId, categoryId, templateId, title, personalData, detailIn
                     # Saving File ---------------------------------------- Finish
             else:
                 checkResult.append("Foto anda tidak boleh kosong.")
+        # Check Personal Data ---------------------------------------- Finish
+    
+    # Graduation
+    elif ckCategory[0]['category'].upper() == "GRADUATION PARTY":
+        print("kategori => ", ckCategory[0]['category'].upper())
+        # Check Detail Info ---------------------------------------- Start
+        if detail:
+            dates = detailInfo["date"]
+            starts = detailInfo["start"]
+            ends = detailInfo["end"]
+            now = datetime.now()
+
+            # Akad
+            if dates != "":
+                dates = datetime.strptime(dates, "%d %B %Y")
+                starts = datetime.strptime(starts, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(dates), datetime.time(starts))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if ends != "1":
+                    ends = datetime.strptime(ends, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(dates), datetime.time(ends))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                    detailInfo['end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["date"] = datetime.strftime(dates, "%d %B %Y")
+                detailInfo["start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+        # Check Detail Info ---------------------------------------- Finish
+
+        # Check Personal Data ---------------------------------------- Start
+        if personData:
+            fullname = personalData["fullname"]
+            school = personalData["school"]
+            graduate = personalData["graduate"]
+
+            if fullname == "":
+                checkResult.append("Nama lengkap tidak boleh kosong.")
+            if school == "":
+                checkResult.append("Nama sekolah tidak boleh kosong.")
+            if graduate == "":
+                checkResult.append("Tahun lulus tidak boleh kosong.")
+
+            # Sanitize Title ---------------------------------------- Start
+            sanitTitle, charTitle = sanitize_title_char(fullname)
+            if sanitTitle:
+                checkResult.append(f"Nama tidak boleh mengandung karakter {charTitle}.")
+            # Sanitize Title ---------------------------------------- Finish
+            
+            # String Filter ---------------------------------------- Start
+            if string_checker(fullname):
+                checkResult.append(f"Nama tidak valid.")
+            # String Filter ---------------------------------------- Finish
         # Check Personal Data ---------------------------------------- Finish
     # Check By Category ---------------------------------------- Finish
 
@@ -892,6 +1052,68 @@ def vld_edit_invitation(result, title, personalData, detailInfo):
                     personalData['myphoto'] = pFName
                     # Saving File ---------------------------------------- Finish
         # Check Personal Data ---------------------------------------- Finish
+    
+    # Graduation
+    elif ckCategory[0]['category'].upper() == "GRADUATION PARTY":
+        print("kategori => ", ckCategory[0]['category'].upper())
+        # Check Detail Info ---------------------------------------- Start
+        if detail:
+            dates = detailInfo["date"]
+            starts = detailInfo["start"]
+            ends = detailInfo["end"]
+            now = datetime.now()
+
+            # Akad
+            if dates != "":
+                dates = datetime.strptime(dates, "%d %B %Y")
+                starts = datetime.strptime(starts, "%I:%M %p")
+                mergeDTS = datetime.combine(datetime.date(dates), datetime.time(starts))
+                if mergeDTS <= now:
+                    checkResult.append("Tanggal yang diinputkan sudah terlewat.")
+
+                if ends != "1":
+                    ends = datetime.strptime(ends, "%I:%M %p")
+                    mergeDTE = datetime.combine(datetime.date(dates), datetime.time(ends))
+                    if mergeDTS >= mergeDTE:
+                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                    detailInfo['end'] = int(round(datetime.timestamp(mergeDTE)*1000))
+
+                detailInfo["date"] = datetime.strftime(dates, "%d %B %Y")
+                detailInfo["start"] = int(round(datetime.timestamp(mergeDTS)*1000))
+        # Check Detail Info ---------------------------------------- Finish
+
+        # Check Personal Data ---------------------------------------- Start
+        if personData:
+            fullname = personalData["fullname"]
+            school = personalData["school"]
+            graduate = personalData["graduate"]
+
+            if fullname != oldData['personal_data']['fullname']:
+                if fullname == "":
+                    checkResult.append("Nama lengkap tidak boleh kosong.")
+                
+                # Sanitize Title ---------------------------------------- Start
+                sanitTitle, charTitle = sanitize_title_char(fullname)
+                if sanitTitle:
+                    checkResult.append(f"Nama tidak boleh mengandung karakter {charTitle}.")
+                # Sanitize Title ---------------------------------------- Finish
+                
+                # String Filter ---------------------------------------- Start
+                if string_checker(fullname):
+                    checkResult.append(f"Nama tidak valid.")
+                # String Filter ---------------------------------------- Finish
+
+            if school != oldData['personal_data']['school']:
+                if school == "":
+                    checkResult.append("Nama sekolah tidak boleh kosong.")
+            
+            if graduate != oldData['personal_data']['graduate']:
+                if graduate == "":
+                    checkResult.append("Tahun lulus tidak boleh kosong.")
+
+            
+        # Check Personal Data ---------------------------------------- Finish
+    
     # Check By Category ---------------------------------------- Finish
 
     # Return Value ========================================

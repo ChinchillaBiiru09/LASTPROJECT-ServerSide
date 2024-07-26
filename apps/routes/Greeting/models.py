@@ -77,24 +77,45 @@ class GreetingModels():
             # Checking Request Body ---------------------------------------- Finish
 
             # Checking Data ---------------------------------------- Start
-            query = GRTG_GET_BY_USER_QUERY
+            query = GRTG_GET_GROUP_COUNT_QUERY
             values = (user_id, )
             result = DBHelper().get_data(query, values)
-            if len(result) < 1 or result is None:
+            if len(result) < 1:
                 return not_found(f"Data ucapan selamat untuk user {user_id} tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
+
+            # Get Join Data ---------------------------------------- Start
+            query = CTGR_GET_ALL_QUERY
+            category = DBHelper().execute(query)
+            query = INV_CHK_CODE_QUERY
+            # Get Join Data ---------------------------------------- Finish
+
+            # Set Join Data ---------------------------------------- Start
+            for rsl in result:
+                values = (rsl['invitation_code'], )
+                invitation = DBHelper().get_data(query, values)
+                for inv in invitation:
+                    if rsl['invitation_code'] == inv['code']:
+                        rsl['category_id'] = inv['category_id']
+            
+            for rsl in result:
+                for ctg in category:
+                    if rsl['category_id'] == ctg['id']:
+                        rsl['category'] = ctg['category']
+            # Set Join Data ---------------------------------------- Finish
             
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
                 data = {
                     "greeting_id" : rsl["id"],
-                    "name" : rsl["name"],
-                    "status" : rsl["status"],
-                    "message" : rsl["message"],
-                    "invitation_code" : rsl["invitation_code"],
+                    "category_id" : rsl["category_id"],
+                    "category" : rsl["category"],
                     "user_owner" : rsl["user_id"],
-                    "created_at": rsl["created_at"]
+                    "invitation_code" : rsl["invitation_code"],
+                    "absent" : rsl["absent"],
+                    "present" : rsl["present"],
+                    "count" : rsl["count"]
                 }
                 response.append(data)
             # Response Data ---------------------------------------- Finish
