@@ -183,20 +183,31 @@ class UserModels():
                 return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
-            # Checking Data ---------------------------------------- Start
+            # Get Data User ---------------------------------------- Start
             query = USR_GET_ALL_QUERY
             result = DBHelper().execute(query)
             if len(result) < 1 or result is None:
                 return not_found("Data user tidak dapat ditemukan.")
-            # Checking Data ---------------------------------------- Finish
+            # Get Data User ---------------------------------------- Finish
+
+            # Get Data User ---------------------------------------- Start
+            query1 = INV_GET_BY_USR_QUERY
+            query2 = REQ_GET_BY_USER_QUERY
+            # Get Data User ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
             response = []
             for rsl in result:
+                print("=======================================")
+                values = (rsl['id'], 2, )
+                invitation = DBHelper().get_count_filter_data(query1, values)
+                reqUser = DBHelper().get_count_filter_data(query2, values)
                 lastActive = split_date_time(datetime.fromtimestamp(rsl["last_active"]/1000))
                 data = {
                     "user_id" : rsl["id"],
                     "username" : rsl["username"],
+                    "invitation_count" : invitation,
+                    "request_count" : reqUser,
                     "status" : "Active" if rsl["is_delete"] == 0 else "Blocked",                    
                     "last_active": lastActive
                 }

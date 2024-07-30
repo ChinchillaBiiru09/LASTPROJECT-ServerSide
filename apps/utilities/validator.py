@@ -268,8 +268,8 @@ def vld_category(category, format_data, is_create=True):
         checkResult.append("Kategori tidak boleh kosong")
     if type(format_data) != dict:
         checkResult.append("Format data tidak valid")
-    if format_data is None or len(format_data) < 1:
-        checkResult.append("Format data undangan tidak boleh kosong")
+    # if format_data is None or len(format_data) < 1:
+    #     checkResult.append("Format data undangan tidak boleh kosong")
     # Check Null Value ---------------------------------------- Finish
 
     # Sanitize Category ---------------------------------------- Start

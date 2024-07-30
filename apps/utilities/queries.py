@@ -284,6 +284,7 @@ REQ_GET_BY_CAT_QUERY = """
 REQ_GET_ALL_QUERY = """
                         SELECT * FROM requser
                         WHERE user_level=%s AND is_delete=0
+                        ORDER BY created_at DESC
                     """
 REQ_GET_BY_ID_QUERY = """
                         SELECT * FROM requser
