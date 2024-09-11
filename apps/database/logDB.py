@@ -1,6 +1,4 @@
 from .. import db
-from sqlalchemy.sql import func
-import time
 
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

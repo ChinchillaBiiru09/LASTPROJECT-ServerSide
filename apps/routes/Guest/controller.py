@@ -10,6 +10,8 @@ from .models import GuestModels
 guest = Blueprint(
     name='guest',
     import_name=__name__,
+    static_folder = '../../static/guest/',
+    static_url_path="/media",
     url_prefix='/guest'
 )
 # BLUEPRINT ============================================================ End
@@ -29,7 +31,81 @@ def create_data():
         data = request.json
 
         # Request Process ======================================== 
-        response = GuestModels.add_guest(id, role,  data)
+        response = GuestModels.add_guest(id, role, data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# CREATE GUEST ============================================================ End
+
+
+# CREATE GUEST ============================================================ Begin
+# POST https://127.0.0.1:5000/guest/
+@guest.post('/duplicate')
+@jwt_required()
+def duplicate_data():
+    try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+        uname = str(get_jwt()["name"])
+
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = GuestModels.copy_paste_guest(id, role, uname, data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# CREATE GUEST ============================================================ End
+
+
+# CREATE GUEST ============================================================ Begin
+# POST https://127.0.0.1:5000/guest/import
+@guest.post('/import')
+@jwt_required()
+def import_data():
+    try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+        uname = str(get_jwt()["name"])
+
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = GuestModels.import_guest(id, role, uname, data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# CREATE GUEST ============================================================ End
+
+
+# CREATE GUEST ============================================================ Begin
+# POST https://127.0.0.1:5000/guest/export
+@guest.get('/export')
+@jwt_required()
+def export_data():
+    try:
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
+
+        # Request Data ======================================== 
+        data = request.args
+
+        # Request Process ======================================== 
+        response = GuestModels.export_guest(id, role, data)
 
         # Request Data ======================================== 
         return response
@@ -48,12 +124,13 @@ def get_data():
         # Access User ======================================== 
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
+        uname = str(get_jwt()["name"])
 
         # Request Data ======================================== 
         data = request.args
 
         # Request Process ======================================== 
-        response = GuestModels.view_guest(id, role, data)
+        response = GuestModels.view_guest(id, role, uname, data)
 
         # Request Data ======================================== 
         return response

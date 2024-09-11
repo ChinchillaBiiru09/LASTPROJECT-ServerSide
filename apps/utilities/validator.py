@@ -12,6 +12,16 @@ import json
 # VALIDATION
 
 # ACCOUNT VALIDATION ============================================================ Begin
+def vld_auth(email):
+    checkResult = []
+    
+    if email_checker(email):
+        checkResult.append(f"Email tidak valid.")
+
+    token = auth_token()
+
+    return checkResult, token
+
 def vld_admin_regis(name, email, password, repassword):
     checkResult = []
 
@@ -166,18 +176,25 @@ def vld_signin(email, password, level):
     
     # Cek data email ready or not
     stts = 200
-    if len(result) == 0 or result == None:
+    if len(result) < 1:
         stts = 404
         checkResult.append("Email belum terdaftar.")
-    
+
     # Cek password
     if len(result) != 0:
+        # Cek activated
+        if result[0]['is_active'] == 0:
+            stts = 400
+            checkResult.append("Akun belum diaktivasi. Silahkan verifikasi terlebih dahulu.")
+            return checkResult, result, stts
+        
+        # Cek password
         savedPassword = result[0]['password']
         validatePass = password_compare(savedPassword, password)
         if not validatePass:
             stts = 400
             checkResult.append("Akun tidak valid.")
-    
+
     # Get photo profile
     query = PROF_GET_BY_ID_QUERY
     values = (result[0]['id'], level)
@@ -247,6 +264,69 @@ def vld_profile(userId, userLevel, fName, mName, lName, phone):
 
     # Return Checker ======================================== 
     return checkResult, result
+
+def vld_edit_profile(userId, userLevel, fName, mName, lName, phone):
+    checkResult = []
+
+    # Checking Email on DB ---------------------------------------- Start
+    query = PROF_CHECK_QUERY
+    values = (userId, userLevel, )
+    result = DBHelper().get_data(query, values)
+    if len(result) < 1:
+        checkResult.append(f"Profile user tidak ditemukan.")
+    profile = result[0]
+    # Checking Email on DB ---------------------------------------- Finish
+ 
+    # Validation For First Name ---------------------------------------- Start
+    if fName != profile['first_name']:
+        # Sanitize String Input ======================================== 
+        sanitFName, charFName = sanitize_all_char(fName)
+        if sanitFName:
+            checkResult.append(f"Nama tidak boleh mengandung karakter {charFName}")
+
+        # Filter String Input ======================================== 
+        if string_checker(mName):
+            checkResult.append(f"Nama tidak valid.")
+    # Validation For First Name ---------------------------------------- Finish
+
+    # Validation For Middle Name - If Set ---------------------------------------- Start
+    if mName != profile['middle_name']:
+        # Sanitize String Input ======================================== 
+        sanitMName, charMName = sanitize_all_char(mName)
+        if sanitMName:
+            checkResult.append(f"Nama tidak boleh mengandung karakter {charMName}")
+
+        # Filter String Input ======================================== 
+        if string_checker(mName):
+            checkResult.append(f"Nama tidak valid.")
+    # Validation For Middle Name - If Set ---------------------------------------- Finish
+    
+    # Validation For Last Name - If Set ---------------------------------------- Start
+    if lName != profile['last_name']:
+        # Sanitize String Input ======================================== 
+        sanitLName, charLName = sanitize_all_char(lName)
+        if sanitLName:
+            checkResult.append(f"Nama tidak boleh mengandung karakter {charLName}")
+
+        # Filter String Input ======================================== 
+        if string_checker(lName):
+            checkResult.append(f"Nama tidak valid.")
+    # Validation For Last Name - If Set ---------------------------------------- Finish
+
+    # Validation For Phone - If Set ---------------------------------------- Start
+    if phone != profile['phone']:
+        # Sanitize Integer Input ======================================== 
+        sanitPhone, charPhone = sanitize_all_char(phone)
+        if sanitPhone:
+            checkResult.append(f"Phone tidak boleh mengandung karakter {charPhone}")
+
+        # Filter Integer Input ======================================== 
+        if phone_checker(phone):
+            checkResult.append(f"Phone tidak valid.")
+    # Validation For Phone - If Set ---------------------------------------- Finish
+
+    # Return Checker ======================================== 
+    return checkResult
 # ACCOUNT VALIDATION ============================================================ End
 
 # ROLE VALIDATION ============================================================ Begin
@@ -474,6 +554,7 @@ def vld_request_template(design, deadline, categoryId):
             checkResult.append("Batas waktu yang diinputkan sudah terlewat.")
         elif deadline < oneweek:
             checkResult.append("Batas waktu minimal 7 hari dari sekarang.")
+        deadline = int(round(datetime.timestamp(deadline)*1000))
     # Datetime Check ---------------------------------------- Finish
 
     # Photo Check ---------------------------------------- Start
@@ -486,8 +567,7 @@ def vld_request_template(design, deadline, categoryId):
             checkResult.append("Data desain yang diinputkan harus berupa gambar.")
     # Photo Check ---------------------------------------- Finish
     
-    return checkResult
-
+    return checkResult, deadline
 # TEMPLATE VALIDATION ============================================================ End
 
 # INVITATION VALIDATION ============================================================ Begin
@@ -619,15 +699,15 @@ def vld_invitation(userId, categoryId, templateId, title, personalData, detailIn
         # Check Personal Data ---------------------------------------- Start
         if personData:
             mFName = personalData["man_fullname"]
-            wFName = personalData["man_fullname"]
-            mCName = personalData["woman_callname"]
-            wCName = personalData["woman_callname"]
+            wFName = personalData["woman_fullname"]
+            mCName = personalData["man_name"]
+            wCName = personalData["woman_name"]
             dNo = personalData["daughter_no"]
             sNo = personalData["son_no"]
-            mDad = personalData["man_dad"]
-            mMom = personalData["man_mom"]
-            wDad = personalData["woman_dad"]
-            wMom = personalData["woman_mom"]
+            mDad = personalData["mans_dad"]
+            mMom = personalData["mans_mom"]
+            wDad = personalData["womans_dad"]
+            wMom = personalData["womans_mom"]
 
             # Check Unnullable Input ---------------------------------------- Start
             if mFName == "":
@@ -743,7 +823,7 @@ def vld_invitation(userId, categoryId, templateId, title, personalData, detailIn
             ends = detailInfo["end"]
             now = datetime.now()
 
-            # Akad
+            # Acara
             if dates != "":
                 dates = datetime.strptime(dates, "%d %B %Y")
                 starts = datetime.strptime(starts, "%I:%M %p")
@@ -755,7 +835,7 @@ def vld_invitation(userId, categoryId, templateId, title, personalData, detailIn
                     ends = datetime.strptime(ends, "%I:%M %p")
                     mergeDTE = datetime.combine(datetime.date(dates), datetime.time(ends))
                     if mergeDTS >= mergeDTE:
-                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                        checkResult.append("Waktu pesta ulang tahun yang anda masukkan tidak valid.")
                     detailInfo['end'] = int(round(datetime.timestamp(mergeDTE)*1000))
 
                 detailInfo["date"] = datetime.strftime(dates, "%d %B %Y")
@@ -819,7 +899,7 @@ def vld_invitation(userId, categoryId, templateId, title, personalData, detailIn
             ends = detailInfo["end"]
             now = datetime.now()
 
-            # Akad
+            # Acara
             if dates != "":
                 dates = datetime.strptime(dates, "%d %B %Y")
                 starts = datetime.strptime(starts, "%I:%M %p")
@@ -1027,7 +1107,7 @@ def vld_edit_invitation(result, title, personalData, detailInfo):
                     ends = datetime.strptime(ends, "%I:%M %p")
                     mergeDTE = datetime.combine(datetime.date(dates), datetime.time(ends))
                     if mergeDTS >= mergeDTE:
-                        checkResult.append("Waktu akad yang anda masukkan tidak valid.")
+                        checkResult.append("Waktu pesta ulang tahun yang anda masukkan tidak valid.")
                     detailInfo['end'] = int(round(datetime.timestamp(mergeDTE)*1000))
 
                 detailInfo["date"] = datetime.strftime(dates, "%d %B %Y")

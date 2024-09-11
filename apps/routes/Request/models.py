@@ -3,18 +3,17 @@ from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_role, vld_request_template
 from ...utilities.utils import random_number, saving_image, saving_file, split_date_time
-from ..Category.models import CategoryModels
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
 import time, os
-  
+
 # REQUEST TEMPLATE MODEL CLASS ============================================================ Begin
 class ReqTemplateModels():
     # CREATE REQUEST TEMPLATE ============================================================ Begin
-    # Clear// input data checker belum
+    # Clear
     def add_request_template(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -27,13 +26,13 @@ class ReqTemplateModels():
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
-            
+
             requiredData = ["category_id", "template_design", "description", "deadline", "type"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
             # Checking Request Body ---------------------------------------- Finish
-            
+
             # Initialize Data Input ---------------------------------------- Start
             tempDesign = datas["template_design"]
             descript = datas["description"]
@@ -43,7 +42,7 @@ class ReqTemplateModels():
             # Initialize Data Input ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            reqTemCheck = vld_request_template(tempDesign, deadline, catgId)
+            reqTemCheck, deadline = vld_request_template(tempDesign, deadline, catgId)
             if len(reqTemCheck) != 0:
                 return defined_error(reqTemCheck, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
@@ -55,7 +54,7 @@ class ReqTemplateModels():
             designPath = os.path.join(app.config['TEMPLATE_REQUEST_DESIGN'], designFileName)
             saving_image(tempDesign, designPath)
             # Saving File ---------------------------------------- Finish
-            
+
             # Insert Data ---------------------------------------- Start
             status = 0 # 0 = waiting | 1 = checked | 2 = acc | decline
             timestamp = int(round(time.time()*1000))
@@ -71,9 +70,9 @@ class ReqTemplateModels():
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
-            # Return Response ======================================== 
+            # Return Response ========================================
             return success(statusCode=201)
-        
+
         except Exception as e:
             return bad_request(str(e))
     # CREATE REQUEST TEMPLATE ============================================================ End
@@ -84,6 +83,7 @@ class ReqTemplateModels():
             # Set Access Level ---------------------------------------- Start
             access = vld_role(user_role)
             # Set Access Level ---------------------------------------- Finish
+            print("saget")
 
             # Get & Check Data ---------------------------------------- Start
             if access:
@@ -91,12 +91,17 @@ class ReqTemplateModels():
                 values = (2, )
             else:
                 query = REQ_GET_BY_USER_QUERY
+                print(user_id)
                 values = (user_id, 2, )
+                print("saget")
+
             result = DBHelper().get_data(query, values)
+            print(result)
             if len(result) < 1:
                 return not_found("Data request tidak dapat ditemukan.")
             # Get & Check Data ---------------------------------------- Finish
-            
+            print("saget")
+
             # Get & Check Data ---------------------------------------- Start
             if access:
                 query = PROF_USER_GET_QUERY
@@ -108,7 +113,7 @@ class ReqTemplateModels():
             if len(profiles) < 1:
                 return not_found("Data profile tidak dapat ditemukan.")
             # Get & Check Data ---------------------------------------- Finish
-            
+
             # Get Data Category ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             category = DBHelper().execute(query)
@@ -139,9 +144,8 @@ class ReqTemplateModels():
                     rsl["type_txt"] = "Private"
                 elif int(rsl["type"]) == 1:
                     rsl["type_txt"] = "Public"
-                
+
                 if rsl['status'] == 0:
-                    print("dakn")
                     rsl['status_txt'] = "Menunggu"
                 # elif rsl['status'] == 1:
                 #     rsl['status_txt'] = "Disetujui"
@@ -157,7 +161,7 @@ class ReqTemplateModels():
                     rsl['type'] = "Private"
                 elif rsl['type'] == 1:
                     rsl['type'] = "Public"
-                
+
             # Generate File URL ---------------------------------------- Finish
 
             # Response Data ---------------------------------------- Start
@@ -184,15 +188,15 @@ class ReqTemplateModels():
                 response.append(data)
             # Response Data ---------------------------------------- Finish
 
-            # Return Response ======================================== 
+            # Return Response ========================================
             return success_data(response)
-        
+
         except Exception as e:
             return bad_request(str(e))
     # GET ALL REQUEST TEMPLATE ============================================================ End
 
     # # UPDATE GUEST ============================================================ Begin
-    # # 
+    # #
     # def edit_guest(user_id, user_role, datas):
     #     try:
     #         # Access Validation ---------------------------------------- Start
@@ -203,13 +207,13 @@ class ReqTemplateModels():
     #         # Checking Request Body ---------------------------------------- Start
     #         if datas == None:
     #             return invalid_params()
-            
+
     #         requiredData = ["guest_id", "invitation_code", "name", "address", "phone"]
     #         for req in requiredData:
     #             if req not in datas:
     #                 return parameter_error(f"Missing {req} in Request Body")
     #         # Checking Request Body ---------------------------------------- Finish
-            
+
     #         # Inisialize Data Input ---------------------------------------- Start
     #         gueId = datas["guest_id"]
     #         invCode = datas["invitation_code"]
@@ -217,19 +221,19 @@ class ReqTemplateModels():
     #         address = datas["address"]
     #         phone = datas["phone"]
     #         # Inisialize Data Input ---------------------------------------- Finish
-            
+
     #         # Data Validation ---------------------------------------- Start
     #         query = GUEST_GET_BY_ID_QUERY
     #         values = (gueId, )
     #         result = DBHelper().get_data(query, values)
     #         if len(result) < 1 :
     #             return not_found("Data tamu tidak dapat ditemukan.")
-            
+
     #         guestCheck, phone = vld_guest(name, address, phone, invCode, False)
     #         if len(guestCheck) != 0:
     #             return defined_error(guestCheck, "Bad Request", 400)
     #         # Data Validation ---------------------------------------- Finish
-            
+
     #         # Update Data ---------------------------------------- Start
     #         timestamp = int(round(time.time()*1000))
     #         query = GUEST_UPDATE_QUERY
@@ -244,15 +248,15 @@ class ReqTemplateModels():
     #         DBHelper().save_data(query, values)
     #         # Log Activity Record ---------------------------------------- Finish
 
-    #         # Return Response ======================================== 
+    #         # Return Response ========================================
     #         return success(message="Updated!")
-            
+
     #     except Exception as e:
     #         return bad_request(str(e))
     # # UPDATE GUEST ============================================================ End
 
     # UPDATE STATUS REQUEST ============================================================ Begin
-    # 
+    #
     def edit_status_request(user_id, user_role, datas):
         try:
             # Access Validation ---------------------------------------- Start
@@ -262,22 +266,21 @@ class ReqTemplateModels():
                 return authorization_error()
             # Access Validation ---------------------------------------- Finish
 
-            print(datas)
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
-            
+
             requiredData = ["req_id", "status"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body")
             # Checking Request Body ---------------------------------------- Finish
-            
+
             # Inisialize Data Input ---------------------------------------- Start
             reqId = datas["req_id"]
             status = datas["status"]
             # Inisialize Data Input ---------------------------------------- Finish
-            
+
             # Data Validation ---------------------------------------- Start
             query = REQ_GET_BY_ID_QUERY
             values = (reqId, )
@@ -285,7 +288,7 @@ class ReqTemplateModels():
             if len(result) < 1 :
                 return not_found("Data permintaan tidak dapat ditemukan.")
             # Data Validation ---------------------------------------- Finish
-            
+
             # Update Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = REQ_UPDATE_STATUS_QUERY
@@ -300,16 +303,16 @@ class ReqTemplateModels():
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
-            # Return Response ======================================== 
+            # Return Response ========================================
             return success(message="Updated!")
-            
+
         except Exception as e:
             return bad_request(str(e))
     # UPDATE STATUS REQUEST ============================================================ End
 
     # DELETE GUEST ============================================================ Begin
-    # 
-    def delete_guest(user_id, user_role, datas):     
+    #
+    def delete_guest(user_id, user_role, datas):
         try:
             # Set Access Level ---------------------------------------- Start
             access = vld_role(user_role)
@@ -319,15 +322,15 @@ class ReqTemplateModels():
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
-            
+
             if "request_id" not in datas:
                 return parameter_error("Missing 'request_id' in Request Body.")
-            
+
             reqId = datas["request_id"]
             if reqId == "":
                 return defined_error("Id tamu tidak boleh kosong.", "Defined Error", 400)
             # Checking Request Body ---------------------------------------- Finish
-            
+
             # Data Validation ---------------------------------------- Start
             query = REQ_GET_BY_ID_QUERY
             values = (reqId,)
@@ -350,14 +353,14 @@ class ReqTemplateModels():
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
-            # Return Response ======================================== 
+            # Return Response ========================================
             return success(message="Deleted!")
-            
+
         except Exception as e:
             return bad_request(str(e))
     # DELETE GUEST ============================================================ End
-    
-    # GET ALL REQUEST TEMPLATE ============================================================ Begin
+
+    # GET DETAIL REQUEST TEMPLATE ============================================================ Begin
     def view_detail_request_template(user_id, user_role, datas):
         try:
             # Set Access Level ---------------------------------------- Start
@@ -367,10 +370,10 @@ class ReqTemplateModels():
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
-            
+
             if "request_id" not in datas:
                 return parameter_error("Missing 'request_id' in Request Body.")
-            
+
             reqId = datas["request_id"]
             if reqId == "":
                 return defined_error("Id request tidak boleh kosong.", "Defined Error", 400)
@@ -383,7 +386,7 @@ class ReqTemplateModels():
             if len(result) < 1:
                 return not_found("Data request tidak dapat ditemukan.")
             # Get & Check Data ---------------------------------------- Finish
-            
+
             # Get & Check Data ---------------------------------------- Start
             query = PROF_GET_BY_ID_QUERY
             values = (result[0]['user_id'], 2, )
@@ -391,7 +394,7 @@ class ReqTemplateModels():
             if len(profiles) < 1:
                 return not_found("Data profile tidak dapat ditemukan.")
             # Get & Check Data ---------------------------------------- Finish
-            
+
             # Get Data Category ---------------------------------------- Start
             query = CTGR_GET_BY_ID_QUERY
             values = (result[0]['category'],)
@@ -423,7 +426,7 @@ class ReqTemplateModels():
                     rsl["type_txt"] = "Privasi"
                 elif int(rsl["type"]) == 1:
                     rsl["type_txt"] = "Publik"
-                
+
                 if rsl['status'] == 0:
                     rsl['status_txt'] = "Menunggu"
                 # elif rsl['status'] == 1:
@@ -444,6 +447,7 @@ class ReqTemplateModels():
 
             # Response Data ---------------------------------------- Start
             result = result[0]
+            deadline = split_date_time(datetime.fromtimestamp(result['deadline']/1000))
             createdAt = split_date_time(datetime.fromtimestamp(result['created_at']/1000))
             updatedAt = split_date_time(datetime.fromtimestamp(result['updated_at']/1000))
             response = {
@@ -452,7 +456,7 @@ class ReqTemplateModels():
                 "fullname" : result["fullname"],
                 "user_level" : result["user_level"],
                 "category" : result["category"],
-                "deadline" : result["deadline"],
+                "deadline" : deadline,
                 "status" : result["status"],
                 "status_txt" : result["status_txt"],
                 "type": result["type"],
@@ -464,10 +468,10 @@ class ReqTemplateModels():
             }
             # Response Data ---------------------------------------- Finish
 
-            # Return Response ======================================== 
+            # Return Response ========================================
             return success_data(response)
-        
+
         except Exception as e:
             return bad_request(str(e))
-    # GET ALL REQUEST TEMPLATE ============================================================ End
+    # GET DETAIL REQUEST TEMPLATE ============================================================ End
 # REQUEST TEMPLATE MODEL CLASS ============================================================ End

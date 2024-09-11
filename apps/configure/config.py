@@ -20,7 +20,7 @@ DB_HOST = os.getenv("DB_HOST")
 
 # JWT Config
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=1)
+JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=3)
 
 # TWILIO WHATSAPP API
 ACCOUNT_SID = os.getenv("ACCOUNT_SID")

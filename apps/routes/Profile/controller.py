@@ -48,12 +48,13 @@ def update_data():
         # Access User ======================================== 
         id = str(get_jwt()["id"])
         role = str(get_jwt()["role"])
+        mail = str(get_jwt()["email"])
         
         # Request Data ======================================== 
         data = request.json
 
         # Request Data ======================================== 
-        response = ProfileModels.edit_profile(id, role, data)
+        response = ProfileModels.edit_profile(id, role, mail, data)
 
         # Request Data ======================================== 
         return response

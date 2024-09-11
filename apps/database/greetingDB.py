@@ -10,6 +10,7 @@ class Greeting(db.Model):
     user_id =  db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.BigInteger, nullable=False)
     deleted_at = db.Column(db.BigInteger, nullable=True)
+    deleted_by =  db.Column(db.Integer, nullable=True)
     is_delete = db.Column(db.Integer, nullable=True, server_default='0')
     
     def __repr__(self):

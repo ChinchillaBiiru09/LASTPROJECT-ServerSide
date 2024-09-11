@@ -17,15 +17,73 @@ auth = Blueprint(
 
 # CREATE CATEGORY ============================================================ Begin
 # POST https://127.0.0.1:5000/auth/
-@auth.get('/')
-def get_all_data():
+@auth.post('/')
+def create_data():
     try:
+        # Request Data ======================================== 
+        data = request.json
+
         # Request Process ======================================== 
-        response = AuthModels.view_auth()
+        response = AuthModels.create_auth(data)
 
         # Request Data ======================================== 
         return response
 
     except Exception as e:
         return bad_request(str(e))
-# GET CATEGORY ============================================================ End
+# CREATE CATEGORY ============================================================ End
+
+
+# CREATE CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/auth/
+@auth.get('/')
+def get_all_data():
+    try:
+        pass
+        # # Request Process ======================================== 
+        # response = AuthModels.view_auth()
+
+        # # Request Data ======================================== 
+        # return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# CREATE CATEGORY ============================================================ End
+
+
+# CREATE CATEGORY ============================================================ Begin
+# POST https://127.0.0.1:5000/auth/detail
+@auth.get('/detail')
+def detail_data():
+    try:
+        # Request Data ======================================== 
+        data = request.args
+
+        # Request Process ======================================== 
+        response = AuthModels.view_detail_auth(data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# CREATE CATEGORY ============================================================ End
+
+
+# CREATE CATEGORY ============================================================ Begin
+# PUT https://127.0.0.1:5000/auth/
+@auth.put('/')
+def update_data():
+    try:
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Process ======================================== 
+        response = AuthModels.edit_auth(data)
+
+        # Response Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# CREATE CATEGORY ============================================================ End

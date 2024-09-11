@@ -1,8 +1,15 @@
 from flask import current_app as app
-import string, random
-import hashlib, uuid
-import cv2, base64, numpy as np
-import re, hashlib, os
+from email.mime.text import MIMEText
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from email.mime.multipart import MIMEMultipart
+from .responseHelper import *
+from .dbHelper import *
+from .queries import *
+
+import string, random, hashlib, uuid, re, hashlib, os, cv2, base64, numpy as np
 
 
 ##########################################################################################################
@@ -46,6 +53,17 @@ def random_number(length):
     numbers = ''.join(random.choice(number) for i in range(length))
     return numbers
 
+def auth_token():
+    token = f"{random_string_number(20)}"
+
+    # Cek db
+    query = AUTH_GET_BY_TOKEN_QUERY
+    values = (token, )
+    result = DBHelper().get_count_filter_data(query, values)
+    if result > 0:
+        auth_token()
+
+    return token
 
 ##########################################################################################################
 # SANITIZING STRING
@@ -219,3 +237,70 @@ def split_date_time(datetimes):
     }
     
     return datetimes
+
+
+##########################################################################################################
+# SEND MAIL
+def email_sender(recivier, subject, messages_content):
+    """
+        Shows basic usage of the Gmail API.
+        Sends an email using the Gmail API.
+    """
+
+    # Scopes required for Gmail API
+    SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        # if creds and creds.expired and creds.refresh_token:
+        #     creds.refresh(Request())
+        # else:
+        #     flow = InstalledAppFlow.from_client_secrets_file(
+        #         'apps/utilities/credentials.json', SCOPES)
+        #     creds = flow.run_local_server(port=5556) # Ubah ke port yang tidak digunakan
+        # # Save the credentials for the next run 
+        # with open('token.json', 'w') as token:
+        #     token.write(creds.to_json())
+        if creds and creds.expired and creds.refresh_token:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"Error refreshing token: {e}")
+                if os.path.exists('token.json'):
+                    os.remove('token.json')
+                creds = None
+        if not creds:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'apps/utilities/credentials.json', SCOPES)
+            creds = flow.run_local_server(port=5556)
+            with open('token.json', 'w') as token:
+                token.write(creds.to_json())
+
+    service = build('gmail', 'v1', credentials=creds)
+
+    # Create an email message
+    message = MIMEMultipart()
+    message['to'] = recivier
+    message['from'] = 'user.infocvt@creavitation.com'
+    message['subject'] = subject
+
+    # Attach the HTML content
+    message.attach(MIMEText(messages_content, 'html'))
+
+    # Encode the message in base64
+    raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+    try:
+        message = (service.users().messages().send(userId='me', body={'raw': raw_message}).execute())
+        print('Message Id: %s' % message['id'])
+        return success_data(message)
+    except Exception as error:
+        print(f'An error occurred: {error}')
+        return bad_request(str(error))
+

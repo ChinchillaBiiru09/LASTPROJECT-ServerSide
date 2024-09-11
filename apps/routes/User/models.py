@@ -3,6 +3,7 @@ from flask import request
 from datetime import datetime
 
 from ..Profile.models import ProfileModels
+from ..Auth.models import AuthModels
 from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
@@ -58,7 +59,6 @@ class UserModels():
             # Insert Data ---------------------------------------- Finish
 
             # Insert Profile ---------------------------------------- Start
-            print("bisa")
             try:
                 data = {
                     "user_id": resReturn,
@@ -69,24 +69,48 @@ class UserModels():
                     "phone": phone
                 }
                 profile = ProfileModels.create_profile(data)
-                print("bisa")
             except Exception as e:
                 return bad_request(str(e))
             # Insert Profile ---------------------------------------- Finish
-            print("bisa")
-
+            
+            # Insert Authentication ---------------------------------------- Start
+            try:
+                data = {
+                    "user_id": resReturn,
+                    "user_level": 2, # 1 = Admin, 2 = User
+                    "email": email
+                }
+                print(data)
+                auth = AuthModels.create_auth(data)
+                print("auth - ", auth)
+            except Exception as e:
+                return bad_request(str(e))
+            # Insert Authentication ---------------------------------------- Finish
+            print("sc - ",auth.status_code)
             # Log Activity Record ---------------------------------------- Start
-            if profile.status_code == 200:
-                activity = f"User baru dengan id {resReturn} telah berhasil mendaftar."
-                query = LOG_ADD_QUERY
-                values = (resReturn, 2, activity, timestamp, )
-                DBHelper().save_data(query, values)
-            else:
+            if profile.status_code != 200:
                 query = USR_DELETE_QUERY
                 values = (timestamp, resReturn, resReturn, )
                 DBHelper().save_data(query, values)
                 
                 return bad_request("Gagal membuat akun.")
+            elif auth.status_code != 200:
+                # Delete User
+                query = USR_DELETE_QUERY
+                values = (timestamp, resReturn, resReturn, )
+                DBHelper().save_data(query, values)
+                
+                # Delete Profile
+                query = PROF_DELETE_QUERY
+                values = (timestamp, resReturn, )
+                DBHelper().save_data(query, values)
+
+                return bad_request("Gagal membuat akun. Silahkan gunakan email yang valid.")
+            else:
+                activity = f"User baru dengan id {resReturn} telah berhasil mendaftar."
+                query = LOG_ADD_QUERY
+                values = (resReturn, 2, activity, timestamp, )
+                DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 
             # Return Response ======================================== 
@@ -118,7 +142,7 @@ class UserModels():
             # Data Validation ---------------------------------------- Start
             level = 2
             checkResult, result, stts = vld_signin(email, password, level)
-            if len(checkResult) != 0:
+            if len(checkResult) > 0:
                 return defined_error(checkResult, "Bad Request", statusCode=stts)
             # Data Validation ---------------------------------------- Finish
 
@@ -222,14 +246,54 @@ class UserModels():
     # GET ALL USER ============================================================ End
     
     # DELETE USER ============================================================ Begin
+    def activate_user(datas):
+        try:
+            print(datas)
+            # Checking Request Body ---------------------------------------- Start
+            if datas == None:
+                return invalid_params()
+            
+            requiredData = ["user_id", "user_level", "token"]
+            for req in requiredData:
+                if req not in datas:
+                    return parameter_error(f"Missing {req} in Request Body.")
+            # Checking Request Body ---------------------------------------- Finish
+
+            # Initialize Data Input ---------------------------------------- Start
+            userId = datas["user_id"]
+            userLevel = datas["user_level"]
+            token = datas["token"]
+            # Initialize Data Input ---------------------------------------- Finish
+
+            # Checking Data ---------------------------------------- Start
+            query = USR_GET_BY_ID_QUERY
+            values = (userId,)
+            result = DBHelper().get_count_filter_data(query, values)
+            if result < 1:
+                return not_found(f"Data user dengan id {userId} tidak dapat ditemukan.")
+            # Checking Data ---------------------------------------- Finish
+
+            # Delete Account ---------------------------------------- Start
+            query = USR_ACTIVATED_ACCOUNT_QUERY
+            values = (userId, )
+            DBHelper().save_data(query, values)
+            # Delete Account ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success(message="Activate!")
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # DELETE USER ============================================================ End
+    
+    # DELETE USER ============================================================ Begin
     def delete_user(user_id, user_role, datas):
         try:
-            # Access Validation ---------------------------------------- Start
-            access = vld_role(user_role)
-            if not access: # Access = True -> Admin
-                return authorization_error()
-            # Access Validation ---------------------------------------- Finish
-            print(datas)
+            # # Access Validation ---------------------------------------- Start
+            # access = vld_role(user_role)
+            # if not access: # Access = True -> Admin
+            #     return authorization_error()
+            # # Access Validation ---------------------------------------- Finish
 
             # Checking Request Body ---------------------------------------- Start
             if datas == None:
@@ -242,11 +306,10 @@ class UserModels():
             if usrId == "":
                 return defined_error("Id user tidak boleh kosong.", "Defined Error", 499)
             # Checking Request Body ---------------------------------------- Finish
-            print(usrId)
 
             # Checking Data ---------------------------------------- Start
             query = USR_GET_BY_ID_QUERY
-            values = (usrId,)
+            values = (user_id,)
             result = DBHelper().get_count_filter_data(query, values)
             if result < 1:
                 return not_found(f"Data user dengan id {usrId} tidak dapat ditemukan.")
@@ -260,18 +323,41 @@ class UserModels():
             # Delete Account ---------------------------------------- Finish
 
             # Delete Profile ---------------------------------------- Start
-            timestamp = int(round(time.time()*1000))
             query = PROF_DELETE_QUERY
             values = (timestamp, usrId)
             DBHelper().save_data(query, values)
             # Delete Profile ---------------------------------------- Finish
 
-            # Log Activity Record ---------------------------------------- Start
-            activity = f"Admin dengan id {user_id} menghapus user {usrId}."
-            query = LOG_ADD_QUERY
-            values = (user_id, 1, activity, timestamp )
-            DBHelper().save_data(query, values)
-            # Log Activity Record ---------------------------------------- Finish
+            # Delete Invitation & Guest ---------------------------------------- Start
+            query = INV_GET_BY_USR_QUERY
+            values = (user_id, )
+            invitations = DBHelper().get_data(query, values)
+            if len(invitations) > 0:
+                query1 = INV_DELETE_QUERY
+                query2 = GUEST_GET_BY_CODE_QUERY
+                query3 = GUEST_DELETE_INV_QUERY
+                for invite in invitations:
+                    # Delete Invitation
+                    delValues1 = (timestamp, user_id, invite['id'], )
+                    DBHelper().save_data(query1, delValues1)
+
+                    # Delete Guest
+                    values = (invite['code'], )
+                    guest = DBHelper().get_count_filter_data(query2, values)
+                    if guest > 0:
+                        delValues2 = (timestamp, user_id, invite['code'], )
+                        DBHelper().save_data(query3, delValues2)
+            # Delete Invitation & Guest ---------------------------------------- Finish
+
+            # Delete Template Private ---------------------------------------- Start
+            query = TMPLT_GET_BY_USER_QUERY
+            values = (user_id, )
+            templates = DBHelper().get_count_filter_data(query, values)
+            if templates > 0:
+                query = TMPLT_PRIV_DELETE_USER_QUERY
+                values = (timestamp, user_id, user_id, )
+                DBHelper().save_data(query, values)
+            # Delete Template Private ---------------------------------------- Finish
             
             # Return Response ======================================== 
             return success(message="Deleted!")

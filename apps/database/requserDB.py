@@ -18,7 +18,7 @@ class Requser(db.Model):
     design_file = db.Column(db.Text(), nullable=False)
     description = db.Column(db.Text(), nullable=False)
     deadline = db.Column(db.BigInteger, nullable=False)
-    type = db.Column(db.Text(), nullable=False, comment="0 = Private, 1 = Public")
+    type = db.Column(db.Text(), nullable=False, comment="0 = Public, 1 = Private")
     status = db.Column(db.Integer, nullable=False) # 0 = waiting | 1 = acc | 2 = proccess | 3 = decline | 4 = clear
     created_at = db.Column(db.BigInteger, nullable=False)
     created_by = db.Column(db.Integer, nullable=False)

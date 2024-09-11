@@ -2,7 +2,7 @@ from flask import request
 from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
-from ...utilities.validator import vld_role, vld_profile
+from ...utilities.validator import *
 from ...utilities.utils import split_date_time
 
 from datetime import datetime
@@ -50,64 +50,50 @@ class ProfileModels():
     # CREATE PROFILE ============================================================ End
 
     # UPDATE PROFILE ============================================================ Begin
-    def edit_profile(user_id, user_role, datas):
+    def edit_profile(user_id, user_role, user_mail, datas):
         try:
             # Set Level Access ---------------------------------------- Start
             access = vld_role(user_role) # Access = True -> Admin
             accLevel = 1 if access else 2  # 1 = Admin | 2 = User
             # Set Level Access ---------------------------------------- Finish
+            print("nani?")
 
             # Validation Request Body ---------------------------------------- Start
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["first_name", "middle_name", "last_name", "phone", "photos"]
+            requiredData = ["first_name", "middle_name", "last_name", "phone"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
             # Validation Request Body ---------------------------------------- Finish
             
             # Initialize Data ---------------------------------------- Start
-            fName = datas["first_name"].strip().title()
-            mName = datas["middle_name"].strip().title()
-            lName = datas["last_name"].strip().title()
-            phone = datas["phone"].strip()
-            photos = datas["photos"]
+            fName = datas["first_name"]
+            mName = datas["middle_name"]
+            lName = datas["last_name"]
+            phone = datas["phone"]
+            # photos = datas["photos"]
             # Initialize Data ---------------------------------------- Finish
 
             # Data Validation ---------------------------------------- Start
-            checkResult, result = vld_profile(user_id, accLevel, fName, mName, lName, phone)
-            if len(checkResult) != 0:
+            checkResult = vld_edit_profile(user_id, accLevel, fName, mName, lName, phone)
+            if len(checkResult) > 0:
                 return defined_error(checkResult, "Bad Request", 400)
             # Data Validation ---------------------------------------- Finish
 
-            # Check Data ---------------------------------------- Start
-            if fName == "":
-                fName = result[0]["first_name"]
-            if mName == "":
-                mName = result[0]["middle_name"]
-            if lName == "":
-                lName = result[0]["last_name"]
-            if phone == "":
-                phone = result[0]["phone"]
-            # base_64 = 0
-            if (photos != "") or (photos is None):
-                # base_64 = base64.b64decode(photos)
-                photos = result[0]["photos"]
-            # Check Data ---------------------------------------- Finish
-            
             # Insert Data ---------------------------------------- Start
             timestamp = int(round(time.time()*1000))
             query = PROF_UPDATE_QUERY
-            values = (fName, mName, lName, phone, photos, timestamp, user_id, accLevel)
+            values = (fName, mName, lName, phone, timestamp, user_id, accLevel)
             DBHelper().save_data(query, values)
             # Insert Data ---------------------------------------- Finish
 
             # Log Activity Record ---------------------------------------- Start
             level = "Admin" if access else "User"
-            activity = f"{level} dengan id {user_id} telah mengubah data profile."
+            activity = f"{level} dengan email {user_mail} telah mengubah data profile."
             query = LOG_ADD_QUERY
-            values = (user_id, accLevel, activity, )
+            values = (user_id, accLevel, activity, timestamp, )
             DBHelper().save_data(query, values)
             # Log Activity Record ---------------------------------------- Finish
 

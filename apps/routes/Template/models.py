@@ -2,8 +2,7 @@ from ...utilities.responseHelper import *
 from ...utilities.dbHelper import DBHelper
 from ...utilities.queries import *
 from ...utilities.validator import vld_template, vld_role
-from ...utilities.utils import random_number, saving_image, saving_file, split_date_time
-from ..Category.models import CategoryModels
+from ...utilities.utils import saving_image, saving_file, split_date_time
 
 from flask import request, current_app as app
 from werkzeug.utils import secure_filename
@@ -26,8 +25,7 @@ class TemplateModels():
             if datas == None:
                 return invalid_params()
             
-            requiredData = ["title", "thumbnail", "css_file", "js_file",
-                             "wallpaper_1", "wallpaper_2", "category_id"]
+            requiredData = ["title", "thumbnail", "css_file", "js_file", "wallpaper_1", "wallpaper_2", "category_id"]
             for req in requiredData:
                 if req not in datas:
                     return parameter_error(f"Missing {req} in Request Body.")
@@ -98,27 +96,47 @@ class TemplateModels():
     # CREATE TEMPLATE ============================================================ End
 
     # GET ALL TEMPLATE ============================================================ Begin
-    def view_template():
+    def view_template(user_id, user_role):
         try:
+            # Access Validation ---------------------------------------- Start
+            access = vld_role(user_role) # Access = True -> Admin
+            accLevel = 1 if access else 2
+            # Access Validation ---------------------------------------- Finish
+
             # Checking Data ---------------------------------------- Start
-            query = TMPLT_GET_ALL_QUERY
-            result = DBHelper().execute(query)
+            if accLevel == 1:
+                query = TMPLT_GET_ALL_QUERY
+                result = DBHelper().execute(query)
+            elif accLevel == 2:
+                query = TMPLT_GET_BY_USER_QUERY
+                values = (user_id,)
+                result = DBHelper().get_data(query, values)
+            
             if len(result) < 1:
                 return not_found("Data template tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish
             
-            # Get Data Category ---------------------------------------- Start
+            # Get Data Category & User ---------------------------------------- Start
             query = CTGR_GET_ALL_QUERY
             resultCtgr = DBHelper().execute(query)
             if len(resultCtgr) < 1:
                 return not_found("Data kategori tidak dapat ditemukan.")
-            # Get Data Category ---------------------------------------- Finish
+            
+            query = USR_GET_ALL_QUERY
+            resultUsr = DBHelper().execute(query)
+            if len(resultUsr) < 1:
+                return not_found("Data user tidak dapat ditemukan.")
+            # Get Data Category & User ---------------------------------------- Finish
 
             # Join Data ---------------------------------------- Start
             for template in result:
                 for category in resultCtgr:
                     if template["category_id"] == category["id"]:
                         template["category"] = category["category"]
+                
+                for user in resultUsr:
+                    if template["user_id"] == user["id"]:
+                        template["username"] = user["username"]
             # Join Data ---------------------------------------- Finish
 
             # Generate File URL ---------------------------------------- Start
@@ -160,6 +178,10 @@ class TemplateModels():
                     "wp2_fname": rsl["wp2_fname"],
                     "category_id" : rsl["category_id"],
                     "category" : rsl["category"],
+                    "type" : rsl["type"],
+                    "type_txt" : "Public" if rsl["type"] == 0 else "Private",
+                    "owner" : rsl["user_id"],
+                    "owner_txt" : "Admin" if rsl["user_id"] == 0 else rsl["username"],
                     "created_at" : createdAt,
                     "updated_at" : updatedAt
                 }
@@ -405,6 +427,18 @@ class TemplateModels():
                     index = detailRequestURL
                     request.url = request.url[:index]
             
+            # Ubah http menjadi https
+            # secure_request_root = request.url_root.replace('http://', 'https://')
+            # template["thumb_fname"] = template['thumbnail']
+            # template["thumbnail"] = f"{secure_request_root}template/media/thumbnail/{template['thumbnail']}"
+            # template["css_fname"] = template['css_file']
+            # template["css_file"] = f"{secure_request_root}template/media/css/{template['css_file']}"
+            # template["js_fname"] = template['js_file']
+            # template["js_file"] = f"{secure_request_root}template/media/js/{template['js_file']}"
+            # template["wp_fname"] = template['wallpaper']
+            # template["wallpaper"] = f"{secure_request_root}template/media/wallpaper/{template['wallpaper']}"
+            # template["wp2_fname"] = template['wallpaper_2']
+            # template["wallpaper_2"] = f"{secure_request_root}template/media/wallpaper/{template['wallpaper_2']}"
             template["thumb_fname"] = template['thumbnail']
             template["thumbnail"] = f"{request.url_root}template/media/thumbnail/{template['thumbnail']}"
             template["css_fname"] = template['css_file']
@@ -435,6 +469,10 @@ class TemplateModels():
                     "wp2_fname": template["wp2_fname"],
                     "category_id" : template["category_id"],
                     "category" : template["category"],
+                    "type" : template["type"],
+                    "type_txt" : "Public" if template["type"] == 0 else "Private",
+                    "owner" : template["user_id"],
+                    "owner_txt" : "Admin" if template["user_id"] == 0 else template["user_id"],
                     "created_at" : template['created_at'],
                     "updated_at" : template['updated_at']
             }
@@ -527,6 +565,135 @@ class TemplateModels():
             response = {
                 "template_count" : result
             }
+            # Response Data ---------------------------------------- Finish
+
+            # Return Response ======================================== 
+            return success_data(response)
+        
+        except Exception as e:
+            return bad_request(str(e))
+    # GET ROW-COUNT TEMPLATE ============================================================ End
+
+    # GET ROW-COUNT TEMPLATE ============================================================ Begin
+    # Clear
+    def get_popular_template(datas):
+        try:
+            
+            # Checking Request Body ---------------------------------------- Start
+            if len(datas) != 0:
+                if "category" not in datas:
+                    return parameter_error("Missing 'category' in Request Body.")
+                
+                category = datas["category"]
+                if category == "":
+                    return defined_error("Filter kategori tidak boleh kosong.", "Defined Error", 499)
+                
+                # Set Filter Query ---------------------------------------- Start
+                inv_query = INV_GET_WITH_FILTER_QUERY
+                inv_values = (2, category)
+                cat_query = CTGR_GET_ALL_QUERY
+                tem_query = TMPLT_GET_FILTER_QUERY
+                tem_values = (category,)
+                usr_query = USR_GET_ALL_QUERY
+                # Set Filter Query ---------------------------------------- Finish
+            else:
+                # Set Query ---------------------------------------- Start
+                inv_query = INV_GET_BY_TEMP_QUERY
+                inv_values = (2,)
+                cat_query = CTGR_GET_ALL_QUERY
+                tem_query = TMPLT_GET_ALL_QUERY
+                usr_query = USR_GET_ALL_QUERY
+                # Set Query ---------------------------------------- Finish
+            # Checking Request Body ---------------------------------------- Finish
+
+            # Checking Data ---------------------------------------- Start
+            values = (2,)
+            invitation = DBHelper().get_data(inv_query, inv_values)
+            if len(invitation) < 1:
+                return not_found("Data undangan tidak dapat ditemukan.")
+            # Checking Data ---------------------------------------- Finish
+
+            # Get Category Data ---------------------------------------- Start
+            category = DBHelper().execute(cat_query)
+            if len(category) < 1:
+                return not_found("Data kategori tidak dapat ditemukan.")
+            # Get Category Data ---------------------------------------- Finish
+
+            # Get Template Data ---------------------------------------- Start
+            template = DBHelper().get_data(tem_query, tem_values) if len(datas) != 0 else DBHelper().execute(tem_query)
+            if len(template) < 1:
+                return not_found("Data template tidak dapat ditemukan.")
+            # Get Template Data ---------------------------------------- Finish
+
+            # Get User Data ---------------------------------------- Start
+            users = DBHelper().execute(usr_query)
+            if len(users) < 1:
+                return not_found("Data template tidak dapat ditemukan.")
+            # Get User Data ---------------------------------------- Finish
+
+             # Generate File URL ---------------------------------------- Start
+            if len(template) >= 1:
+                detailRequestURL = str(request.url).find('?')
+                if detailRequestURL != -1:
+                    index = detailRequestURL
+                    request.url = request.url[:index]
+            for item in template:
+                # secure_request_root = request.url_root.replace('http://', 'https://')
+                # item["thumb_fname"] = item['thumbnail']
+                # item["thumbnail"] = f"{secure_request_root}template/media/thumbnail/{item['thumbnail']}"
+                
+                # Khusus Lokal
+                item["thumb_fname"] = item['thumbnail']
+                item["thumbnail"] = f"{request.url_root}template/media/thumbnail/{item['thumbnail']}"
+            # Generate File URL ---------------------------------------- Finish
+
+            # Join Data ---------------------------------------- Start
+            for temp in template:
+                for cat in category:
+                    if cat['id'] == temp['category_id']:
+                        temp['category'] = cat['category']
+
+                for user in users:
+                    if temp["user_id"] == user["id"]:
+                        temp["username"] = user["username"]
+
+            for inv in invitation:
+                for temp in template:
+                    if temp['id'] == inv['template_id']:
+                        inv['title'] = temp['title']
+                        inv['category'] = temp['category']
+                        inv['thumbnail'] = temp['thumbnail']
+                        inv['thumb_fname'] = temp['thumb_fname']
+                        inv['type'] = temp['type']
+                        inv['type_txt'] = "Public" if temp["type"] == 0 else "Private"
+                        inv['owner'] = temp['user_id']
+                        inv['owner_txt'] = "Admin" if temp["user_id"] == 0 else temp["username"]
+                        inv['created_at'] = split_date_time(datetime.fromtimestamp(temp['created_at']/1000))
+            # Join Data ---------------------------------------- Finish
+            
+            # Response Data ---------------------------------------- Start
+            response = []
+            for inv in invitation:
+                response.append(inv)
+            for inv in invitation:
+                for temp in template:
+                    if temp['id'] != inv['template_id']:
+                        if not any(r['template_id'] == temp['id'] for r in response):
+                            data = {
+                                "category_id": temp['category_id'],
+                                "category": temp['category'],
+                                "template_id": temp['id'],
+                                "title": temp['title'],
+                                "thumbnail" : temp["thumbnail"],
+                                "thumb_fname" : temp["thumb_fname"],
+                                "type" : temp["type"],
+                                "type_txt" : "Public" if temp["type"] == 0 else "Private",
+                                "owner" : temp["user_id"],
+                                "owner_txt" : "Admin" if temp["user_id"] == 0 else temp["username"],
+                                "created_at" : split_date_time(datetime.fromtimestamp(temp['created_at']/1000)),
+                                "count": 0
+                            }
+                            response.append(data)
             # Response Data ---------------------------------------- Finish
 
             # Return Response ======================================== 

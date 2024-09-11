@@ -44,13 +44,15 @@ def create_data():
 # GET TEMPLATE ============================================================ Begin
 # GET https://127.0.0.1:5000/template/
 @template.get('/')
+@jwt_required()
 def get_data():
     try:
-        # # Request Data ======================================== 
-        # data = request.args
+        # Access User ======================================== 
+        id = str(get_jwt()["id"])
+        role = str(get_jwt()["role"])
 
         # Request Process ======================================== 
-        response = TemplateModels.view_template()
+        response = TemplateModels.view_template(id, role)
 
         # Request Data ======================================== 
         return response
@@ -130,15 +132,15 @@ def detail_data():
 
 # VIEW TEMPLATE ============================================================ Begin
 # GET https://127.0.0.1:5000/template/show
-@template.get('/show')
+@template.get('/popular')
 @jwt_required()
-def show():
-    try:
+def popular():
+    try:        
         # Request Data ======================================== 
         data = request.args
 
         # Request Process ======================================== 
-        response = TemplateModels.show_template(data)
+        response = TemplateModels.get_popular_template(data)
 
         # Request Data ======================================== 
         return response

@@ -182,7 +182,6 @@ class GreetingModels():
             query = GRTG_GET_BY_CODE_QUERY
             values = (invCode,)
             result = DBHelper().get_data(query, values)
-            print("clear")
             if len(result) < 1 :
                 return defined_error("Ucapan selamat tidak dapat ditemukan.")
             # Checking Data ---------------------------------------- Finish

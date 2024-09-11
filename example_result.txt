@@ -96,3 +96,75 @@ Jun 2024', 'full': 'Selasa, 11 Jun 2024, 10:46:56'}},
 
 
 2024-06-21_185641_57254_design_user_5.jpg
+
+
+>> template model
+for r in result:
+    print("---------------------", r['id'])
+    print("type -> ",r['type'])
+    print("owner -> ",r['user_id'])
+    print("delete -> ",r['is_delete'])
+
+# public admin ==>> tipe 0 | usid = sesuai | isdel = 0
+# tipe = 0 | user id = 0 | is delete = 0
+a = True
+b = False
+c = True
+orr = a or b
+ann = orr and c
+tri = a or b and c
+print("public admin ______________________________")
+print("a ->",a)
+print("b ->",b)
+print("c ->",c)
+print("a or b ->",orr)
+print("ab and c ->",ann)
+print("abc ->",tri)
+
+# public admin del ==>> tipe 0 | usid = sesuai | isdel = 0
+# tipe = 0 | user id = 0 | is delete = 1
+a = True
+b = False
+c = False
+orr = a or b
+ann = orr and c
+tri = (a or b) and c
+print("public admin del ______________________________")
+print("a ->",a)
+print("b ->",b)
+print("c ->",c)
+print("a or b ->",orr)
+print("ab and c ->",ann)
+print("abc ->",tri)
+
+# private user del ==>> tipe = 0 | usid = sesuai | isdel = 0
+# tipe = 1 | user id = sesuai | is delete = 1
+a = False
+b = True
+c = False
+orr = a or b
+ann = orr and c
+tri = a or b and c
+print("private user del ______________________________")
+print("a ->",a)
+print("b ->",b)
+print("c ->",c)
+print("a or b ->",orr)
+print("ab and c ->",ann)
+print("abc ->",tri)
+
+# private user ==>> tipe = 0 | usid = sesuai | isdel = 0
+# tipe = 1 | user id = sesuai | is delete = 0
+a = False
+b = True
+c = True
+orr = a or b
+ann = orr and c
+tri = a or b and c
+print("private user ______________________________")
+print("a ->",a)
+print("b ->",b)
+print("c ->",c)
+print("a or b ->",orr)
+print("ab and c ->",ann)
+print("abc ->",tri)

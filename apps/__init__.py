@@ -12,6 +12,7 @@ from .configure.connectionDB import ConnectDB
 # =================================== CONFIG ===================================
 app = Flask(__name__)
 app.config['PRODUCT_ENVIRONMENT'] = config.PRODUCT_ENVIRONMENT
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
 
 # App URL
 app.config['BASE_URL'] = config.BASE_URL
@@ -22,9 +23,9 @@ app.config['SECRET_KEY'] = config.JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.JWT_ACCESS_TOKEN_EXPIRES
 jwt = JWTManager(app)
 
-# API Whatsapp
-app.config['ACCOUNT_SID'] = config.ACCOUNT_SID
-app.config['AUTH_TOKEN'] = config.AUTH_TOKEN
+# # API Whatsapp
+# app.config['ACCOUNT_SID'] = config.ACCOUNT_SID
+# app.config['AUTH_TOKEN'] = config.AUTH_TOKEN
 
 # Config Database Migration
 app.config.from_object(ConnectDB)
@@ -49,6 +50,7 @@ app.config['TEMPLATE_JS_FILE'] = config.STATIC_FOLDER_PATH + "templates/js/"
 app.config['USER_INVITATION_FILE'] = config.STATIC_FOLDER_PATH + "invitation/user/"
 app.config['GALLERY_INVITATION_FILE'] = config.STATIC_FOLDER_PATH + "invitation/gallery/"
 app.config['TEMPLATE_REQUEST_DESIGN'] = config.STATIC_FOLDER_PATH + "request_template/"
+app.config['EXPORT_GUEST'] = config.STATIC_FOLDER_PATH + "guest/export/"
 
 # Create Folder (if doesn't exist)
 list_folder_to_create = [
@@ -60,7 +62,8 @@ list_folder_to_create = [
     app.config['TEMPLATE_JS_FILE'],
     app.config['USER_INVITATION_FILE'],
     app.config['TEMPLATE_REQUEST_DESIGN'],
-    app.config['GALLERY_INVITATION_FILE']
+    app.config['GALLERY_INVITATION_FILE'],
+    app.config['EXPORT_GUEST']
 ]
 
 for x in list_folder_to_create:
@@ -69,6 +72,7 @@ for x in list_folder_to_create:
 
 # =================================== DATABASE MODEL ===================================
 from .database import adminDB
+from .database import authDB
 from .database import userDB
 from .database import profileDB
 from .database import logDB
@@ -96,10 +100,8 @@ from .routes.Invitation.controller import invitation
 from .routes.Guest.controller import guest
 from .routes.Log.controller import log
 from .routes.Request.controller import reqtemp
+from .routes.Auth.controller import auth
 from .routes.tester.controller import test
-
-# Set Limiter Every Route
-# limiter.limit("5/minute;12/hours")(admin)
 
 # Register Blueprint Here
 app.register_blueprint(admin)
@@ -112,4 +114,9 @@ app.register_blueprint(invitation)
 app.register_blueprint(guest)
 app.register_blueprint(log)
 app.register_blueprint(reqtemp)
+app.register_blueprint(auth)
 app.register_blueprint(test)
+
+
+# Set Limiter Every Route
+# limiter.limit("5/minute;12/hours")(admin)

@@ -1,5 +1,5 @@
 from flask_jwt_extended import create_access_token
-from flask import request, current_app as app
+from flask import request
 
 from ..Profile.models import ProfileModels
 from ...utilities.responseHelper import *

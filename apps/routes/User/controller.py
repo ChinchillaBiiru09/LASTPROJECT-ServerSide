@@ -75,6 +75,25 @@ def get_data():
 
 
 # GET USER ============================================================ Begin
+# DELETE https://127.0.0.1:5000/user/activate
+@user.put('/activate')
+def active_data():
+    try:
+        # Request Data ======================================== 
+        data = request.json
+
+        # Request Data ======================================== 
+        response = UserModels.activate_user(data)
+
+        # Request Data ======================================== 
+        return response
+
+    except Exception as e:
+        return bad_request(str(e))
+# GET USER ============================================================ End
+
+
+# GET USER ============================================================ Begin
 # DELETE https://127.0.0.1:5000/user/
 @user.delete('/')
 @jwt_required()
